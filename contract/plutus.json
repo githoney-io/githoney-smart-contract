@@ -1,0 +1,126 @@
+{
+  "preamble": {
+    "title": "txpipe/contract",
+    "description": "Aiken contracts for project 'txpipe/contract'",
+    "version": "0.0.0",
+    "plutusVersion": "v2",
+    "compiler": {
+      "name": "Aiken",
+      "version": "v1.0.21-alpha+4b04517"
+    },
+    "license": "Apache-2.0"
+  },
+  "validators": [
+    {
+      "title": "githoney_contract.githoney_contract",
+      "datum": {
+        "title": "_datum",
+        "schema": {
+          "$ref": "#/definitions/aiken~1transaction~1Datum"
+        }
+      },
+      "redeemer": {
+        "title": "_redeemer",
+        "schema": {
+          "$ref": "#/definitions/types~1GithoneyContractRedeemers"
+        }
+      },
+      "compiledCode": "510100003222253330044a229309b2b2b9a1",
+      "hash": "39c520d0627aafa728f7e4dd10142b77c257813c36f57e2cb88f72a5"
+    },
+    {
+      "title": "githoney_policy.githoney_policy",
+      "redeemer": {
+        "title": "_redeemer",
+        "schema": {
+          "$ref": "#/definitions/Data"
+        }
+      },
+      "parameters": [
+        {
+          "title": "txHash",
+          "schema": {
+            "$ref": "#/definitions/ByteArray"
+          }
+        },
+        {
+          "title": "outputIndex",
+          "schema": {
+            "$ref": "#/definitions/Int"
+          }
+        }
+      ],
+      "compiledCode": "581a010000322322322253330074a229309b2b1bad001375c002ae69",
+      "hash": "d419d581726bb5a174fee9a56b1aecf0a976f04b4f565e8accf2185b"
+    }
+  ],
+  "definitions": {
+    "ByteArray": {
+      "dataType": "bytes"
+    },
+    "Data": {
+      "title": "Data",
+      "description": "Any Plutus data."
+    },
+    "Int": {
+      "dataType": "integer"
+    },
+    "aiken/transaction/Datum": {
+      "title": "Datum",
+      "description": "An output `Datum`.",
+      "anyOf": [
+        {
+          "title": "NoDatum",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": []
+        },
+        {
+          "title": "DatumHash",
+          "description": "A datum referenced by its hash digest.",
+          "dataType": "constructor",
+          "index": 1,
+          "fields": [
+            {
+              "$ref": "#/definitions/ByteArray"
+            }
+          ]
+        },
+        {
+          "title": "InlineDatum",
+          "description": "A datum completely inlined in the output.",
+          "dataType": "constructor",
+          "index": 2,
+          "fields": [
+            {
+              "$ref": "#/definitions/Data"
+            }
+          ]
+        }
+      ]
+    },
+    "types/GithoneyContractRedeemers": {
+      "title": "GithoneyContractRedeemers",
+      "anyOf": [
+        {
+          "title": "Deposit",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": []
+        },
+        {
+          "title": "Merge",
+          "dataType": "constructor",
+          "index": 1,
+          "fields": []
+        },
+        {
+          "title": "Close",
+          "dataType": "constructor",
+          "index": 2,
+          "fields": []
+        }
+      ]
+    }
+  }
+}

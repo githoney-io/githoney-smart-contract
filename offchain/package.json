@@ -1,0 +1,15 @@
+{
+  "name": "offchain",
+  "version": "1.0.0",
+  "description": "Githoney offchain library",
+  "main": "index.ts",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Filabs",
+  "license": "ISC",
+  "dependencies": {
+    "lucid-cardano": "^0.10.7"
+  }
+}
