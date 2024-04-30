@@ -3,6 +3,6 @@ artifacts/
 # Aiken's project working directory
 build/
 # Aiken's default documentation export
-docs/
+onchain/docs/
 
 offchain/node_modules/
