@@ -18,8 +18,7 @@ There will be a single `BountyUtxo` for each bounty, which will hold the reward 
 >
 > - maintainer: **PaymentPubKeyHash**
 > - deadline: **POSIXTime**
-> - repo_id: **String**
-> - pull_request_number: **Int**
+> - bounty_id: **String**
 > - admin: **PaymentPubKeyHash**
 > - merged: **Bool**
 >
@@ -34,7 +33,7 @@ There will be a single `BountyUtxo` for each bounty, which will hold the reward 
 
 ### Create BountyUtxo:
 
-This transaction creates a `BountyUtxo` locking the reward assets and minting a `ContributorToken` and a `ControlToken`. It sets the maintainer, deadline, repo_id, pull_request_number, admin, and merged (False) in the datum.
+This transaction creates a `BountyUtxo` locking the reward assets and minting a `ContributorToken` and a `ControlToken`. It sets the maintainer, deadline, bounty_id, admin, and merged (False) in the datum.
 
 ![createBounty diagram](img/createBounty.png)
 
@@ -82,8 +81,8 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 #### _AssignContributor Redeemer_
 
 - `ContributorToken` is transferred from the `BountyUtxo` to the contributor's address.
-- Reward assets don't change.
-- Datum merged field must be False.
+- Utxo assets besides the `ContributorToken` don't change.
+- Datum doesn't change.
 
 #### _CloseBounty Redeemer_
 
@@ -95,13 +94,13 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 #### _MergeBounty Redeemer_
 
 - `BountyUtxo` input.
-- Reward assets times `BountyRewardFee` are paid to the `GitHoneyAddress`.
+- Reward assets times `BountyRewardFee` are paid to the `GitHoneyAddress`, the rest of the assets remain in the utxo.
 - Datum Admin address is present in the signers.
 - Datum merged field is updated to True.
 
 #### _ClaimBounty Redeemer_
 
-- `BountyUtxo` input.
+- `BountyUtxo` input with merged field setted to true.
 - `ContributorToken` is present in the inputs.
 - Remaining reward assets in utxo are payed to the contributor.
 
@@ -118,4 +117,4 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 
 #### BURN:
 
-- `ContributorToken` and `ControlToken` are present in the input.
+- No restrictions.
