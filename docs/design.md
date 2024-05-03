@@ -12,7 +12,7 @@ There will be a single `BountyUtxo` for each bounty, which will hold the reward 
 
 > #### Address
 >
-> - Parameterized on the `GitHoneyAddress`.
+> - Parameterized on the `GitHoneyAddress` and `Policy id`.
 >
 > #### Datum
 >
@@ -71,7 +71,7 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 
 ### BountyValidator:
 
-- Params: `PolicyID`.
+- Params: `PolicyID`, `GithoneyAddress`.
 
 #### _AddReward Redeemer_
 
