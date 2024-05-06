@@ -2,14 +2,23 @@
   "name": "offchain",
   "version": "1.0.0",
   "description": "Githoney offchain library",
-  "main": "index.ts",
-  "devDependencies": {},
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "/dist",
+    "README.md",
+    "package.json"
+  ],
   "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "prepack": "rm -rf dist && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Filabs",
   "license": "ISC",
   "dependencies": {
-    "lucid-cardano": "^0.10.7"
+    "lucid-cardano": "^0.10.7",
+    "tsup": "^8.0.2"
   }
 }

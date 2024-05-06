@@ -6,7 +6,7 @@ import {
   ScriptHash,
   OutRef
 } from "lucid-cardano";
-import plutusBlueprint from "../../contract/plutus.json" assert { type: "json" };
+import plutusBlueprint from "../../onchain/plutus.json" assert { type: "json" };
 
 const githoneyValidator = plutusBlueprint.validators.find(
   ({ title }) => title === "githoney_contract.githoney_contract"
