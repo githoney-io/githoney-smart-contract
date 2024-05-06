@@ -98,7 +98,6 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 - `BountyUtxo` input.
 - The merged field is False.
 - The `deadline` has not been reached.
-- `ControlToken` is burnt.
 - Reward assets times `BountyRewardFee` are paid to the `GitHoneyAddress`, the rest of the assets remain in the utxo.
 - Datum Admin address is present in the signers.
 - Datum merged field is updated to True.
@@ -107,8 +106,8 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 
 - `BountyUtxo` input
 - The merged field is True.
-- Contributor's `PaymentPubKeyHash` is present in the signers.
-- Remaining reward assets in utxo are payed to the contributor.
+- `ControlToken` is burnt.
+- Remaining reward assets in utxo are payed to the `contributor`'s `PaymentPubKeyHash`.
 
 ### mintingPolicy:
 
