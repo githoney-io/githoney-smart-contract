@@ -21,7 +21,7 @@ There will be a single `BountyUtxo` for each bounty, which will hold the reward 
 > - bounty_id: **String**
 > - admin: **PaymentPubKeyHash**
 > - merged: **Bool**
-> - contributor: **PaymentPubKeyHash** (if assigned)
+> - contributor: **Optional( PaymentPubKeyHash )** (if assigned)
 >
 > #### Value
 >
