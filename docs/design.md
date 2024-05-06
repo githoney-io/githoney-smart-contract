@@ -4,7 +4,7 @@
 
 This document describes the technical design of the GitHoney dApp - the script UTxOs involved, the operations that take place during the bounty lifecycle, and the necessary validators and minting policies.
 
-There will be a single `BountyUtxo` for each bounty, which will hold the reward assets deposited by the maintainers. A `ContributorToken` and a `ControlToken` will be minted and held in the `BountyUtxo` until a contributor takes the `ContributorToken`, representing their assignment to the bounty. The `ControlToken` ensures the correctness of the `BountyUtxo` datum.
+There will be a single `BountyUtxo` for each bounty, which will hold the reward assets deposited by the maintainers. A `ControlToken` will be minted and held in the `BountyUtxo` until a contributor is assigned to the bounty, at which point their `PaymentPubKeyHash` will be added to the datum. The `ControlToken` ensures the correctness of the `BountyUtxo` datum.
 
 ## UTxOs specification
 
@@ -21,19 +21,19 @@ There will be a single `BountyUtxo` for each bounty, which will hold the reward 
 > - bounty_id: **String**
 > - admin: **PaymentPubKeyHash**
 > - merged: **Bool**
+> - contributor: **PaymentPubKeyHash** (if assigned)
 >
 > #### Value
 >
 > - minAda
 > - reward_assets: **MultiAsset**
-> - `ContributorToken` (if not assigned)
 > - `ControlToken`
 
 ## Transactions
 
 ### Create BountyUtxo:
 
-This transaction creates a `BountyUtxo` locking the reward assets and minting a `ContributorToken` and a `ControlToken`. It sets the maintainer, deadline, bounty_id, admin, and merged (False) in the datum.
+This transaction creates a `BountyUtxo` locking the reward assets and minting a `ControlToken`. It sets the maintainer, deadline, bounty_id, admin, and merged (False) in the datum.
 
 ![createBounty diagram](img/createBounty.png)
 
@@ -45,7 +45,7 @@ Adds additional reward assets to an existing `BountyUtxo`.
 
 ### Assign Contributor:
 
-Transfers the `ContributorToken` from the `BountyUtxo` to the contributor's address.
+Sets the contributor's `PaymentPubKeyHash` to the `BountyUtxo` datum.
 
 ![assignContributor diagram](img/assignContributor.png)
 
@@ -80,9 +80,8 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 
 #### _AssignContributor Redeemer_
 
-- `ContributorToken` is transferred from the `BountyUtxo` to the contributor's address.
-- Utxo assets besides the `ContributorToken` don't change.
-- Datum doesn't change.
+- Contributor's `PaymentPubKeyHash` is added to the `BountyUtxo` datum.
+- Utxo assets don't change.
 
 #### _CloseBounty Redeemer_
 
@@ -101,7 +100,7 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 #### _ClaimBounty Redeemer_
 
 - `BountyUtxo` input with merged field setted to true.
-- `ContributorToken` is present in the inputs.
+- Contributor's `PaymentPubKeyHash` is present in the signers.
 - Remaining reward assets in utxo are payed to the contributor.
 
 ### mintingPolicy:
@@ -110,8 +109,8 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 
 #### MINT:
 
-- A single `ContributorToken` and `ControlToken` are minted.
-- The minted tokens are paid to the `BountyValidatorAddress`.
+- A single `ControlToken` is minted.
+- The minted token is paid to the `BountyValidatorAddress`.
 - The datum of the `BountyUtxo` is checked for correctness.
 - Datum merged field must be False.
 
