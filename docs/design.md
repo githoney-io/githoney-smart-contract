@@ -75,11 +75,14 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 
 #### _AddReward Redeemer_
 
+- The `deadline` has not been reached.
 - `BountyUtxo` output value includes input value plus additional reward assets.
 - Datum doesn't change.
 
 #### _AssignContributor Redeemer_
 
+- The `deadline` has not been reached.
+- The `contributor` field in the datum is null.
 - Contributor's `PaymentPubKeyHash` is added to the `BountyUtxo` datum.
 - Utxo assets don't change.
 
@@ -93,13 +96,17 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 #### _MergeBounty Redeemer_
 
 - `BountyUtxo` input.
+- The merged field is False.
+- The `deadline` has not been reached.
+- `ControlToken` is burnt.
 - Reward assets times `BountyRewardFee` are paid to the `GitHoneyAddress`, the rest of the assets remain in the utxo.
 - Datum Admin address is present in the signers.
 - Datum merged field is updated to True.
 
 #### _ClaimBounty Redeemer_
 
-- `BountyUtxo` input with merged field setted to true.
+- `BountyUtxo` input
+- The merged field is True.
 - Contributor's `PaymentPubKeyHash` is present in the signers.
 - Remaining reward assets in utxo are payed to the contributor.
 
@@ -111,8 +118,10 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 
 - A single `ControlToken` is minted.
 - The minted token is paid to the `BountyValidatorAddress`.
-- The datum of the `BountyUtxo` is checked for correctness.
-- Datum merged field must be False.
+- The datum of the `BountyUtxo` is checked for correctness:
+  - Deadline must be in the future.
+  - Merged field must be False.
+  - Bounty Reward Fee must be equal or grater than 0 and less than 1.
 
 #### BURN:
 
