@@ -8,5 +8,6 @@ onchain/docs/
 dist/
 
 offchain/node_modules/
+offchain/package-lock.json
 
 *.tgz
