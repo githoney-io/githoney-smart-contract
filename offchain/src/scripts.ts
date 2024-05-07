@@ -4,16 +4,18 @@ import {
   Data,
   applyParamsToScript,
   ScriptHash,
-  OutRef
+  OutRef,
+  Wallet
 } from "lucid-cardano";
 import plutusBlueprint from "../../onchain/plutus.json" assert { type: "json" };
+import { WalletSchema } from "./types";
 
 const githoneyValidator = plutusBlueprint.validators.find(
   ({ title }) => title === "githoney_contract.githoney_contract"
 );
 
 const mintingPolicy = plutusBlueprint.validators.find(
-  ({ title }) => title === "githoney_policy.githoney_policy"
+  ({ title }) => title === "githoney_contract.githoney_policy"
 );
 
 if (!githoneyValidator) {
@@ -32,26 +34,58 @@ const GITHONEY_SCRIPT: SpendingValidator["script"] =
   githoneyValidator.compiledCode;
 const MINTING_SCRIPT: SpendingValidator["script"] = mintingPolicy.compiledCode;
 
-function buildGithoneyValidator(): SpendingValidator {
+const ParamsSchema = Data.Tuple([
+  Data.Object({
+    githoneyWallet: WalletSchema,
+    creationFee: Data.Integer(),
+    rewardFee: Data.Integer()
+  })
+]);
+type ParamsT = Data.Static<typeof ParamsSchema>;
+const Params = ParamsSchema as unknown as ParamsT;
+
+type WalletT = Data.Static<typeof WalletSchema>;
+
+function buildGithoneyValidator(
+  githoneyWallet: WalletT,
+  creationFee: bigint,
+  rewardFee: bigint
+): SpendingValidator {
   return {
     type: "PlutusV2",
-    script: GITHONEY_SCRIPT
+    script: applyParamsToScript<ParamsT>(
+      GITHONEY_SCRIPT,
+      [
+        {
+          githoneyWallet: githoneyWallet,
+          creationFee: creationFee,
+          rewardFee: rewardFee
+        }
+      ],
+      Params
+    )
   };
 }
 
 const GITHONEY_SCRIPT_HASH: ScriptHash = githoneyValidator.hash;
 
-function buildGithoneyMintingPolicy(outRef: OutRef): SpendingValidator {
-  const MintingPolicyParamSchema = Data.Tuple([Data.Bytes(), Data.Integer()]);
-  type MintingPolicyParamT = Data.Static<typeof MintingPolicyParamSchema>;
-  const MintingPolicyParam =
-    MintingPolicyParamSchema as unknown as MintingPolicyParamT;
+function buildGithoneyMintingPolicy(
+  githoneyWallet: WalletT,
+  creationFee: bigint,
+  rewardFee: bigint
+): SpendingValidator {
   return {
     type: "PlutusV2",
-    script: applyParamsToScript<MintingPolicyParamT>(
+    script: applyParamsToScript<ParamsT>(
       MINTING_SCRIPT,
-      [outRef.txHash, BigInt(outRef.outputIndex)],
-      MintingPolicyParam
+      [
+        {
+          githoneyWallet: githoneyWallet,
+          creationFee: creationFee,
+          rewardFee: rewardFee
+        }
+      ],
+      Params
     )
   };
 }
