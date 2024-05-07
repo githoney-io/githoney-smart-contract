@@ -31,4 +31,9 @@ namespace CapsuleValidatorRedeemer {
     );
 }
 
-export { CapsuleValidatorRedeemer };
+const WalletSchema = Data.Object({
+  paymentKey: Data.Bytes(),
+  stakeKey: Data.Nullable(Data.Bytes())
+});
+
+export { CapsuleValidatorRedeemer, WalletSchema };
