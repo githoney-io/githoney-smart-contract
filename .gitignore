@@ -8,3 +8,5 @@ onchain/docs/
 dist/
 
 offchain/node_modules/
+
+*.tgz
