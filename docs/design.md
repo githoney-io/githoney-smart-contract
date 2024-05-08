@@ -19,10 +19,12 @@ There will be a single `BountyUtxo` for each bounty, which will hold the reward 
 > - maintainer: **PaymentPubKeyHash**
 > - admin: **PaymentPubKeyHash**
 > - githoney: **PaymentPubKeyHash**
+> - contributor: **Optional( PaymentPubKeyHash )** (if assigned)
 > - deadline: **POSIXTime**
 > - bounty_id: **String**
 > - merged: **Bool**
-> - contributor: **Optional( PaymentPubKeyHash )** (if assigned)
+> - creation_fee: **BigInt**
+> - reward_fee: **BigInt**
 >
 > #### Value
 >
@@ -123,6 +125,7 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
   - Deadline must be in the future.
   - Merged field must be False.
   - Bounty Reward Fee must be equal or grater than 0 and less than 1.
+  - Bounty Creation Fee must be greater than 0.
 
 #### BURN:
 
