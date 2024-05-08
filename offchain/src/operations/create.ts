@@ -1,28 +1,32 @@
+import dotenv from "dotenv";
 import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
 import { Data, fromText, toUnit, Assets, Lucid } from "lucid-cardano";
 import { Roles, MIN_ADA } from "../utils";
 import { mkDatum } from "../types";
 
+dotenv.config();
+
 async function createBounty(
   maintainerAddr: string,
   adminAddr: string,
   githoneyAddr: string,
-  creationFee: bigint,
-  rewardFee: bigint,
+
   rewards: Assets,
   deadline: bigint,
   bounty_id: string,
   lucid: Lucid
 ) {
   console.debug("START createBounty");
+  const creationFee = process.env.CREATION_FEE!;
+  const rewardFee = process.env.REWARD_FEE!;
   const gitHoneyCredentials = lucid.utils.getAddressDetails(githoneyAddr);
   const gitHoneyValidator = buildGithoneyValidator(
     {
       paymentKey: gitHoneyCredentials.paymentCredential!.hash,
       stakeKey: gitHoneyCredentials.stakeCredential!.hash
     },
-    creationFee,
-    rewardFee
+    BigInt(creationFee),
+    BigInt(rewardFee)
   );
   const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
   const utxo = (await lucid.utxosAt(maintainerAddr))[0];
@@ -31,8 +35,8 @@ async function createBounty(
       paymentKey: gitHoneyCredentials.paymentCredential!.hash,
       stakeKey: gitHoneyCredentials.stakeCredential!.hash
     },
-    creationFee,
-    rewardFee
+    BigInt(creationFee),
+    BigInt(rewardFee)
   );
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
   const githoneyUnit = toUnit(mintingPolicyid, fromText("githoney"));
@@ -69,8 +73,7 @@ async function createBounty(
     },
     deadline,
     bounty_id,
-    false,
-    creationFee
+    false
   );
 
   const tx = await lucid
@@ -85,8 +88,11 @@ async function createBounty(
         [toUnit(mintingPolicyid, fromText("ControlToken"))]: 1n
       }
     )
-    .payToAddress(maintainerAddr, { lovelace: creationFee, ...mantainerAssets })
-    .payToAddress(githoneyAddr, { lovelace: creationFee })
+    .payToAddress(maintainerAddr, {
+      lovelace: BigInt(creationFee),
+      ...mantainerAssets
+    })
+    .payToAddress(githoneyAddr, { lovelace: BigInt(creationFee) })
     .addSignerKey(maintainerPkh)
     .addSignerKey(gitHoneyCredentials.paymentCredential!.hash)
     // what if maintainer is the same as githoney? Error
