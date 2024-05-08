@@ -14,6 +14,7 @@ const DatumSchema = Data.Object({
   deadline: Data.Integer(),
   bounty_id: Data.Bytes(),
   merged: Data.Boolean(),
+  creation_fee: Data.Integer(),
   contributor: Data.Nullable(WalletSchema)
 });
 
@@ -21,20 +22,22 @@ type GithoneyDatumT = Data.Static<typeof DatumSchema>;
 const GithoneyDatum = DatumSchema as unknown as GithoneyDatumT;
 
 function mkDatum(
-  maintainer: WalletT,
   admin: WalletT,
+  maintainer: WalletT,
   githoney: WalletT,
   deadline: bigint,
   bounty_id: string,
-  merged: boolean
+  merged: boolean,
+  creation_fee: bigint
 ): string {
   const d: GithoneyDatumT = {
-    maintainer,
     admin,
+    maintainer,
     githoney,
     deadline,
     bounty_id,
     merged,
+    creation_fee,
     contributor: null
   };
   const datum = Data.to<GithoneyDatumT>(d, GithoneyDatum);
