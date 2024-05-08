@@ -61,10 +61,10 @@ async function createBounty(
       { inline: bountyDatum },
       {
         lovelace: rewards["lovelace"] > MIN_ADA ? rewards["lovelace"] : MIN_ADA,
-        ...rewards
-        // TODO: pay control token to the contract
+        ...rewards,
+        [toUnit(mintingPolicyid, fromText("ControlToken"))]: 1n
       }
-    ) // NOTE this rewrite the lovelace amount?
+    )
     .payToAddress(maintainerAddr, { lovelace: fee, ...mantainerAssets })
     .payToAddress(githoneyAdrr, { lovelace: fee })
     .addSignerKey(maintainerPkh)
