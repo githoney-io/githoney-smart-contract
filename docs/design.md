@@ -17,9 +17,10 @@ There will be a single `BountyUtxo` for each bounty, which will hold the reward 
 > #### Datum
 >
 > - maintainer: **PaymentPubKeyHash**
+> - admin: **PaymentPubKeyHash**
+> - githoney: **PaymentPubKeyHash**
 > - deadline: **POSIXTime**
 > - bounty_id: **String**
-> - admin: **PaymentPubKeyHash**
 > - merged: **Bool**
 > - contributor: **Optional( PaymentPubKeyHash )** (if assigned)
 >
@@ -118,6 +119,7 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 - A single `ControlToken` is minted.
 - The minted token and the min ADAs are paid to the `BountyValidatorAddress`.
 - The datum of the `BountyUtxo` is checked for correctness:
+  - `githoney` Address must be the same as the parameter.
   - Deadline must be in the future.
   - Merged field must be False.
   - Bounty Reward Fee must be equal or grater than 0 and less than 1.
