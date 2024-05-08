@@ -1,4 +1,5 @@
 import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
+import { GithoneyDatumT } from "../types";
 import { MIN_ADA, NetConfig } from "../utils";
 import { Assets, Data, Lucid, OutRef, fromText, toUnit } from "lucid-cardano";
 
@@ -10,7 +11,7 @@ async function addRewards(
 ) {
   console.debug("START addRewards");
   const utxo = (await lucid.utxosByOutRef([githoneyUtxo]))[0];
-  const datum = await lucid.datumOf(utxo);
+  const datum: GithoneyDatumT = await lucid.datumOf(utxo);
   const gitHoneyValidator = buildGithoneyValidator();
   const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
   const mintingScript = buildGithoneyMintingPolicy(outRef);
