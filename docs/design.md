@@ -4,39 +4,36 @@
 
 This document describes the technical design of the GitHoney dApp - the script UTxOs involved, the operations that take place during the bounty lifecycle, and the necessary validators and minting policies.
 
-There will be a single `BountyUtxo` for each bounty, which will hold the reward assets deposited by the maintainers. A `ControlToken` will be minted and held in the `BountyUtxo` until a contributor is assigned to the bounty, at which point their `PaymentPubKeyHash` will be added to the datum. The `ControlToken` ensures the correctness of the `BountyUtxo` datum.
+There will be a single `BountyUtxo` for each bounty, which will hold the reward assets deposited by the maintainers. A `ControlToken` will be minted and held in the `BountyUtxo` during the bounty creation. Initially, the contributor field in the datum will be null until a developer decides to work on that bounty, at which point their `PaymentPubKeyHash` will be added to the datum. The `ControlToken` ensures the correctness of the `BountyUtxo` datum, the initial payment of the bounty creation fee to GitHoney, and also that the reward assets are not null.
 
-## UTxOs specification
+## UTxOs Specification
 
 ### BountyUtxo:
 
 > #### Address
 >
-> - Parameterized on the `GitHoneyAddress` and `Policy id`.
+> - Parameterized on the `GitHoneyAddress`, `BountyCreationFee`, and `BountyRewardFee`.
 >
 > #### Datum
 >
 > - maintainer: **PaymentPubKeyHash**
 > - admin: **PaymentPubKeyHash**
-> - githoney: **PaymentPubKeyHash**
-> - contributor: **Optional( PaymentPubKeyHash )** (if assigned)
+> - contributor: **Optional(PaymentPubKeyHash)** (if assigned)
 > - deadline: **POSIXTime**
 > - bounty_id: **String**
 > - merged: **Bool**
-> - creation_fee: **BigInt**
-> - reward_fee: **BigInt**
 >
 > #### Value
 >
 > - minAda
-> - reward_assets: **MultiAsset**
+> - reward_assets
 > - `ControlToken`
 
 ## Transactions
 
 ### Create BountyUtxo:
 
-This transaction creates a `BountyUtxo` locking the reward assets and minting a `ControlToken`. It sets the maintainer, deadline, bounty_id, admin, and merged (False) in the datum.
+This transaction creates a `BountyUtxo` locking the reward assets plus min ADA and a `ControlToken`. It sets the maintainer, deadline, bounty_id, admin, and merged (False) in the datum.
 
 ![createBounty diagram](img/createBounty.png)
 
@@ -48,19 +45,19 @@ Adds additional reward assets to an existing `BountyUtxo`.
 
 ### Assign Contributor:
 
-Sets the contributor's `PaymentPubKeyHash` to the `BountyUtxo` datum.
+Sets the contributor's `PaymentPubKeyHash` to the `BountyUtxo` datum and adds the contributor's min ADA to the value.
 
 ![assignContributor diagram](img/assignContributor.png)
 
 ### Close Bounty:
 
-Returns the all the assets to the maintainer and burns the `ControlToken`.
+Returns all the assets to the maintainer and burns the `ControlToken`.
 
 ![closeBounty diagram](img/close.png)
 
 ### Merge Bounty:
 
-Pays to Githoney the reward assets times `BountyRewardFee`. Updates the merged field to True.
+Pays GitHoney the reward assets times `BountyRewardFee`. Updates the merged field to True. The contributor's min ADAs remain in the UTxO.
 
 ![mergeBounty diagram](img/merge.png)
 
@@ -74,58 +71,61 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 
 ### BountyValidator:
 
-- Params: `PolicyID`, `GithoneyAddress`.
+- Params: `GitHoneyAddress`, `BountyCreationFee`, and `BountyRewardFee`.
 
 #### _AddReward Redeemer_
 
+- `BountyUtxo` input with a control token.
 - The `deadline` has not been reached.
-- `BountyUtxo` output value includes input value plus additional reward assets.
+- `BountyUtxo` output value includes the input value plus additional reward assets.
 - Datum doesn't change.
 
 #### _AssignContributor Redeemer_
 
+- `BountyUtxo` input with a control token.
 - The `deadline` has not been reached.
 - The `contributor` field in the datum is null.
-- Contributor's `PaymentPubKeyHash` is added to the `BountyUtxo` datum.
-- Utxo assets are the same plus min ADAs payed by the `contributor`.
+- Contributor's `PaymentPubKeyHash` is added to the `BountyUtxo` datum, and the rest of the datum fields are the same.
+- UTxO assets are the same plus min ADAs.
 
 #### _CloseBounty Redeemer_
 
-- `BountyUtxo` input.
+- `BountyUtxo` input with a control token.
 - `ControlToken` is burnt.
 - Reward assets and the min ADAs are paid back to the maintainer.
-- Datum Admin address is present in the signers.
+- Datum Admin address signed the transaction.
 
 #### _MergeBounty Redeemer_
 
-- `BountyUtxo` input.
+- `BountyUtxo` input with a control token.
 - The merged field is False.
 - The `deadline` has not been reached.
-- Reward assets times `BountyRewardFee` are paid to the `GitHoneyAddress`, the min ADAs are paid back to the mantainer, and the rest of the assets remain in the utxo.
-- Datum Admin address is present in the signers.
-- Datum merged field is updated to True.
+- Reward assets times `BountyRewardFee` is paid to the `GitHoneyAddress`, the min ADAs are paid back to the maintainer, and the rest of the assets remain in the UTxO.
+- Datum Admin address signed the transaction.
+- Datum merged field is updated to True, and the rest of the datum fields are the same.
 
 #### _ClaimBounty Redeemer_
 
-- `BountyUtxo` input
+- `BountyUtxo` input with a control token.
 - The merged field is True.
 - `ControlToken` is burnt.
-- Remaining reward assets in utxo are payed to the `contributor`'s `PaymentPubKeyHash`.
+- Remaining reward assets in UTxO are paid to the `contributor`'s `PaymentPubKeyHash`.
 
 ### mintingPolicy:
 
-- Params: `BountyCreationFee`, `BountyRewardFee`, `BountyValidatorAddress`, `GitHoneyAddress`.
+- Params: `BountyCreationFee`, `BountyRewardFee`, `GitHoneyAddress`.
 
 #### MINT:
 
 - A single `ControlToken` is minted.
 - The minted token and the min ADAs are paid to the `BountyValidatorAddress`.
+- There are some reward assets paid to the `BountyUtxo`.
 - The datum of the `BountyUtxo` is checked for correctness:
-  - `githoney` Address must be the same as the parameter.
-  - Deadline must be in the future.
-  - Merged field must be False.
-  - Bounty Reward Fee must be equal or grater than 0 and less than 1.
-  - Bounty Creation Fee must be greater than 0.
+- Deadline must be in the future.
+- Merged field must be False.
+- Contributor field must be null.
+- Bounty Reward Fee must be equal to or greater than 0 and less than 1.
+- Bounty Creation Fee must be greater than 0.
 
 #### BURN:
 
