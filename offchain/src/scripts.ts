@@ -8,7 +8,7 @@ import {
   Wallet
 } from "lucid-cardano";
 import plutusBlueprint from "../../onchain/plutus.json" assert { type: "json" };
-import { WalletSchema } from "./types";
+import { WalletSchema, WalletT } from "./types";
 
 const githoneyValidator = plutusBlueprint.validators.find(
   ({ title }) => title === "githoney_contract.githoney_contract"
@@ -43,8 +43,6 @@ const ParamsSchema = Data.Tuple([
 ]);
 type ParamsT = Data.Static<typeof ParamsSchema>;
 const Params = ParamsSchema as unknown as ParamsT;
-
-type WalletT = Data.Static<typeof WalletSchema>;
 
 function buildGithoneyValidator(
   githoneyWallet: WalletT,
