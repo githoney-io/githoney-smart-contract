@@ -54,6 +54,11 @@ async function createBounty(
 
   const bountyDatum = mkDatum(
     {
+      paymentKey:
+        lucid.utils.getAddressDetails(adminAddr).paymentCredential!.hash,
+      stakeKey: lucid.utils.getAddressDetails(adminAddr).stakeCredential!.hash
+    },
+    {
       paymentKey: maintainerPkh,
       stakeKey:
         lucid.utils.getAddressDetails(maintainerAddr).stakeCredential!.hash
@@ -64,11 +69,6 @@ async function createBounty(
     },
     deadline,
     bounty_id,
-    {
-      paymentKey:
-        lucid.utils.getAddressDetails(adminAddr).paymentCredential!.hash,
-      stakeKey: lucid.utils.getAddressDetails(adminAddr).stakeCredential!.hash
-    },
     false,
     creationFee
   );
