@@ -9,8 +9,6 @@ dotenv.config();
 async function createBounty(
   maintainerAddr: string,
   adminAddr: string,
-  githoneyAddr: string,
-
   rewards: Assets,
   deadline: bigint,
   bounty_id: string,
@@ -19,6 +17,7 @@ async function createBounty(
   console.debug("START createBounty");
   const creationFee = process.env.CREATION_FEE!;
   const rewardFee = process.env.REWARD_FEE!;
+  const githoneyAddr = process.env.GITHONEY_ADDR!;
   const gitHoneyCredentials = lucid.utils.getAddressDetails(githoneyAddr);
   const gitHoneyValidator = buildGithoneyValidator(
     {
