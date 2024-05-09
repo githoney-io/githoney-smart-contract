@@ -44,47 +44,27 @@ const ParamsSchema = Data.Tuple([
 type ParamsT = Data.Static<typeof ParamsSchema>;
 const Params = ParamsSchema as unknown as ParamsT;
 
-function buildGithoneyValidator(
-  githoneyWallet: WalletT,
-  creationFee: bigint,
-  rewardFee: bigint
-): SpendingValidator {
+function buildGithoneyValidator(params: {
+  githoneyWallet: WalletT;
+  creationFee: bigint;
+  rewardFee: bigint;
+}): SpendingValidator {
   return {
     type: "PlutusV2",
-    script: applyParamsToScript<ParamsT>(
-      GITHONEY_SCRIPT,
-      [
-        {
-          githoneyWallet: githoneyWallet,
-          creationFee: creationFee,
-          rewardFee: rewardFee
-        }
-      ],
-      Params
-    )
+    script: applyParamsToScript<ParamsT>(GITHONEY_SCRIPT, [params], Params)
   };
 }
 
 const GITHONEY_SCRIPT_HASH: ScriptHash = githoneyValidator.hash;
 
-function buildGithoneyMintingPolicy(
-  githoneyWallet: WalletT,
-  creationFee: bigint,
-  rewardFee: bigint
-): SpendingValidator {
+function buildGithoneyMintingPolicy(param: {
+  githoneyWallet: WalletT;
+  creationFee: bigint;
+  rewardFee: bigint;
+}): SpendingValidator {
   return {
     type: "PlutusV2",
-    script: applyParamsToScript<ParamsT>(
-      MINTING_SCRIPT,
-      [
-        {
-          githoneyWallet: githoneyWallet,
-          creationFee: creationFee,
-          rewardFee: rewardFee
-        }
-      ],
-      Params
-    )
+    script: applyParamsToScript<ParamsT>(MINTING_SCRIPT, [param], Params)
   };
 }
 

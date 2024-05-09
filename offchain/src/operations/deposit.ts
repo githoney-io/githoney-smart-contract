@@ -1,7 +1,7 @@
 import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
 import { Data, fromText, toUnit } from "lucid-cardano";
 import { CapsuleValidatorRedeemer } from "../types";
-import { NetConfig, Roles } from "../utils";
+import { NetConfig, Roles } from "../constants";
 
 async function depositBounty(
   utxoHash: string,

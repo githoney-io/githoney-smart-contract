@@ -1,21 +1,23 @@
+import { creationFee, rewardFee } from "./constants";
+import { WalletT } from "./types";
+import dotenv from "dotenv";
 import { Lucid } from "lucid-cardano";
 
-interface NetConfig {
-  SIGN_SERVER_URL: string;
-  SEED: string;
-  MARLOWE_RT_WEBSERVER_URL: string;
-  BLOCKFROST_PROJECT_ID: string;
-  BLOCKFROST_URL: string;
-  lucidAdmin: Lucid | null;
+dotenv.config();
+
+function validatorParams(lucid: Lucid) {
+  const githoneyAddr = process.env.GITHONEY_ADDR!;
+  const gitHoneyCredentials = lucid.utils.getAddressDetails(githoneyAddr);
+  const gitHoneyWallet: WalletT = {
+    paymentKey: gitHoneyCredentials.paymentCredential!.hash,
+    stakeKey: gitHoneyCredentials.stakeCredential!.hash
+  };
+
+  return {
+    githoneyWallet: gitHoneyWallet,
+    creationFee: BigInt(creationFee),
+    rewardFee: BigInt(rewardFee)
+  };
 }
 
-const Roles = {
-  MAINTAINER: "Maintainer",
-  GIT_HONEY: "GitHoney",
-  ADMIN: "Admin",
-  CONTRIBUTOR: "Contributor"
-};
-
-const MIN_ADA = 2_000_000n;
-
-export { MIN_ADA, Roles, NetConfig };
+export { validatorParams };

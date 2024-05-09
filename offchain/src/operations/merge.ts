@@ -1,5 +1,5 @@
 import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
-import { MIN_ADA, NetConfig } from "../utils";
+import { MIN_ADA, NetConfig } from "../constants";
 import { Data, fromText, toUnit } from "lucid-cardano";
 
 async function mergeBounty(maintainerAddr: string, netConfig: NetConfig) {
