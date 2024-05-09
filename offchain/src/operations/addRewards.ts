@@ -1,6 +1,6 @@
 import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
 import { GithoneyDatumT } from "../types";
-import { MIN_ADA, NetConfig } from "../utils";
+import { MIN_ADA, NetConfig } from "../constants";
 import { Assets, Data, Lucid, OutRef, fromText, toUnit } from "lucid-cardano";
 
 async function addRewards(
