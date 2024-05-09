@@ -16,7 +16,7 @@
       "datum": {
         "title": "_datum",
         "schema": {
-          "$ref": "#/definitions/aiken~1transaction~1Datum"
+          "$ref": "#/definitions/types~1GithoneyDatum"
         }
       },
       "redeemer": {
@@ -27,7 +27,7 @@
       },
       "parameters": [
         {
-          "title": "githoney_fee",
+          "title": "_githoney_fee",
           "schema": {
             "$ref": "#/definitions/types~1GithoneyFee"
           }
@@ -46,7 +46,7 @@
       },
       "parameters": [
         {
-          "title": "githoney_fee",
+          "title": "_githoney_fee",
           "schema": {
             "$ref": "#/definitions/types~1GithoneyFee"
           }
@@ -57,6 +57,23 @@
     }
   ],
   "definitions": {
+    "Bool": {
+      "title": "Bool",
+      "anyOf": [
+        {
+          "title": "False",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": []
+        },
+        {
+          "title": "True",
+          "dataType": "constructor",
+          "index": 1,
+          "fields": []
+        }
+      ]
+    },
     "ByteArray": {
       "dataType": "bytes"
     },
@@ -90,6 +107,29 @@
         }
       ]
     },
+    "Option$types/Wallet": {
+      "title": "Optional",
+      "anyOf": [
+        {
+          "title": "Some",
+          "description": "An optional value.",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "$ref": "#/definitions/types~1Wallet"
+            }
+          ]
+        },
+        {
+          "title": "None",
+          "description": "Nothing.",
+          "dataType": "constructor",
+          "index": 1,
+          "fields": []
+        }
+      ]
+    },
     "RedeemerWrapper$types/GithoneyContractRedeemers": {
       "title": "Wrapped Redeemer",
       "description": "A redeemer wrapped in an extra constructor to make multi-validator detection possible on-chain.",
@@ -105,45 +145,11 @@
         }
       ]
     },
-    "aiken/transaction/Datum": {
-      "title": "Datum",
-      "description": "An output `Datum`.",
-      "anyOf": [
-        {
-          "title": "NoDatum",
-          "dataType": "constructor",
-          "index": 0,
-          "fields": []
-        },
-        {
-          "title": "DatumHash",
-          "description": "A datum referenced by its hash digest.",
-          "dataType": "constructor",
-          "index": 1,
-          "fields": [
-            {
-              "$ref": "#/definitions/ByteArray"
-            }
-          ]
-        },
-        {
-          "title": "InlineDatum",
-          "description": "A datum completely inlined in the output.",
-          "dataType": "constructor",
-          "index": 2,
-          "fields": [
-            {
-              "$ref": "#/definitions/Data"
-            }
-          ]
-        }
-      ]
-    },
     "types/GithoneyContractRedeemers": {
       "title": "GithoneyContractRedeemers",
       "anyOf": [
         {
-          "title": "Deposit",
+          "title": "AddRewards",
           "dataType": "constructor",
           "index": 0,
           "fields": []
@@ -159,6 +165,48 @@
           "dataType": "constructor",
           "index": 2,
           "fields": []
+        },
+        {
+          "title": "Claim",
+          "dataType": "constructor",
+          "index": 3,
+          "fields": []
+        }
+      ]
+    },
+    "types/GithoneyDatum": {
+      "title": "GithoneyDatum",
+      "anyOf": [
+        {
+          "title": "GithoneyDatum",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "title": "admin_wallet",
+              "$ref": "#/definitions/types~1Wallet"
+            },
+            {
+              "title": "maintainer_wallet",
+              "$ref": "#/definitions/types~1Wallet"
+            },
+            {
+              "title": "contributor_wallet",
+              "$ref": "#/definitions/Option$types~1Wallet"
+            },
+            {
+              "title": "bounty_id",
+              "$ref": "#/definitions/ByteArray"
+            },
+            {
+              "title": "deadline",
+              "$ref": "#/definitions/Int"
+            },
+            {
+              "title": "merged",
+              "$ref": "#/definitions/Bool"
+            }
+          ]
         }
       ]
     },

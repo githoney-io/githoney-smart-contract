@@ -1,9 +1,9 @@
 
-use aiken/transaction.{ScriptContext, Datum, Redeemer}
-use types.{GithoneyContractRedeemers, GithoneyFee}
+use aiken/transaction.{ScriptContext, Redeemer}
+use types.{GithoneyContractRedeemers, GithoneyFee, GithoneyDatum}
 
-validator(githoney_fee: GithoneyFee){
-  fn githoney_contract(_datum: Datum, _redeemer:GithoneyContractRedeemers, _ctx: ScriptContext){
+validator(_githoney_fee: GithoneyFee){
+  fn githoney_contract(_datum: GithoneyDatum, _redeemer:GithoneyContractRedeemers, _ctx: ScriptContext){
     True
   }
 
