@@ -1,8 +1,9 @@
 import dotenv from "dotenv";
 import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
 import { Data, fromText, toUnit, Assets, Lucid } from "lucid-cardano";
-import { Roles, MIN_ADA } from "../utils";
+import { ControlTokenName, Roles, MIN_ADA } from "../constants";
 import { mkDatum } from "../types";
+import { validatorParams } from "../utils";
 
 dotenv.config();
 
@@ -15,28 +16,22 @@ async function createBounty(
   lucid: Lucid
 ) {
   console.debug("START createBounty");
-  const creationFee = process.env.CREATION_FEE!;
-  const rewardFee = process.env.REWARD_FEE!;
   const githoneyAddr = process.env.GITHONEY_ADDR!;
-  const gitHoneyCredentials = lucid.utils.getAddressDetails(githoneyAddr);
+  const { gitHoneyWallet, creationFee, rewardFee } = validatorParams(lucid);
+
   const gitHoneyValidator = buildGithoneyValidator(
-    {
-      paymentKey: gitHoneyCredentials.paymentCredential!.hash,
-      stakeKey: gitHoneyCredentials.stakeCredential!.hash
-    },
-    BigInt(creationFee),
-    BigInt(rewardFee)
+    gitHoneyWallet,
+    creationFee,
+    rewardFee
   );
   const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
   const utxo = (await lucid.utxosAt(maintainerAddr))[0];
   const mintingScript = buildGithoneyMintingPolicy(
-    {
-      paymentKey: gitHoneyCredentials.paymentCredential!.hash,
-      stakeKey: gitHoneyCredentials.stakeCredential!.hash
-    },
-    BigInt(creationFee),
-    BigInt(rewardFee)
+    gitHoneyWallet,
+    creationFee,
+    rewardFee
   );
+
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
   const githoneyUnit = toUnit(mintingPolicyid, fromText("githoney"));
   const mintAssets = {
@@ -45,7 +40,7 @@ async function createBounty(
     [toUnit(mintingPolicyid, fromText(Roles.MAINTAINER))]: 1n,
     [githoneyUnit]: 1n
   };
-  const { [githoneyUnit]: _, ...mantainerAssets } = mintAssets;
+  const { [githoneyUnit]: _ } = mintAssets;
   const maintainerPkh =
     lucid.utils.getAddressDetails(maintainerAddr).paymentCredential!.hash;
 
@@ -80,16 +75,11 @@ async function createBounty(
       {
         lovelace: rewards["lovelace"] + MIN_ADA,
         ...rewards,
-        [toUnit(mintingPolicyid, fromText("ControlToken"))]: 1n
+        [toUnit(mintingPolicyid, fromText(ControlTokenName))]: 1n
       }
     )
-    .payToAddress(maintainerAddr, {
-      lovelace: BigInt(creationFee),
-      ...mantainerAssets
-    })
     .payToAddress(githoneyAddr, { lovelace: BigInt(creationFee) })
     .addSignerKey(maintainerPkh)
-    .addSignerKey(gitHoneyCredentials.paymentCredential!.hash)
     // what if maintainer is the same as githoney? Error
     .mintAssets(mintAssets, Data.void())
     .attachMintingPolicy(mintingScript)
@@ -98,8 +88,6 @@ async function createBounty(
   lucid.selectWalletFrom({ address: maintainerAddr });
   const txCbor = (await tx.sign().complete()).toString();
   console.debug(`TxCbor ${txCbor}`);
-
-  return { txCbor, mintingPolicyid };
 }
 
 export default createBounty;
