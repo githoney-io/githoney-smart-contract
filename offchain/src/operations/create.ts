@@ -66,10 +66,6 @@ async function createBounty(
       stakeKey:
         lucid.utils.getAddressDetails(maintainerAddr).stakeCredential!.hash
     },
-    {
-      paymentKey: gitHoneyCredentials.paymentCredential!.hash,
-      stakeKey: gitHoneyCredentials.stakeCredential!.hash
-    },
     deadline,
     bounty_id,
     false
