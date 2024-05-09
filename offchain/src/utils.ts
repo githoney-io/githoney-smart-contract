@@ -14,7 +14,7 @@ function validatorParams(lucid: Lucid) {
   };
 
   return {
-    gitHoneyWallet: gitHoneyWallet,
+    githoneyWallet: gitHoneyWallet,
     creationFee: BigInt(creationFee),
     rewardFee: BigInt(rewardFee)
   };

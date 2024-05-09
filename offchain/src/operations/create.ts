@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
 import { Data, fromText, toUnit, Assets, Lucid } from "lucid-cardano";
-import { ControlTokenName, Roles, MIN_ADA } from "../constants";
+import { ControlTokenName, Roles, MIN_ADA, creationFee } from "../constants";
 import { mkDatum } from "../types";
 import { validatorParams } from "../utils";
 
@@ -17,20 +17,12 @@ async function createBounty(
 ) {
   console.debug("START createBounty");
   const githoneyAddr = process.env.GITHONEY_ADDR!;
-  const { gitHoneyWallet, creationFee, rewardFee } = validatorParams(lucid);
+  const scriptParams = validatorParams(lucid);
 
-  const gitHoneyValidator = buildGithoneyValidator(
-    gitHoneyWallet,
-    creationFee,
-    rewardFee
-  );
+  const gitHoneyValidator = buildGithoneyValidator(scriptParams);
   const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
   const utxo = (await lucid.utxosAt(maintainerAddr))[0];
-  const mintingScript = buildGithoneyMintingPolicy(
-    gitHoneyWallet,
-    creationFee,
-    rewardFee
-  );
+  const mintingScript = buildGithoneyMintingPolicy(scriptParams);
 
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
   const githoneyUnit = toUnit(mintingPolicyid, fromText("githoney"));
