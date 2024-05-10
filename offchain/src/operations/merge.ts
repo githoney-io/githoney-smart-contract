@@ -41,7 +41,7 @@ async function mergeBounty(
 
   const feePercent = BigInt(rewardFee) / 10000n;
   const assets = contractUtxo.assets;
-  // for every assets, we calculate the reward and subtract it from the asset
+
   const githoneyRewards = Object.fromEntries(
     Object.entries(assets).map(([asset, amount]) => {
       if (asset === "lovelace") {
