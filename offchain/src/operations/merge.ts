@@ -1,47 +1,83 @@
 import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
-import { MIN_ADA, NetConfig } from "../constants";
-import { Data, fromText, toUnit, OutRef } from "lucid-cardano";
+import { ControlTokenName, MIN_ADA, rewardFee } from "../constants";
+import {
+  GithoneyDatum,
+  GithoneyDatumT,
+  GithoneyValidatorRedeemer,
+  mkDatum
+} from "../types";
+import { Data, fromText, toUnit, OutRef, Lucid } from "lucid-cardano";
+import { validatorParams } from "../utils";
 
 async function mergeBounty(
   ref_input: OutRef,
   maintainerAddr: string,
-  netConfig: NetConfig
+  adminAddr: string,
+  lucid: Lucid
 ) {
   console.debug("START mergeBounty");
-  const lucid = netConfig.lucidAdmin!;
-  const gitHoneyValidator = buildGithoneyValidator();
+  const githoneyAddr = process.env.GITHONEY_ADDR!;
+  const scriptParams = validatorParams(lucid);
+
+  const gitHoneyValidator = buildGithoneyValidator(scriptParams);
   const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
   const [contractUtxo] = await lucid.utxosByOutRef([ref_input]);
-  const bountyDatum = Data.from<BountyDatumT>(
+  const bountyDatum = Data.from<GithoneyDatumT>(
     contractUtxo.datum as string,
-    BountyDatum as unknown as BountyDatumT
+    GithoneyDatum as unknown as GithoneyDatumT
   );
-  const newBountyDatum = {
-    ...bountyDatum,
-    merged: true
-  };
 
-  const githoneyAdrr = await lucid.wallet.address();
+  const newBountyDatum: string = mkDatum(
+    bountyDatum.admin,
+    bountyDatum.maintainer,
+    bountyDatum.deadline,
+    bountyDatum.bounty_id,
+    true
+  );
+
   const utxo = (await lucid.wallet.getUtxos())[0];
-  const outRef = { txHash: utxo.txHash, outputIndex: utxo.outputIndex };
-  const mintingScript = buildGithoneyMintingPolicy(outRef);
+  const mintingScript = buildGithoneyMintingPolicy(scriptParams);
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
-  const githoneyUnit = toUnit(mintingPolicyid, fromText("githoney"));
 
-  // Your code here
+  const feePercent = BigInt(rewardFee) / 10000n;
+  const assets = contractUtxo.assets;
+  // for every assets, we calculate the reward and subtract it from the asset
+  const githoneyRewards = Object.fromEntries(
+    Object.entries(assets).map(([asset, amount]) => {
+      if (asset === "lovelace") {
+        return [asset, amount - 2n * MIN_ADA];
+      } else {
+        return [asset, amount * feePercent];
+      }
+    })
+  );
+  const bountyRewards = Object.fromEntries(
+    Object.entries(assets).map(([asset, amount]) => {
+      if (asset === "lovelace") {
+        return [asset, amount - 2n * MIN_ADA];
+      } else {
+        return [asset, amount * (1n - feePercent)];
+      }
+    })
+  );
 
-  // Your return object here
   const tx = await lucid
     .newTx()
-    // .collectFrom(utxos)
-    // .collectFrom(contractUtxo, CapsuleValidatorRedeemer.Deposit())
-    // .attachSpendingValidator(gitHoneyValidator)
-    .payToContract(validatorAddress, { inline: newBountyDatum }, {})
+    .readFrom([utxo])
+    .collectFrom([contractUtxo], GithoneyValidatorRedeemer.Merge())
+    .payToContract(
+      validatorAddress,
+      { inline: newBountyDatum },
+      {
+        ...bountyRewards,
+        [toUnit(mintingPolicyid, fromText(ControlTokenName))]: 1n
+      }
+    )
     .payToAddress(maintainerAddr, { lovelace: MIN_ADA })
-    .payToAddress(githoneyAdrr, {})
+    .payToAddress(githoneyAddr, { ...githoneyRewards })
     .complete();
 
-  lucid.selectWalletFromSeed(netConfig.SEED);
+  lucid.selectWalletFrom({ address: adminAddr });
   const txSigned = await tx.sign().complete();
 
   console.debug("END mergeBounty");
