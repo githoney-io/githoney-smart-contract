@@ -49,11 +49,17 @@ Sets the contributor's `PaymentPubKeyHash` to the `BountyUtxo` datum and adds th
 
 ![assignContributor diagram](img/assignContributor.png)
 
-### Close Bounty
+### Close Bounty Before Contributor Assignment
 
 Returns all the assets to the maintainer and burns the `ControlToken`.
 
-![closeBounty diagram](img/close.png)
+![closeBounty diagram](img/close1.png)
+
+### Close Bounty After Contributor Assignment
+
+Returns the reward assets to the maintainer, burns the `ControlToken` and returns the min ADA to the contributor.
+
+![closeBountyAfterContributor diagram](img/close2.png)
 
 ### Merge Bounty
 
@@ -93,6 +99,7 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 - `BountyUtxo` input with a control token.
 - `ControlToken` is burnt.
 - Reward assets and the min ADAs are paid back to the maintainer.
+- If the `contributor` is setted the min ADAs are paid back to the contributor.
 - Datum Admin address signed the transaction.
 
 #### _MergeBounty Redeemer_
@@ -124,8 +131,6 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 - Deadline must be in the future.
 - Merged field must be False.
 - Contributor field must be null.
-- Bounty Reward Fee must be equal to or greater than 0 and less than 1.
-- Bounty Creation Fee must be greater than 0.
 
 #### BURN
 
