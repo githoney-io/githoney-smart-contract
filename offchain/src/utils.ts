@@ -1,7 +1,7 @@
-import { creationFee, rewardFee } from "./constants";
+import { creationFee, MIN_ADA, rewardFee } from "./constants";
 import { WalletT } from "./types";
 import dotenv from "dotenv";
-import { AddressDetails, Lucid } from "lucid-cardano";
+import { Assets, Lucid } from "lucid-cardano";
 
 dotenv.config();
 
@@ -28,4 +28,16 @@ function addrToWallet(address: string, lucid: Lucid): WalletT {
   };
 }
 
-export { validatorParams, addrToWallet };
+function calculateRewards(assets: Assets, feePercent: bigint) {
+  return Object.fromEntries(
+    Object.entries(assets).map(([asset, amount]: [string, bigint]) => {
+      if (asset === "lovelace") {
+        return [asset, amount - 2n * MIN_ADA];
+      } else {
+        return [asset, amount * feePercent];
+      }
+    })
+  );
+}
+
+export { validatorParams, calculateRewards, addrToWallet };
