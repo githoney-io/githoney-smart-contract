@@ -86,6 +86,7 @@ namespace GithoneyValidatorRedeemer {
 
 export {
   mkDatum,
+  GithoneyDatum,
   GithoneyDatumT,
   GithoneyValidatorRedeemer,
   WalletSchema,
