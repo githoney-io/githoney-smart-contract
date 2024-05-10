@@ -1,5 +1,5 @@
 import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
-import { ControlTokenName, MIN_ADA, rewardFee } from "../constants";
+import { controlTokenName, MIN_ADA, rewardFee } from "../constants";
 import {
   GithoneyDatum,
   GithoneyDatumT,
@@ -70,7 +70,7 @@ async function mergeBounty(
       { inline: newBountyDatum },
       {
         ...bountyRewards,
-        [toUnit(mintingPolicyid, fromText(ControlTokenName))]: 1n
+        [toUnit(mintingPolicyid, fromText(controlTokenName))]: 1n
       }
     )
     .payToAddress(maintainerAddr, { lovelace: MIN_ADA })
