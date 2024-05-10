@@ -6,6 +6,9 @@ use aiken/transaction/credential.{ScriptCredential}
 use aiken/list
 use aiken/option
 
+pub const control_token_name: ByteArray = "controlToken"
+pub const min_ada: Int = 2_000_000
+
 pub fn is_signed_by(transaction: Transaction, vk: VerificationKeyHash) {
   list.has(transaction.extra_signatories, vk)
 }
