@@ -12,13 +12,13 @@ In the GitHoney system, there are three main actors:
 
 ### The Process Flow
 
-1. A maintainer creates a bounty and deposits the **reward assets** (multi-asset) indicating the **deadline** to complete the task.
+1. A maintainer creates a bounty and deposits the **reward assets** indicating the **deadline** to complete the task.
 
 2. (**Optional**) Anyone can deposit more assets to increase the rewards.
 
-3. A contributor indicates their willingness to work on the task and is assigned to the bounty. Only one contributor can be assigned at a time.
+3. A contributor indicates their willingness to work on the task and is assigned to the bounty. Only one contributor can be assigned to the bounty.
 
-4. The admin decides if the bounty is **closed** or **merged**. The former means that the funds are sent back to the maintainer, and the latter means that the contributor receives their payment.
+4. The admin decides if the bounty is **closed** or **merged**. The former means that the funds are sent back to the maintainer, and the latter means that the contributor can now claim his reward.
 
 If the deadline passes before the bounty is merged, the only option is to close the bounty and return the funds to the maintainer, even if a contributor has been assigned.
 
