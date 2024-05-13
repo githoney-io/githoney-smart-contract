@@ -16,10 +16,10 @@ and make a local package with
 npm pack
 ```
 
-which builds the code and produces `txpipe-domain-marketplace-0.0.0.tgz` file.
+which builds the code and produces `offchain-1.0.0.tgz` file.
 
 Finally, in another npm project we can install the library as a local npm package via
 
 ```sh
-npm i /path/to/txpipe-domain-marketplace-0.0.0.tgz
+npm i /path/to/offchain-1.0.0.tgz
 ```
