@@ -32,7 +32,9 @@ function calculateRewards(assets: Assets, feePercent: bigint) {
   return Object.fromEntries(
     Object.entries(assets).map(([asset, amount]: [string, bigint]) => {
       if (asset === "lovelace") {
-        return [asset, (amount - 2n * MIN_ADA) * feePercent];
+        const minAda = 2n * MIN_ADA;
+        const reward = (amount - minAda) * feePercent;
+        return [asset, reward + minAda];
       } else {
         return [asset, amount * feePercent];
       }

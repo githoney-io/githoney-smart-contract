@@ -31,7 +31,6 @@ async function mergeBounty(
     true
   );
 
-  const utxo = (await lucid.utxosAt(adminAddr))[0];
   const mintingScript = buildGithoneyMintingPolicy(scriptParams);
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
 
@@ -44,7 +43,6 @@ async function mergeBounty(
 
   const tx = await lucid
     .newTx()
-    .collectFrom([utxo])
     .collectFrom([contractUtxo], GithoneyValidatorRedeemer.Merge())
     .payToContract(
       validatorAddress,
