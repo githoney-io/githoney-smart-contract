@@ -149,21 +149,27 @@
           "fields": []
         },
         {
-          "title": "Merge",
+          "title": "Assign",
           "dataType": "constructor",
           "index": 1,
           "fields": []
         },
         {
-          "title": "Close",
+          "title": "Merge",
           "dataType": "constructor",
           "index": 2,
           "fields": []
         },
         {
-          "title": "Claim",
+          "title": "Close",
           "dataType": "constructor",
           "index": 3,
+          "fields": []
+        },
+        {
+          "title": "Claim",
+          "dataType": "constructor",
+          "index": 4,
           "fields": []
         }
       ]

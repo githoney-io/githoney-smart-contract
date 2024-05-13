@@ -3,6 +3,7 @@ use aiken/transaction/credential.{ VerificationKey }
 
 pub type GithoneyContractRedeemers {
   AddRewards
+  Assign
   Merge
   Close
   Claim

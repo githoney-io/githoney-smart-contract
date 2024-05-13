@@ -18,7 +18,11 @@
   "author": "Filabs",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "lucid-cardano": "^0.10.7",
     "tsup": "^8.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.11"
   }
 }

@@ -1,85 +1,73 @@
-import dotenv from "dotenv";
 import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
-import { Data, fromText, toUnit, Assets, Lucid } from "lucid-cardano";
-import { ControlTokenName, Roles, MIN_ADA, creationFee } from "../constants";
+import { Data, fromText, toUnit, Lucid } from "lucid-cardano";
+import {
+  ControlTokenName,
+  Roles,
+  MIN_ADA,
+  creationFee,
+  githoneyAddr
+} from "../constants";
 import { mkDatum } from "../types";
-import { validatorParams } from "../utils";
-
-dotenv.config();
+import { addrToWallet, validatorParams } from "../utils";
 
 async function createBounty(
   maintainerAddr: string,
   adminAddr: string,
-  rewards: Assets,
+  reward: { unit: string; amount: bigint },
   deadline: bigint,
   bounty_id: string,
   lucid: Lucid
-) {
+): Promise<string> {
   console.debug("START createBounty");
-  const githoneyAddr = process.env.GITHONEY_ADDR!;
   const scriptParams = validatorParams(lucid);
 
   const gitHoneyValidator = buildGithoneyValidator(scriptParams);
   const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
-  const utxo = (await lucid.utxosAt(maintainerAddr))[0];
   const mintingScript = buildGithoneyMintingPolicy(scriptParams);
 
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
-  const githoneyUnit = toUnit(mintingPolicyid, fromText("githoney"));
+  const controlTokenUnit = toUnit(mintingPolicyid, fromText(ControlTokenName));
   const mintAssets = {
-    [toUnit(mintingPolicyid, fromText(Roles.ADMIN))]: 1n,
-    [toUnit(mintingPolicyid, fromText(Roles.CONTRIBUTOR))]: 1n,
-    [toUnit(mintingPolicyid, fromText(Roles.MAINTAINER))]: 1n,
-    [githoneyUnit]: 1n
+    [controlTokenUnit]: 1n
   };
-  const { [githoneyUnit]: _ } = mintAssets;
-  const maintainerPkh =
-    lucid.utils.getAddressDetails(maintainerAddr).paymentCredential!.hash;
+  const rewardAssets =
+    reward.unit === "lovelace"
+      ? { lovelace: reward.amount + MIN_ADA }
+      : { [reward.unit]: reward.amount, lovelace: MIN_ADA };
+  const utxoAssets = {
+    ...rewardAssets,
+    ...mintAssets
+  };
+  const maintainerWallet = addrToWallet(maintainerAddr, lucid);
+  const adminWallet = addrToWallet(adminAddr, lucid);
 
   console.debug("Maintainer Address", maintainerAddr);
   console.debug("Githoney Address", githoneyAddr);
   // New tx to pay to the contract the minAda and mint the admin, githoney, developer and mantainer tokens
-  console.debug("Rewards", rewards);
+  console.debug("Rewards", rewardAssets);
   lucid.selectWalletFrom({ address: maintainerAddr });
 
   const bountyDatum = mkDatum(
-    {
-      paymentKey:
-        lucid.utils.getAddressDetails(adminAddr).paymentCredential!.hash,
-      stakeKey: lucid.utils.getAddressDetails(adminAddr).stakeCredential!.hash
-    },
-    {
-      paymentKey: maintainerPkh,
-      stakeKey:
-        lucid.utils.getAddressDetails(maintainerAddr).stakeCredential!.hash
-    },
+    adminWallet,
+    maintainerWallet,
     deadline,
     bounty_id,
     false
   );
 
+  lucid.selectWalletFrom({ address: maintainerAddr });
   const tx = await lucid
     .newTx()
-    .collectFrom([utxo])
-    .payToContract(
-      validatorAddress,
-      { inline: bountyDatum },
-      {
-        lovelace: rewards["lovelace"] + MIN_ADA,
-        ...rewards,
-        [toUnit(mintingPolicyid, fromText(ControlTokenName))]: 1n
-      }
-    )
+    .payToContract(validatorAddress, { inline: bountyDatum }, utxoAssets)
     .payToAddress(githoneyAddr, { lovelace: BigInt(creationFee) })
-    .addSignerKey(maintainerPkh)
-    // what if maintainer is the same as githoney? Error
     .mintAssets(mintAssets, Data.void())
     .attachMintingPolicy(mintingScript)
     .complete();
 
-  lucid.selectWalletFrom({ address: maintainerAddr });
-  const txCbor = (await tx.sign().complete()).toString();
-  console.debug(`TxCbor ${txCbor}`);
+  const cbor = tx.toString();
+  console.debug("END createBounty");
+  console.debug(`Create ${cbor}`);
+  return cbor;
 }
 
 export default createBounty;

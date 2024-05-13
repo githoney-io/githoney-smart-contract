@@ -1,7 +1,7 @@
 import { creationFee, rewardFee } from "./constants";
 import { WalletT } from "./types";
 import dotenv from "dotenv";
-import { Lucid } from "lucid-cardano";
+import { AddressDetails, Lucid } from "lucid-cardano";
 
 dotenv.config();
 
@@ -20,4 +20,12 @@ function validatorParams(lucid: Lucid) {
   };
 }
 
-export { validatorParams };
+function addrToWallet(address: string, lucid: Lucid): WalletT {
+  const details = lucid.utils.getAddressDetails(address);
+  return {
+    paymentKey: details.paymentCredential!.hash,
+    stakeKey: details.stakeCredential!.hash
+  };
+}
+
+export { validatorParams, addrToWallet };
