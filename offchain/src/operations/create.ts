@@ -70,4 +70,4 @@ async function createBounty(
   return cbor;
 }
 
-export default createBounty;
+export { createBounty };
