@@ -79,17 +79,23 @@ async function createNewBounty(lucid: Lucid, emulator: Emulator) {
   console.log("Creating bounty...");
   const now = new Date();
   const deadline = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).getTime(); // Tomorrow
-  const { txCbor, mintingPolicyid } = await createBounty(
+  const tx = await createBounty(
     ACCOUNT_MANTAINER.address,
     ACCOUNT_ADMIN.address,
     {
-      lovelace: 100n,
-      [tokenAUnit]: 5n,
-      [tokenBUnit]: 10n,
-      [tokenCUnit]: 15n
+      unit: "lovelace",
+      amount: 100n
     },
     BigInt(deadline),
     bounty_id,
     lucid
   );
+  lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
+  const createTx = await lucid
+    .fromTx(tx)
+    .sign()
+    .complete()
+    .then((signedTx) => signedTx.submit());
+  console.log("SUCCESS CREATE BOUNTY", createTx);
+  return { createTx };
 }
