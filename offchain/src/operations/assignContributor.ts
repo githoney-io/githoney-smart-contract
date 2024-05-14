@@ -1,12 +1,6 @@
-import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
-import { Data, fromText, toUnit, Assets, Lucid, OutRef } from "lucid-cardano";
-import {
-  ControlTokenName,
-  Roles,
-  MIN_ADA,
-  creationFee,
-  githoneyAddr
-} from "../constants";
+import { buildGithoneyValidator } from "../scripts";
+import { Lucid, OutRef } from "lucid-cardano";
+import { MIN_ADA } from "../constants";
 import { GithoneyDatumT, GithoneyValidatorRedeemer, mkDatum } from "../types";
 import { addrToWallet, validatorParams } from "../utils";
 
