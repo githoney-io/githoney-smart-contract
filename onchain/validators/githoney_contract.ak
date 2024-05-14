@@ -1,14 +1,47 @@
 
-use aiken/transaction.{ ScriptContext, Datum, Redeemer }
-use aiken/transaction/value.{ from_lovelace }
-use aiken/transaction/credential.{ from_script }
-use types.{ GithoneyContractRedeemers, GithoneyFee }
-use utils.{ get_first_output, get_minting_info, to_githoney_datum, control_token_name, value_paid_to }
-use checks.{ is_utxo_value_valid, is_utxo_datum_valid }
+use aiken/transaction.{ ScriptContext, Redeemer }
+use aiken/transaction/value.{ from_lovelace, quantity_of }
+use aiken/transaction/credential.{ ScriptCredential, from_script }
+use types.{
+  GithoneyContractRedeemers, AddRewards, Assign, Merge, Close, Claim,
+  GithoneyFee, GithoneyDatum }
+use utils.{ value_grater_than, get_script_input, get_first_output, get_minting_info,
+  to_githoney_datum, control_token_name, value_paid_to }
+use checks.{ is_utxo_value_valid, is_utxo_datum_valid, is_tx_before_deadline }
 
 validator(githoney_fee: GithoneyFee){
-  fn githoney_contract(_datum: Datum, _redeemer:GithoneyContractRedeemers, _ctx: ScriptContext){
-    True
+  fn githoney_contract(datum: GithoneyDatum, redeemer: GithoneyContractRedeemers, ctx: ScriptContext){
+    let script_input = get_script_input(ctx).output
+    let is_tx_before_deadline = is_tx_before_deadline(ctx.transaction, datum.deadline)
+    expect ScriptCredential(control_token_policy) = script_input.address.payment_credential
+    let is_control_token_in_input =
+      quantity_of(script_input.value, control_token_policy, control_token_name) == 1
+
+    if !is_control_token_in_input {
+      False
+    } else {
+      when redeemer is {
+        AddRewards -> {
+          let script_output = get_first_output(ctx)
+          let new_datum = to_githoney_datum(script_output)
+
+          let is_datum_the_same = datum == new_datum
+          let is_value_grater_than_before = value_grater_than(script_output.value, script_input.value)
+          let is_utxo_address_the_same = script_input.address == script_output.address
+
+          is_datum_the_same &&
+          is_tx_before_deadline &&
+          is_utxo_address_the_same &&
+          is_value_grater_than_before
+        }
+
+        Assign -> True
+        Merge -> True
+        Close -> True
+        Claim -> True
+      }
+    }
+
   }
 
   fn githoney_policy(_redeemer:Redeemer, ctx: ScriptContext){
