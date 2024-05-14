@@ -47,7 +47,7 @@ async function claim(
 
   const cbor = tx.toString();
   console.debug("END claim");
-  console.debug("Claim", cbor);
+  console.debug(`Claim ${cbor}`);
   return cbor;
 }
 

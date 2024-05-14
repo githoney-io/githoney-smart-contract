@@ -8,6 +8,8 @@ import {
 } from "lucid-cardano";
 import { controlTokenName } from "../src/constants";
 import { createBounty } from "../src/operations/create";
+import { buildGithoneyMintingPolicy } from "../src/scripts";
+import { validatorParams } from "../src/utils";
 
 const tokenA = {
   policy_id: "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb",
@@ -24,11 +26,25 @@ const tokenC = {
   asset_name: "tokenC"
 };
 
+const lucid = await Lucid.new();
+const scriptParams = validatorParams(lucid);
+const mintingScript = buildGithoneyMintingPolicy(scriptParams);
+const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
+
+const controlToken = {
+  policy_id: mintingPolicyid,
+  asset_name: controlTokenName
+};
+
 const bounty_id = "";
 
 const tokenAUnit = toUnit(tokenA.policy_id, fromText(tokenA.asset_name));
 const tokenBUnit = toUnit(tokenB.policy_id, fromText(tokenB.asset_name));
 const tokenCUnit = toUnit(tokenC.policy_id, fromText(tokenC.asset_name));
+const controlTokenUnit = toUnit(
+  controlToken.policy_id,
+  fromText(controlToken.asset_name)
+);
 
 const generateAccount = async (assets: Assets) => {
   const seedPhrase = generateSeedPhrase();
@@ -90,12 +106,24 @@ async function createNewBounty(lucid: Lucid, emulator: Emulator) {
     bounty_id,
     lucid
   );
-  lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
-  const createTx = await lucid
-    .fromTx(tx)
-    .sign()
-    .complete()
-    .then((signedTx) => signedTx.submit());
-  console.log("SUCCESS CREATE BOUNTY", createTx);
-  return { createTx };
+  // lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
+  // const createTx = await lucid
+  //   .fromTx(tx)
+  //   .sign()
+  //   .complete()
+  //   .then((signedTx) => signedTx.submit());
+  // console.log("SUCCESS CREATE BOUNTY", createTx);
+  return { tx };
 }
+
+export {
+  createNewBounty,
+  ACCOUNT_ADMIN,
+  ACCOUNT_MANTAINER,
+  ACCOUNT_GITHONEY,
+  emulator,
+  tokenAUnit,
+  tokenBUnit,
+  tokenCUnit,
+  controlTokenUnit
+};
