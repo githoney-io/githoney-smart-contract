@@ -1,6 +1,6 @@
 use types.{VerificationKeyHash, GithoneyDatum, Wallet}
 use aiken/transaction.{Transaction, ScriptContext, Datum, InlineDatum, Output, Input, Spend}
-use aiken/transaction/value.{AssetName, PolicyId, Value, tokens}
+use aiken/transaction/value.{AssetName, PolicyId, Value, tokens, reduce, quantity_of}
 use aiken/dict
 use aiken/transaction/credential.{ScriptCredential}
 use aiken/list
@@ -89,5 +89,12 @@ pub fn get_input_with_asset(
   input
 }
 
-
+pub fn value_grater_than(
+  v1: Value,
+  v2: Value,
+) {
+  reduce(v1, True, fn(policy_id, token_name, amount, acc){
+    acc && (quantity_of(v2, policy_id, token_name) >= amount)
+  })
+}
 
