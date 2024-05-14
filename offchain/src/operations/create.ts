@@ -1,8 +1,7 @@
 import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
 import { Data, fromText, toUnit, Lucid } from "lucid-cardano";
 import {
-  ControlTokenName,
-  Roles,
+  controlTokenName,
   MIN_ADA,
   creationFee,
   githoneyAddr
@@ -26,7 +25,7 @@ async function createBounty(
   const mintingScript = buildGithoneyMintingPolicy(scriptParams);
 
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
-  const controlTokenUnit = toUnit(mintingPolicyid, fromText(ControlTokenName));
+  const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
   const mintAssets = {
     [controlTokenUnit]: 1n
   };

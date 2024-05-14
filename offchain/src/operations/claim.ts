@@ -1,8 +1,8 @@
 import { buildGithoneyValidator } from "../scripts";
 import { Data, Lucid, OutRef, fromText, toUnit } from "lucid-cardano";
-import { GithoneyDatumT, GithoneyValidatorRedeemer, mkDatum } from "../types";
+import { GithoneyDatumT, GithoneyValidatorRedeemer } from "../types";
 import { addrToWallet, validatorParams } from "../utils";
-import { ControlTokenName } from "../constants";
+import { controlTokenName } from "../constants";
 
 async function claim(
   utxoRef: OutRef,
@@ -31,7 +31,7 @@ async function claim(
   ) {
     throw new Error("Invalid contributor");
   }
-  const controlTokenUnit = toUnit(mintingPolicyid, fromText(ControlTokenName));
+  const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
 
   lucid.selectWalletFrom({
     address: contributorAddr
