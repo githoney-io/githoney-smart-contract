@@ -47,3 +47,11 @@ pub fn is_assign_datum_valid(old_datum: GithoneyDatum, new_datum: GithoneyDatum)
   }
   new_datum == expected_datum && is_some(new_datum.contributor_wallet)
 }
+
+pub fn is_merge_datum_valid(old_datum: GithoneyDatum, new_datum: GithoneyDatum){
+  let expected_datum = GithoneyDatum {
+    ..old_datum,
+    merged: True
+  }
+  new_datum == expected_datum
+}
