@@ -1,13 +1,14 @@
 
 use aiken/transaction.{ ScriptContext, Redeemer }
-use aiken/transaction/value.{ from_lovelace, quantity_of }
+use aiken/transaction/value.{ merge, from_lovelace, quantity_of }
 use aiken/transaction/credential.{ ScriptCredential, from_script }
+use aiken/option.{ is_none }
 use types.{
   GithoneyContractRedeemers, AddRewards, Assign, Merge, Close, Claim,
   GithoneyFee, GithoneyDatum }
 use utils.{ value_grater_than, get_script_input, get_first_output, get_minting_info,
-  to_githoney_datum, control_token_name, value_paid_to }
-use checks.{ is_utxo_value_valid, is_utxo_datum_valid, is_tx_before_deadline }
+  to_githoney_datum, control_token_name, value_paid_to, min_ada }
+use checks.{ is_utxo_value_valid, is_utxo_datum_valid, is_tx_before_deadline, is_assign_datum_valid }
 
 validator(githoney_fee: GithoneyFee){
   fn githoney_contract(datum: GithoneyDatum, redeemer: GithoneyContractRedeemers, ctx: ScriptContext){
@@ -29,13 +30,28 @@ validator(githoney_fee: GithoneyFee){
           let is_value_grater_than_before = value_grater_than(script_output.value, script_input.value)
           let is_utxo_address_the_same = script_input.address == script_output.address
 
-          is_datum_the_same &&
-          is_tx_before_deadline &&
-          is_utxo_address_the_same &&
-          is_value_grater_than_before
+          is_datum_the_same? &&
+          is_tx_before_deadline? &&
+          is_utxo_address_the_same? &&
+          is_value_grater_than_before?
         }
 
-        Assign -> True
+        Assign -> {
+          let script_output = get_first_output(ctx)
+          let new_datum = to_githoney_datum(script_output)
+
+          let contributor_isnt_assigned = is_none(datum.contributor_wallet)
+          let is_datum_valid = is_assign_datum_valid(datum, new_datum)
+          let is_utxo_address_the_same = script_input.address == script_output.address
+          let expected_value = merge(script_input.value, from_lovelace(min_ada))
+          let is_utxo_value_valid = script_output.value == expected_value
+
+          is_datum_valid? &&
+          is_utxo_value_valid? &&
+          is_tx_before_deadline? &&
+          is_utxo_address_the_same? &&
+          contributor_isnt_assigned?
+        }
         Merge -> True
         Close -> True
         Claim -> True
