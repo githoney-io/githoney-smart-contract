@@ -99,6 +99,7 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 
 - `BountyUtxo` input with a control token.
 - `ControlToken` is burnt.
+- The merged field is False.
 - Reward assets and the min ADAs are paid back to the maintainer.
 - If the `contributor` is setted the min ADAs are paid back to the contributor.
 - Datum Admin address signed the transaction.

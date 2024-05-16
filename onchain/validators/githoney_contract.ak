@@ -59,7 +59,6 @@ validator(githoney_fee: GithoneyFee){
           let new_datum = to_githoney_datum(script_output)
           let min_ada_value = from_lovelace(min_ada)
 
-          let merged_field_is_false = !datum.merged
           let contributor_is_assigned = is_some(datum.contributor_wallet)
           let is_new_datum_valid = is_merge_datum_valid(datum, new_datum)
           let is_utxo_address_the_same = script_input.address == script_output.address
@@ -69,16 +68,44 @@ validator(githoney_fee: GithoneyFee){
           let is_maintainer_minada_payed =
             value_paid_to(datum.maintainer_wallet, ctx.transaction) == min_ada_value
 
+          !datum.merged? &&
           is_signed_by_admin? &&
           is_new_datum_valid? &&
           is_utxo_value_valid? &&
           is_tx_before_deadline? &&
-          merged_field_is_false? &&
           contributor_is_assigned? &&
           is_utxo_address_the_same? &&
           is_maintainer_minada_payed?
         }
-        Close -> True
+
+        Close -> {
+          let (policy_id, minted_name, minted_quantity) = get_minting_info(ctx.transaction)
+          let are_payments_valid =
+            when datum.contributor_wallet is {
+              Some(contributor_wallet) -> {
+                let is_contributor_pay_valid =
+                  value_paid_to(contributor_wallet, ctx.transaction) == from_lovelace(min_ada)
+                let is_maintainer_pay_valid =
+                  value_paid_to(datum.maintainer_wallet, ctx.transaction) ==
+                    merge(script_input.value, negate(from_lovelace(min_ada)))
+                is_contributor_pay_valid? && is_maintainer_pay_valid?
+              }
+              None -> {
+                value_paid_to(datum.maintainer_wallet, ctx.transaction) == script_input.value
+              }
+            }
+
+          let is_signed_by_admin = is_signed_by(ctx.transaction, datum.admin_wallet.payment_key)
+          let is_control_token_burnt = minted_quantity == -1 &&
+            minted_name == control_token_name &&
+            policy_id == control_token_policy
+
+          !datum.merged? &&
+          is_signed_by_admin? &&
+          are_payments_valid? &&
+          is_control_token_burnt?
+        }
+
         Claim -> {
           expect Some(contributor_wallet) = datum.contributor_wallet
 
