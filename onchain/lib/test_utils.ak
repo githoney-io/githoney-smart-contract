@@ -28,34 +28,24 @@ pub fn mk_mp_script_context() -> ScriptContext {
       },
     }
 
-  let admin_wallet =
-    Wallet {
-      payment_key: VerificationKeyHash(mocks.admin_addr),
-      stake_key: None,
-    }
+  let admin_wallet = Wallet { payment_key: mocks.admin_addr, stake_key: None }
 
   let maintainer_wallet =
-    Wallet {
-      payment_key: VerificationKeyHash(mocks.maintainer_addr),
-      stake_key: None,
-    }
+    Wallet { payment_key: mocks.maintainer_addr, stake_key: None }
 
   let contributor_wallet =
-    Wallet {
-      payment_key: VerificationKeyHash(mocks.contributor_addr),
-      stake_key: None,
-    }
+    Wallet { payment_key: mocks.contributor_addr, stake_key: None }
 
   let bounty_utxo =
     Output {
-      address: githoney_address,
+      address: mocks.mk_githoney_address(),
       value: value.from_lovelace(2_000_000)
         |> value.add(mocks.control_token_policy, mocks.control_token_name, 1),
       datum: InlineDatum(
         GithoneyDatum {
           admin_wallet,
           maintainer_wallet,
-          contributor_wallet,
+          contributor_wallet: Some(contributor_wallet),
           bounty_id: mocks.bounty_id,
           deadline: 1715888789 + 604800,
           // 23 of May
@@ -69,7 +59,7 @@ pub fn mk_mp_script_context() -> ScriptContext {
     ScriptContext {
       purpose: Mint(mocks.control_token_policy),
       transaction: Transaction {
-        inputs: [manager_input_utxo],
+        inputs: [maintainer_input_utxo],
         reference_inputs: [],
         outputs: [bounty_utxo],
         fee: value.from_lovelace(2_000_000),
