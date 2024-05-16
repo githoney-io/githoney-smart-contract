@@ -6,34 +6,44 @@ use aiken/transaction.{
 }
 use aiken/transaction/credential.{Address, ScriptCredential}
 use aiken/transaction/value
-use types.{GithoneyContractRedeemers, GithoneyDatum, GithoneyFee}
 use mocks
+use types.{
+  GithoneyContractRedeemers, GithoneyDatum, GithoneyFee, VerificationKeyHash,
+  Wallet,
+}
 
 pub fn mk_mp_script_context() -> ScriptContext {
-  let user_addr =
-    Address {
-      payment_credential: ScriptCredential(mocks.user_addr),
-      stake_credential: None,
-    }
-
-  let manager_input_utxo =
+  let maintainer_input_utxo =
     Input {
       output_reference: OutputReference {
         transaction_id: TransactionId { hash: mocks.transaction_id },
         output_index: 1,
       },
       output: Output {
-        address: user_addr,
-        value: value.from_lovelace(4_000_000),
+        address: mocks.mk_maintainer_address(),
+        value: value.from_lovelace(4_000_000)
+          |> value.add(mocks.token_a_policy, mocks.token_a_name, 10_000),
         datum: NoDatum,
         reference_script: None,
       },
     }
 
-  let githoney_address =
-    Address {
-      payment_credential: ScriptCredential(mocks.githoney_addr),
-      stake_credential: None,
+  let admin_wallet =
+    Wallet {
+      payment_key: VerificationKeyHash(mocks.admin_addr),
+      stake_key: None,
+    }
+
+  let maintainer_wallet =
+    Wallet {
+      payment_key: VerificationKeyHash(mocks.maintainer_addr),
+      stake_key: None,
+    }
+
+  let contributor_wallet =
+    Wallet {
+      payment_key: VerificationKeyHash(mocks.contributor_addr),
+      stake_key: None,
     }
 
   let bounty_utxo =
@@ -43,12 +53,13 @@ pub fn mk_mp_script_context() -> ScriptContext {
         |> value.add(mocks.control_token_policy, mocks.control_token_name, 1),
       datum: InlineDatum(
         GithoneyDatum {
-        admin_wallet: ,
-        maintainer_wallet: ,
-        contributor_wallet: ,
-        bounty_id: ,
-        deadline: ,
-        merged:
+          admin_wallet,
+          maintainer_wallet,
+          contributor_wallet,
+          bounty_id: mocks.bounty_id,
+          deadline: 1715888789 + 604800,
+          // 23 of May
+          merged: False,
         },
       ),
       reference_script: None,

@@ -53,10 +53,39 @@ pub const transaction_id_3 =
   #"f5c5b6a6d88e2ee95838f3449558818e97ed211231a64a3ce6d877348b53db6a"
 
 pub const githoney_fee = 2000
+
+pub const bounty_id = "abc123"
+
 // ====================
 // MOCK DATA GENERATION
 // ====================
+pub fn mk_admin_address() {
+  Address {
+    payment_credential: VerificationKeyCredential(admin_addr),
+    stake_credential: None,
+  }
+}
 
+pub fn mk_maintainer_address() {
+  Address {
+    payment_credential: VerificationKeyCredential(maintainer_addr),
+    stake_credential: None,
+  }
+}
+
+pub fn mk_githoney_address() {
+  Address {
+    payment_credential: ScriptCredential(githoney_addr),
+    stake_credential: None,
+  }
+}
+
+pub fn mk_contributor_address() {
+  Address {
+    payment_credential: VerificationKeyCredential(contributor_addr),
+    stake_credential: None,
+  }
+}
 // ========================================
 // INPUTS
 // ========================================
