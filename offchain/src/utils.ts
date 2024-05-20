@@ -1,7 +1,7 @@
 import { creationFee, rewardFee } from "./constants";
 import { WalletT } from "./types";
 import dotenv from "dotenv";
-import { AddressDetails, Lucid } from "lucid-cardano";
+import { Address, AddressDetails, Lucid, Utils } from "lucid-cardano";
 
 dotenv.config();
 
@@ -28,4 +28,21 @@ function addrToWallet(address: string, lucid: Lucid): WalletT {
   };
 }
 
-export { validatorParams, addrToWallet };
+/**
+ * Converts a keys pair to its corresponding address.
+ * @param keyPairs payment and (optional) stake key.
+ * @returns Address in bech32 representation.
+ */
+async function keyPairsToAddress(
+  lucid: Lucid,
+  keyPairs: { paymentKey: string; stakeKey: string | null }
+): Promise<Address> {
+  const utils = new Utils(lucid);
+  const { paymentKey, stakeKey } = keyPairs;
+  return utils.credentialToAddress(
+    utils.keyHashToCredential(paymentKey),
+    stakeKey ? utils.keyHashToCredential(stakeKey) : undefined
+  );
+}
+
+export { validatorParams, addrToWallet, keyPairsToAddress };
