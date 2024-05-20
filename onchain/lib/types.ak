@@ -1,5 +1,5 @@
 use aiken/hash.{Blake2b_224, Hash}
-use aiken/transaction/credential.{ VerificationKey }
+use aiken/transaction/credential.{Script, VerificationKey}
 
 pub type GithoneyContractRedeemers {
   AddRewards
@@ -17,7 +17,7 @@ pub type Wallet {
 pub type GithoneyFee {
   githoney_wallet: Wallet,
   bounty_creation_fee: Int,
-  bounty_reward_fee: Int
+  bounty_reward_fee: Int,
 }
 
 pub type GithoneyDatum {
@@ -26,8 +26,12 @@ pub type GithoneyDatum {
   contributor_wallet: Option<Wallet>,
   bounty_id: ByteArray,
   deadline: Int,
-  merged: Bool
+  merged: Bool,
 }
 
 /// This is a hash of the sender's (or receiver) verification key.
-pub type VerificationKeyHash = Hash<Blake2b_224, VerificationKey>
+pub type VerificationKeyHash =
+  Hash<Blake2b_224, VerificationKey>
+
+pub type ScriptAddress =
+  Hash<Blake2b_224, Script>

@@ -4,15 +4,18 @@ use aiken/transaction/credential.{
   Address, ScriptCredential, VerificationKeyCredential,
 }
 use checks
+use mocks
 use test_utils
 
 test general_test() {
-  todo {
-    let ctx = test_utils.mk_mp_script_context()
-  }
+  let ctx = test_utils.mk_mp_script_context()
   let redeemer = #""
-  let datum = #""
-  checks.check_minting_policy(githoney_fee, datum, redeemer, ctx)
+  checks.check_minting_policy(
+    mocks.githoney_addr,
+    mocks.githoney_fee,
+    redeemer,
+    ctx,
+  )
 }
 
 test wrong_datum() {
