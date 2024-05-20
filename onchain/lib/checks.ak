@@ -1,11 +1,17 @@
+use aiken/dict
 use aiken/interval.{Finite}
+use aiken/list
 use aiken/option.{is_some}
-use aiken/transaction.{ScriptContext, Transaction}
+use aiken/transaction.{Mint, ScriptContext, Transaction}
+use aiken/transaction/credential.{ScriptCredential, from_script}
 use aiken/transaction/value.{
   Value, from_asset, from_lovelace, is_zero, merge, negate, quantity_of,
 }
-use types.{GithoneyContractRedeemers, GithoneyDatum, GithoneyFee}
-use utils.{control_token_name, min_ada}
+use types.{GithoneyContractRedeemers, GithoneyDatum, GithoneyFee, ScriptAddress}
+use utils.{
+  control_token_name, get_first_output, get_minting_info, min_ada,
+  to_githoney_datum, value_paid_to,
+}
 
 pub fn is_utxo_value_valid(policy_id: ByteArray, value: Value) {
   let is_control_token_in_output =
@@ -59,46 +65,28 @@ pub fn check_minting_policy(
   _redeemer: GithoneyContractRedeemers,
   ctx: ScriptContext,
 ) -> Bool {
-  let ScriptContext { transaction, purpose } = ctx
+  let (own_policy, minted_name, minted_quantity) =
+    get_minting_info(ctx.transaction)
 
-  expect Mint(minted_policy_id) = purpose
-
-  let Transaction { mint, .. } = transaction
-
-  let minted =
-    mint
-      |> value.from_minted_value()
-
-  let minted_length = list.length(value.flatten(minted))
-
-  expect [(minted_asset_name, minted_amount)] =
-    minted
-      |> value.tokens(minted_policy_id)
-      |> dict.to_list()
-
-  if minted_amount == 1 {
-    // MINT
-    // check correct datum structure and one script output
-    let bounty_utxo =
-      transaction
-        |> utils.get_script_output()
-
-    // let githoney_datum = utils.to_githoney_datum(bounty_utxo.datum)
-    // let check_value = todo
-    expect ScriptCredential(addr_payment) =
-      bounty_utxo.address.payment_credential
-
-    let check_paid_address = githoney_address == addr_payment
-
-    check_paid_address? && check_value?
+  let is_token_burned = minted_quantity == -1
+  if is_token_burned {
+    True
   } else {
-    // BURN
-    let check_burn =
-      list.length(value.flatten(minted)) == 1 && minted_amount == -1
-    let check_no_script_outputs =
-      transaction.outputs
-        |> list.filter(utils.is_output_script_utxo)
-        |> list.is_empty()
-    check_no_script_outputs? && check_burn?
+    let script_output = get_first_output(ctx)
+    let datum = to_githoney_datum(script_output)
+
+    let is_minting_only_one_control_token =
+      minted_quantity == 1 && minted_name == control_token_name
+    let is_script_output_address_valid =
+      script_output.address == from_script(own_policy)
+    let is_creation_fee_paid =
+      value_paid_to(githoney_fee.githoney_wallet, ctx.transaction) == from_lovelace(
+        githoney_fee.bounty_creation_fee,
+      )
+
+    is_creation_fee_paid && is_minting_only_one_control_token && is_script_output_address_valid && is_utxo_datum_valid(
+      ctx.transaction,
+      datum,
+    ) && is_utxo_value_valid(own_policy, script_output.value)
   }
 }
