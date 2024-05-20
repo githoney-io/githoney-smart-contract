@@ -1,23 +1,61 @@
-import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
-import { MIN_ADA, NetConfig } from "../constants";
-import { Data, fromText, toUnit } from "lucid-cardano";
+import { buildGithoneyValidator } from "../scripts";
+import {
+  Assets,
+  Data,
+  Lucid,
+  OutRef,
+  Tx,
+  fromText,
+  toUnit
+} from "lucid-cardano";
+import { GithoneyDatumT, GithoneyValidatorRedeemer } from "../types";
+import { keyPairsToAddress, validatorParams } from "../utils";
+import { MIN_ADA, controlTokenName } from "../constants";
 
-async function closeBounty(maintainerAddr: string, netConfig: NetConfig) {
-  console.debug("START closeBounty");
-  const lucid = netConfig.lucidAdmin!;
-  const gitHoneyValidator = buildGithoneyValidator();
-  const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
-  const utxo = (await lucid.wallet.getUtxos())[0];
-  const outRef = { txHash: utxo.txHash, outputIndex: utxo.outputIndex };
-  const mintingScript = buildGithoneyMintingPolicy(outRef);
-  const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
-  const githoneyUnit = toUnit(mintingPolicyid, fromText("githoney"));
+async function close(utxoRef: OutRef, lucid: Lucid): Promise<string> {
+  console.debug("START close");
+  const scriptParams = validatorParams(lucid);
 
-  // Your code here
-  console.debug("END closeBounty");
-  return {
-    // Your return object here
-  };
+  const gitHoneyValidator = buildGithoneyValidator(scriptParams);
+  const mintingPolicy = buildGithoneyValidator(scriptParams);
+  const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingPolicy);
+  const utxo = (await lucid.utxosByOutRef([utxoRef]))[0];
+  const datum: GithoneyDatumT = await lucid.datumOf(utxo);
+  const adminAddr = await keyPairsToAddress(lucid, datum.admin);
+  const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
+
+  lucid.selectWalletFrom({ address: adminAddr });
+  const tx = await lucid
+    .newTx()
+    .collectFrom([utxo], GithoneyValidatorRedeemer.Close())
+    .mintAssets({ [controlTokenUnit]: BigInt(-1) }, Data.void())
+    .attachSpendingValidator(gitHoneyValidator)
+    .attachMintingPolicy(mintingPolicy);
+
+  const txWithPayments = await (
+    await addPayments(tx, datum, utxo.assets, lucid)
+  ).complete();
+
+  const cbor = txWithPayments.toString();
+  console.debug("END close");
+  console.debug("close", cbor);
+  return cbor;
 }
 
-export default closeBounty;
+const addPayments = async (
+  tx: Tx,
+  datum: GithoneyDatumT,
+  assets: Assets,
+  lucid: Lucid
+): Promise<Tx> => {
+  if (datum.contributor) {
+    const contributorAddr = await keyPairsToAddress(lucid, datum.contributor);
+    tx = tx.payToAddress(contributorAddr, { lovelace: MIN_ADA });
+    assets = { ...assets, lovelace: assets["lovelace"] - MIN_ADA };
+  }
+  const maintainerAddr = await keyPairsToAddress(lucid, datum.maintainer);
+  tx = tx.payToAddress(maintainerAddr, assets);
+  return tx;
+};
+
+export default close;
