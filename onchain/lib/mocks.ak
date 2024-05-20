@@ -5,6 +5,7 @@ use aiken/transaction/credential.{
   Address, ScriptCredential, VerificationKeyCredential,
 }
 use aiken/transaction/value
+use types.{GithoneyFee, VerificationKeyHash, Wallet}
 
 // This module includes mock values for testing the main validator and minting policy.
 
@@ -52,7 +53,13 @@ pub const transaction_id_2 =
 pub const transaction_id_3 =
   #"f5c5b6a6d88e2ee95838f3449558818e97ed211231a64a3ce6d877348b53db6a"
 
-pub const githoney_fee = 2000
+pub fn mk_githoney_fee() {
+  GithoneyFee {
+    githoney_wallet: Wallet { payment_key: githoney_addr, stake_key: None },
+    bounty_creation_fee: 20000,
+    bounty_reward_fee: 20000,
+  }
+}
 
 pub const bounty_id = "abc123"
 
