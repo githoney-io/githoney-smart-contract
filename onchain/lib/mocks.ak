@@ -87,7 +87,7 @@ pub fn mk_maintainer_address() {
 
 pub fn mk_githoney_address() {
   Address {
-    payment_credential: ScriptCredential(githoney_addr),
+    payment_credential: VerificationKeyCredential(githoney_addr),
     stake_credential: None,
   }
 }
@@ -128,7 +128,10 @@ pub fn mk_githoney_wallet() {
 // ========================================
 pub fn mk_output_bounty_utxo() {
   Output {
-    address: mk_githoney_address(),
+    address: Address {
+      payment_credential: ScriptCredential(githoney_addr),
+      stake_credential: None,
+    },
     value: value.from_lovelace(2_000_000)
       |> value.add(control_token_policy, control_token_name, 1),
     datum: InlineDatum(
