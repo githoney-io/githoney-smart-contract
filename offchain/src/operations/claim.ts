@@ -15,7 +15,7 @@ async function claim(
   const gitHoneyValidator = buildGithoneyValidator(scriptParams);
   const mintingPolicy = buildGithoneyValidator(scriptParams);
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingPolicy);
-  const utxo = (await lucid.utxosByOutRef([utxoRef]))[0];
+  const [utxo] = await lucid.utxosByOutRef([utxoRef]);
   const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo);
 
   if (!oldDatum.merged) {

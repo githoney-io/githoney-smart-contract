@@ -14,7 +14,7 @@ async function addRewards(
 
   const gitHoneyValidator = buildGithoneyValidator(scriptParams);
   const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
-  const utxo = (await lucid.utxosByOutRef([utxoRef]))[0];
+  const [utxo] = await lucid.utxosByOutRef([utxoRef]);
   const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo);
 
   if (oldDatum.merged) {

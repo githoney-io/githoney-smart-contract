@@ -19,7 +19,7 @@ async function close(utxoRef: OutRef, lucid: Lucid): Promise<string> {
   const gitHoneyValidator = buildGithoneyValidator(scriptParams);
   const mintingPolicy = buildGithoneyValidator(scriptParams);
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingPolicy);
-  const utxo = (await lucid.utxosByOutRef([utxoRef]))[0];
+  const [utxo] = await lucid.utxosByOutRef([utxoRef]);
   const datum: GithoneyDatumT = await lucid.datumOf(utxo);
   const adminAddr = await keyPairsToAddress(lucid, datum.admin);
   const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));

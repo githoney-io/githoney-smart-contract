@@ -1,4 +1,4 @@
-import { creationFee, rewardFee } from "./constants";
+import { creationFee, MIN_ADA, rewardFee } from "./constants";
 import { WalletT } from "./types";
 import dotenv from "dotenv";
 import { Address, AddressDetails, Lucid, Utils } from "lucid-cardano";

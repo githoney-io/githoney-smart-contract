@@ -46,13 +46,14 @@ async function createBounty(
   console.debug("Rewards", rewardAssets);
   lucid.selectWalletFrom({ address: maintainerAddr });
 
-  const bountyDatum = mkDatum(
-    adminWallet,
-    maintainerWallet,
+  const bountyDatum = mkDatum({
+    admin: adminWallet,
+    maintainer: maintainerWallet,
     deadline,
     bounty_id,
-    false
-  );
+    merged: false,
+    contributor: null
+  });
 
   lucid.selectWalletFrom({ address: maintainerAddr });
   const tx = await lucid

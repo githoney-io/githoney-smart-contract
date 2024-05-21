@@ -14,7 +14,7 @@ async function assignContributor(
 
   const gitHoneyValidator = buildGithoneyValidator(scriptParams);
   const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
-  const utxo = (await lucid.utxosByOutRef([utxoRef]))[0];
+  const [utxo] = await lucid.utxosByOutRef([utxoRef]);
   const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo);
 
   if (oldDatum.merged) {
@@ -27,14 +27,7 @@ async function assignContributor(
     throw new Error("Bounty already has a contributor");
   }
   const contributorWallet = addrToWallet(contributorAddr, lucid);
-  const newDatum = mkDatum(
-    oldDatum.admin,
-    oldDatum.maintainer,
-    oldDatum.deadline,
-    oldDatum.bounty_id,
-    oldDatum.merged,
-    contributorWallet
-  );
+  const newDatum = mkDatum({ ...oldDatum, contributor: contributorWallet });
   const newAssets = {
     ...utxo.assets,
     lovelace: utxo.assets.lovelace + MIN_ADA
