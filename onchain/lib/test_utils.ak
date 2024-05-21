@@ -58,8 +58,8 @@ pub fn mk_mp_script_context() -> ScriptContext {
             is_inclusive: True,
           },
           upper_bound: IntervalBound {
-            bound_type: PositiveInfinity,
-            is_inclusive: False,
+            bound_type: Finite(1716260400),
+            is_inclusive: True,
           },
         },
         extra_signatories: [],

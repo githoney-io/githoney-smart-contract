@@ -133,7 +133,7 @@ validator(githoney_fee: GithoneyFee) {
       True
     } else {
       let script_output = get_first_output(ctx)
-      let datum = to_githoney_datum(script_output)
+      let datum = to_githoney_datum(script_output.datum)
 
       let is_minting_only_one_control_token =
         minted_quantity == 1 && minted_name == control_token_name
@@ -144,10 +144,10 @@ validator(githoney_fee: GithoneyFee) {
           githoney_fee.bounty_creation_fee,
         )
 
-      is_creation_fee_paid && is_minting_only_one_control_token && is_script_output_address_valid && is_utxo_datum_valid(
-        ctx.transaction,
-        datum,
-      ) && is_utxo_value_valid(own_policy, script_output.value)
+      let valid_datum = is_utxo_datum_valid(ctx.transaction, datum)
+      let valid_value = is_utxo_value_valid(own_policy, script_output.value)
+
+      is_creation_fee_paid? && is_minting_only_one_control_token? && is_script_output_address_valid? && valid_datum? && valid_value?
     }
   }
 }

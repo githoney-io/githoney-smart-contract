@@ -20,10 +20,10 @@ pub fn is_utxo_value_valid(policy_id: ByteArray, value: Value) {
       |> merge(from_asset(policy_id, control_token_name, 1))
       |> negate
       |> merge(value)
-      |> is_zero // this works?
+      |> is_zero
       |> not
 
-  is_control_token_in_output && there_are_some_reward
+  is_control_token_in_output? && there_are_some_reward?
 }
 
 pub fn is_utxo_datum_valid(tx: Transaction, datum: GithoneyDatum) {
