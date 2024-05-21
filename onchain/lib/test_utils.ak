@@ -1,13 +1,11 @@
 use aiken/dict
-use aiken/interval.{Finite, Interval, IntervalBound, PositiveInfinity}
+use aiken/interval.{Finite, Interval, IntervalBound}
 use aiken/transaction.{
-  InlineDatum, Input, Mint, NoDatum, Output, OutputReference, ScriptContext,
-  Transaction, TransactionId,
+  Input, Mint, NoDatum, Output, OutputReference, ScriptContext, Transaction,
+  TransactionId,
 }
-use aiken/transaction/credential.{ScriptCredential}
 use aiken/transaction/value
 use mocks
-use types.{GithoneyDatum, Wallet}
 
 pub fn mk_mp_script_context() -> ScriptContext {
   let maintainer_input_utxo =

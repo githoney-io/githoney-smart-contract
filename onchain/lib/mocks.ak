@@ -1,11 +1,10 @@
-use aiken/transaction.{
-  InlineDatum, Input, Output, OutputReference, TransactionId,
-}
+use aiken/transaction.{InlineDatum, Output}
 use aiken/transaction/credential.{
   Address, ScriptCredential, VerificationKeyCredential,
 }
 use aiken/transaction/value
-use types.{GithoneyDatum, GithoneyFee, VerificationKeyHash, Wallet}
+use types.{GithoneyDatum, GithoneyFee, Wallet}
+use utils.{min_ada}
 
 // This module includes mock values for testing the main validator and minting policy.
 
@@ -129,10 +128,15 @@ pub fn mk_githoney_wallet() {
 pub fn mk_output_bounty_utxo() {
   Output {
     address: Address {
-      payment_credential: ScriptCredential(githoney_addr),
+      payment_credential: ScriptCredential(control_token_policy),
       stake_credential: None,
     },
-    value: value.from_lovelace(2_000_000)
+    value: value.from_lovelace(min_ada)
+      |> value.add(
+          token_a_policy,
+          token_a_name,
+          mk_githoney_fee().bounty_reward_fee,
+        ) // Reward token
       |> value.add(control_token_policy, control_token_name, 1),
     datum: InlineDatum(
       GithoneyDatum {
@@ -140,8 +144,7 @@ pub fn mk_output_bounty_utxo() {
         maintainer_wallet: mk_maintainer_wallet(),
         contributor_wallet: Some(mk_contributor_wallet()),
         bounty_id,
-        deadline: 1715888789 + 604800,
-        // 23 of May
+        deadline: 1718938800,
         merged: False,
       },
     ),

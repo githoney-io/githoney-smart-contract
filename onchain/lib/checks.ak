@@ -1,4 +1,3 @@
-use aiken/cbor
 use aiken/interval.{Finite}
 use aiken/option.{is_some}
 use aiken/transaction.{ScriptContext, Transaction}
@@ -6,7 +5,7 @@ use aiken/transaction/credential.{from_script}
 use aiken/transaction/value.{
   Value, from_asset, from_lovelace, is_zero, merge, negate, quantity_of,
 }
-use types.{GithoneyContractRedeemers, GithoneyDatum, GithoneyFee}
+use types.{GithoneyDatum, GithoneyFee}
 use utils.{
   control_token_name, get_first_output, get_minting_info, min_ada,
   to_githoney_datum, value_paid_to,
@@ -61,7 +60,6 @@ pub fn is_merge_datum_valid(old_datum: GithoneyDatum, new_datum: GithoneyDatum) 
 // Main validation of the githoney token minting policy
 pub fn check_minting_policy(
   githoney_fee: GithoneyFee,
-  _redeemer: GithoneyContractRedeemers,
   ctx: ScriptContext,
 ) -> Bool {
   let (own_policy, minted_name, minted_quantity) =
@@ -76,6 +74,7 @@ pub fn check_minting_policy(
 
     let is_minting_only_one_control_token =
       minted_quantity == 1 && minted_name == control_token_name
+
     let is_script_output_address_valid =
       script_output.address == from_script(own_policy)
     let is_creation_fee_paid =
@@ -86,6 +85,6 @@ pub fn check_minting_policy(
     let valid_datum = is_utxo_datum_valid(ctx.transaction, datum)
     let valid_value = is_utxo_value_valid(own_policy, script_output.value)
 
-    is_creation_fee_paid? && is_minting_only_one_control_token? && is_script_output_address_valid? && valid_datum && valid_value?
+    is_creation_fee_paid? && is_minting_only_one_control_token? && is_script_output_address_valid? && valid_datum? && valid_value?
   }
 }
