@@ -4,13 +4,10 @@ use aiken/transaction.{
   InlineDatum, Input, Mint, NoDatum, Output, OutputReference, ScriptContext,
   Transaction, TransactionId,
 }
-use aiken/transaction/credential.{Address, ScriptCredential}
+use aiken/transaction/credential.{ScriptCredential}
 use aiken/transaction/value
 use mocks
-use types.{
-  GithoneyContractRedeemers, GithoneyDatum, GithoneyFee, VerificationKeyHash,
-  Wallet,
-}
+use types.{GithoneyDatum, Wallet}
 
 pub fn mk_mp_script_context() -> ScriptContext {
   let maintainer_input_utxo =
@@ -28,30 +25,13 @@ pub fn mk_mp_script_context() -> ScriptContext {
       },
     }
 
-  let admin_wallet = Wallet { payment_key: mocks.admin_addr, stake_key: None }
+  let bounty_utxo = mocks.mk_output_bounty_utxo()
 
-  let maintainer_wallet =
-    Wallet { payment_key: mocks.maintainer_addr, stake_key: None }
-
-  let contributor_wallet =
-    Wallet { payment_key: mocks.contributor_addr, stake_key: None }
-
-  let bounty_utxo =
+  let out_githoney_wallet =
     Output {
       address: mocks.mk_githoney_address(),
-      value: value.from_lovelace(2_000_000)
-        |> value.add(mocks.control_token_policy, mocks.control_token_name, 1),
-      datum: InlineDatum(
-        GithoneyDatum {
-          admin_wallet,
-          maintainer_wallet,
-          contributor_wallet: Some(contributor_wallet),
-          bounty_id: mocks.bounty_id,
-          deadline: 1715888789 + 604800,
-          // 23 of May
-          merged: False,
-        },
-      ),
+      value: value.from_lovelace(mocks.mk_githoney_fee().bounty_creation_fee),
+      datum: NoDatum,
       reference_script: None,
     }
 
@@ -61,7 +41,7 @@ pub fn mk_mp_script_context() -> ScriptContext {
       transaction: Transaction {
         inputs: [maintainer_input_utxo],
         reference_inputs: [],
-        outputs: [bounty_utxo],
+        outputs: [bounty_utxo, out_githoney_wallet],
         fee: value.from_lovelace(2_000_000),
         mint: value.to_minted_value(
           value.from_asset(

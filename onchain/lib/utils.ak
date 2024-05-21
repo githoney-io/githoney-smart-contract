@@ -27,8 +27,8 @@ pub fn get_minting_info(tx: Transaction) -> (PolicyId, AssetName, Int) {
 // Converts an arbitrary Data type into a GithoneyDatum.
 pub fn to_githoney_datum(data: Data) -> GithoneyDatum {
   expect InlineDatum(datum): Datum = data
-  expect datum: GithoneyDatum = datum
-  datum
+  expect githoney_datum: GithoneyDatum = datum
+  githoney_datum
 }
 
 pub fn get_first_output(ctx: ScriptContext) -> Output {

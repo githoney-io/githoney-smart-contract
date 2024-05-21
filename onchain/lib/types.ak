@@ -32,6 +32,3 @@ pub type GithoneyDatum {
 /// This is a hash of the sender's (or receiver) verification key.
 pub type VerificationKeyHash =
   Hash<Blake2b_224, VerificationKey>
-
-pub type ScriptAddress =
-  Hash<Blake2b_224, Script>

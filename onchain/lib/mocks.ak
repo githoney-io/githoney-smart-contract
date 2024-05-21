@@ -1,11 +1,11 @@
 use aiken/transaction.{
-  InlineDatum, Input, NoDatum, Output, OutputReference, TransactionId,
+  InlineDatum, Input, Output, OutputReference, TransactionId,
 }
 use aiken/transaction/credential.{
   Address, ScriptCredential, VerificationKeyCredential,
 }
 use aiken/transaction/value
-use types.{GithoneyFee, VerificationKeyHash, Wallet}
+use types.{GithoneyDatum, GithoneyFee, VerificationKeyHash, Wallet}
 
 // This module includes mock values for testing the main validator and minting policy.
 
@@ -57,7 +57,7 @@ pub fn mk_githoney_fee() {
   GithoneyFee {
     githoney_wallet: Wallet { payment_key: githoney_addr, stake_key: None },
     bounty_creation_fee: 20000,
-    bounty_reward_fee: 20000,
+    bounty_reward_fee: 10000,
   }
 }
 
@@ -66,6 +66,11 @@ pub const bounty_id = "abc123"
 // ====================
 // MOCK DATA GENERATION
 // ====================
+
+// ========================================
+// ADDRESSES
+// ========================================
+
 pub fn mk_admin_address() {
   Address {
     payment_credential: VerificationKeyCredential(admin_addr),
@@ -93,6 +98,27 @@ pub fn mk_contributor_address() {
     stake_credential: None,
   }
 }
+
+// ========================================
+// WALLETS
+// ========================================
+
+pub fn mk_contributor_wallet() {
+  Wallet { payment_key: contributor_addr, stake_key: None }
+}
+
+pub fn mk_admin_wallet() {
+  Wallet { payment_key: admin_addr, stake_key: None }
+}
+
+pub fn mk_maintainer_wallet() {
+  Wallet { payment_key: maintainer_addr, stake_key: None }
+}
+
+pub fn mk_githoney_wallet() {
+  Wallet { payment_key: githoney_addr, stake_key: None }
+}
+
 // ========================================
 // INPUTS
 // ========================================
@@ -100,15 +126,38 @@ pub fn mk_contributor_address() {
 // ========================================
 // OUTPUTS
 // ========================================
-
-// ========================================
-// ADDRESSES
-// ========================================
-
+pub fn mk_output_bounty_utxo() {
+  Output {
+    address: mk_githoney_address(),
+    value: value.from_lovelace(2_000_000)
+      |> value.add(control_token_policy, control_token_name, 1),
+    datum: InlineDatum(
+      GithoneyDatum {
+        admin_wallet: mk_admin_wallet(),
+        maintainer_wallet: mk_maintainer_wallet(),
+        contributor_wallet: Some(mk_contributor_wallet()),
+        bounty_id,
+        deadline: 1715888789 + 604800,
+        // 23 of May
+        merged: False,
+      },
+    ),
+    reference_script: None,
+  }
+}
 // ========================================
 // DATUMS
 // ========================================
-
+// pub fn mk_bounty_datum() -> GithoneyDatum {
+//   GithoneyDatum {
+//     admin_wallet,
+//     maintainer_wallet,
+//     contributor_wallet: Some(contributor_wallet),
+//     bounty_id: mocks.bounty_id,
+//     deadline: 1715888789 + 604800,
+//     merged: False,
+//   }
+// }
 // ========================================
 // EXTRA
 // ========================================
