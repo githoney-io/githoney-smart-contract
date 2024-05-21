@@ -19,21 +19,21 @@ const DatumSchema = Data.Object({
 type GithoneyDatumT = Data.Static<typeof DatumSchema>;
 const GithoneyDatum = DatumSchema as unknown as GithoneyDatumT;
 
-function mkDatum(
-  admin: WalletT,
-  maintainer: WalletT,
-  deadline: bigint,
-  bounty_id: string,
-  merged: boolean,
-  contributor?: WalletT
-): string {
+function mkDatum(params: {
+  admin: WalletT;
+  maintainer: WalletT;
+  deadline: bigint;
+  bounty_id: string;
+  merged: boolean;
+  contributor: WalletT | null;
+}): string {
   const d: GithoneyDatumT = {
-    admin,
-    maintainer,
-    deadline,
-    bounty_id,
-    merged,
-    contributor: contributor || null
+    admin: params.admin,
+    maintainer: params.maintainer,
+    deadline: params.deadline,
+    bounty_id: params.bounty_id,
+    merged: params.merged,
+    contributor: params.contributor
   };
   const datum = Data.to<GithoneyDatumT>(d, GithoneyDatum);
   return datum;

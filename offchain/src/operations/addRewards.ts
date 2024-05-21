@@ -1,28 +1,46 @@
-import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
-import { GithoneyDatumT } from "../types";
-import { MIN_ADA, NetConfig } from "../constants";
-import { Assets, Data, Lucid, OutRef, fromText, toUnit } from "lucid-cardano";
+import { buildGithoneyValidator } from "../scripts";
+import { Lucid, OutRef } from "lucid-cardano";
+import { GithoneyDatumT, GithoneyValidatorRedeemer } from "../types";
+import { validatorParams } from "../utils";
 
 async function addRewards(
-  lucid: Lucid,
-  githoneyUtxo: OutRef,
+  utxoRef: OutRef,
   address: string,
-  assets: Assets
-) {
+  reward: { unit: string; amount: bigint },
+  lucid: Lucid
+): Promise<string> {
   console.debug("START addRewards");
-  const utxo = (await lucid.utxosByOutRef([githoneyUtxo]))[0];
-  const datum: GithoneyDatumT = await lucid.datumOf(utxo);
-  const gitHoneyValidator = buildGithoneyValidator();
-  const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
-  const mintingScript = buildGithoneyMintingPolicy(outRef);
-  const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
-  const githoneyUnit = toUnit(mintingPolicyid, fromText("githoney"));
+  const scriptParams = validatorParams(lucid);
 
-  // Your code here
-  console.debug("END addRewards");
-  return {
-    // Your return object here
+  const gitHoneyValidator = buildGithoneyValidator(scriptParams);
+  const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
+  const [utxo] = await lucid.utxosByOutRef([utxoRef]);
+  const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo);
+
+  if (oldDatum.merged) {
+    throw new Error("Bounty already merged");
+  }
+  if (oldDatum.deadline < Date.now()) {
+    throw new Error("Bounty deadline passed");
+  }
+  const prevAssets = utxo.assets[reward.unit];
+  const newAssets = {
+    ...utxo.assets,
+    [reward.unit]: prevAssets ? prevAssets + reward.amount : reward.amount
   };
+
+  lucid.selectWalletFrom({ address: address });
+  const tx = await lucid
+    .newTx()
+    .collectFrom([utxo], GithoneyValidatorRedeemer.AddRewards())
+    .payToContract(validatorAddress, { inline: utxo.datum! }, newAssets)
+    .attachSpendingValidator(gitHoneyValidator)
+    .complete();
+
+  const cbor = tx.toString();
+  console.debug("END addRewards");
+  console.debug("Add Rewards", cbor);
+  return cbor;
 }
 
 export default addRewards;

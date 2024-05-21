@@ -1,6 +1,7 @@
 use aiken/transaction/value.{Value, quantity_of, from_lovelace, from_asset, is_zero, negate, merge}
 use aiken/transaction.{Transaction}
 use aiken/interval.{Finite}
+use aiken/option.{ is_some }
 use types.{ GithoneyDatum }
 use utils.{control_token_name, min_ada}
 
@@ -37,4 +38,20 @@ pub fn is_tx_after_deadline(tx: Transaction, deadline: Int) {
     _ ->
       False
   }
+}
+
+pub fn is_assign_datum_valid(old_datum: GithoneyDatum, new_datum: GithoneyDatum){
+  let expected_datum = GithoneyDatum {
+    ..old_datum,
+    contributor_wallet: new_datum.contributor_wallet
+  }
+  new_datum == expected_datum && is_some(new_datum.contributor_wallet)
+}
+
+pub fn is_merge_datum_valid(old_datum: GithoneyDatum, new_datum: GithoneyDatum){
+  let expected_datum = GithoneyDatum {
+    ..old_datum,
+    merged: True
+  }
+  new_datum == expected_datum
 }

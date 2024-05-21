@@ -99,6 +99,7 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 
 - `BountyUtxo` input with a control token.
 - `ControlToken` is burnt.
+- The merged field is False.
 - Reward assets and the min ADAs are paid back to the maintainer.
 - If the `contributor` is setted the min ADAs are paid back to the contributor.
 - Datum Admin address signed the transaction.
@@ -108,6 +109,7 @@ Pays the contributor the remaining reward assets and burns the `ControlToken`.
 - `BountyUtxo` input with a control token.
 - The merged field is False.
 - The `deadline` has not passed.
+- There is a contributor assigned.
 - Reward assets times `BountyRewardFee` is paid to the `GitHoneyAddress`, the min ADAs are paid back to the maintainer, and the rest of the assets remain in the UTxO.
 - Datum Admin address signed the transaction.
 - Datum merged field is updated to True, and the rest of the datum fields are the same.

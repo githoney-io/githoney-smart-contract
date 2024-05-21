@@ -1,7 +1,7 @@
 import { creationFee, MIN_ADA, rewardFee } from "./constants";
 import { WalletT } from "./types";
 import dotenv from "dotenv";
-import { Assets, Lucid } from "lucid-cardano";
+import { Address, AddressDetails, Lucid, Utils } from "lucid-cardano";
 
 dotenv.config();
 
@@ -28,18 +28,21 @@ function addrToWallet(address: string, lucid: Lucid): WalletT {
   };
 }
 
-function calculateRewards(assets: Assets, feePercent: bigint) {
-  return Object.fromEntries(
-    Object.entries(assets).map(([asset, amount]: [string, bigint]) => {
-      if (asset === "lovelace") {
-        const minAda = 2n * MIN_ADA;
-        const reward = (amount - minAda) * feePercent;
-        return [asset, reward + minAda];
-      } else {
-        return [asset, amount * feePercent];
-      }
-    })
+/**
+ * Converts a keys pair to its corresponding address.
+ * @param keyPairs payment and (optional) stake key.
+ * @returns Address in bech32 representation.
+ */
+async function keyPairsToAddress(
+  lucid: Lucid,
+  keyPairs: { paymentKey: string; stakeKey: string | null }
+): Promise<Address> {
+  const utils = new Utils(lucid);
+  const { paymentKey, stakeKey } = keyPairs;
+  return utils.credentialToAddress(
+    utils.keyHashToCredential(paymentKey),
+    stakeKey ? utils.keyHashToCredential(stakeKey) : undefined
   );
 }
 
-export { validatorParams, calculateRewards, addrToWallet };
+export { validatorParams, addrToWallet, keyPairsToAddress };
