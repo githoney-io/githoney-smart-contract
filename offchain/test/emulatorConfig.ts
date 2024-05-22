@@ -106,13 +106,6 @@ async function createNewBounty(lucid: Lucid, emulator: Emulator) {
     bounty_id,
     lucid
   );
-  // lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
-  // const createTx = await lucid
-  //   .fromTx(tx)
-  //   .sign()
-  //   .complete()
-  //   .then((signedTx) => signedTx.submit());
-  // console.log("SUCCESS CREATE BOUNTY", createTx);
   return { tx };
 }
 

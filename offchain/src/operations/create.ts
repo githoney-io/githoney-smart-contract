@@ -49,15 +49,19 @@ async function createBounty(
   const bountyDatum = mkDatum({
     admin: adminWallet,
     maintainer: maintainerWallet,
-    deadline,
+    contributor: null,
     bounty_id,
-    merged: false,
-    contributor: null
+    deadline,
+    merged: false
   });
 
   lucid.selectWalletFrom({ address: maintainerAddr });
+  const now = new Date();
+  const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+
   const tx = await lucid
     .newTx()
+    .validTo(sixHoursFromNow.getTime())
     .payToContract(validatorAddress, { inline: bountyDatum }, utxoAssets)
     .payToAddress(githoneyAddr, { lovelace: BigInt(creationFee) })
     .mintAssets(mintAssets, Data.void())
