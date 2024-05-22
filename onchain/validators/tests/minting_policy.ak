@@ -2,15 +2,15 @@ use aiken/list
 use aiken/transaction.{NoDatum, Output, ScriptContext, Transaction}
 use aiken/transaction/credential.{Address, ScriptCredential}
 use aiken/transaction/value
-use checks
 use mocks
 use test_utils
 use utils.{min_ada}
+use validations.{minting_policy}
 
 test general_test() {
   let ctx = test_utils.mk_mp_script_context()
 
-  checks.check_minting_policy(mocks.mk_githoney_fee(), ctx)
+  minting_policy(mocks.mk_githoney_fee(), ctx)
 }
 
 test wrong_datum() fail {
@@ -25,7 +25,7 @@ test wrong_datum() fail {
       transaction: Transaction { ..ctx.transaction, outputs: [wrong_output] },
     }
 
-  checks.check_minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+  minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
 }
 
 test fee_not_paid() {
@@ -48,7 +48,7 @@ test fee_not_paid() {
         outputs: list.push(outputs, wrong_bounty),
       },
     }
-  !checks.check_minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+  !minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
 }
 
 test wrong_value() {
@@ -68,7 +68,7 @@ test wrong_value() {
       },
     }
 
-  !checks.check_minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+  !minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
 }
 
 test wrong_minted_amount() fail {
@@ -89,7 +89,7 @@ test wrong_minted_amount() fail {
         ),
       },
     }
-  checks.check_minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+  minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
 }
 
 test wrong_burned_amount() {
@@ -109,7 +109,7 @@ test wrong_burned_amount() {
         ),
       },
     }
-  !checks.check_minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+  !minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
 }
 
 test invalid_script_output_address() {
@@ -134,5 +134,5 @@ test invalid_script_output_address() {
         outputs: list.push(outputs, wrong_bounty),
       },
     }
-  !checks.check_minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+  !minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
 }
