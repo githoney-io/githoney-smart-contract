@@ -31,7 +31,7 @@ pub fn control_token_input_and_policy(ctx: ScriptContext) -> (Output, PolicyId) 
 pub fn add_rewards(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
   let (script_input, _) = control_token_input_and_policy(ctx)
   let script_output = get_first_output(ctx)
-  let new_datum = to_githoney_datum(script_output)
+  let new_datum = to_githoney_datum(script_output.datum)
 
   let is_tx_before_deadline =
     is_tx_before_deadline(ctx.transaction, datum.deadline)
@@ -47,7 +47,7 @@ pub fn add_rewards(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
 pub fn assign(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
   let (script_input, _) = control_token_input_and_policy(ctx)
   let script_output = get_first_output(ctx)
-  let new_datum = to_githoney_datum(script_output)
+  let new_datum = to_githoney_datum(script_output.datum)
 
   let is_tx_before_deadline =
     is_tx_before_deadline(ctx.transaction, datum.deadline)
@@ -64,7 +64,7 @@ pub fn assign(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
 pub fn merge(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
   let (script_input, _) = control_token_input_and_policy(ctx)
   let script_output = get_first_output(ctx)
-  let new_datum = to_githoney_datum(script_output)
+  let new_datum = to_githoney_datum(script_output.datum)
   let min_ada_value = from_lovelace(min_ada)
 
   let is_tx_before_deadline =

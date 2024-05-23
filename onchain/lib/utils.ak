@@ -6,7 +6,7 @@ use aiken/transaction.{
 }
 use aiken/transaction/credential.{ScriptCredential}
 use aiken/transaction/value.{
-  AssetName, PolicyId, Value, quantity_of, reduce, tokens,
+  AssetName, PolicyId, Value, quantity_of, reduce, tokens, merge
 }
 use types.{GithoneyDatum, Wallet}
 
@@ -107,11 +107,18 @@ pub fn get_input_with_asset(
 }
 
 pub fn value_grater_than(v1: Value, v2: Value) {
+  let assets = merge(v1, v2)
   reduce(
-    v1,
-    True,
-    fn(policy_id, token_name, amount, acc) {
-      acc && quantity_of(v2, policy_id, token_name) >= amount
+    assets,
+    False,
+    fn(policy_id, token_name, _, acc) {
+      let v1_quantity = quantity_of(v1, policy_id, token_name)
+      let v2_quantity = quantity_of(v2, policy_id, token_name)
+      if v1_quantity < v2_quantity {
+        False
+      } else {
+        acc || v1_quantity > v2_quantity
+      }
     },
   )
 }
