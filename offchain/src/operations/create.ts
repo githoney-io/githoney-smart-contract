@@ -29,6 +29,10 @@ async function createBounty(
   const mintAssets = {
     [controlTokenUnit]: 1n
   };
+
+  if (reward.amount < 1n) {
+    throw new Error("Negative fees are not allowed");
+  }
   const rewardAssets =
     reward.unit === "lovelace"
       ? { lovelace: reward.amount + MIN_ADA }

@@ -11,6 +11,9 @@ import { createBounty } from "../../src/operations/create";
 const lucid = await Lucid.new(emulator, "Custom");
 
 const signAndSubmitCreate = async (lucid: Lucid, tx: any) => {
+  emulator.awaitBlock(1);
+
+  lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
   const createTx = await lucid
     .fromTx(tx)
     .sign()
@@ -36,9 +39,42 @@ describe("Create tests", () => {
       bounty_id,
       lucid
     );
-    emulator.awaitBlock(1);
-    // Sign and submit the transaction
-    lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
+    signAndSubmitCreate(lucid, tx);
+  });
+
+  it("Bounty with deadline in the past", async () => {
+    const deadline = new Date(
+      now.getTime() - 1000 * 60 * 60 * 24 * 1
+    ).getTime(); // Yesterday
+    const tx = await createBounty(
+      ACCOUNT_MANTAINER.address,
+      ACCOUNT_ADMIN.address,
+      {
+        unit: "lovelace",
+        amount: 100n
+      },
+      BigInt(deadline),
+      bounty_id,
+      lucid
+    );
+    signAndSubmitCreate(lucid, tx);
+  });
+
+  it("Bounty with negative fees", async () => {
+    const deadline = new Date(
+      now.getTime() + 1000 * 60 * 60 * 24 * 1
+    ).getTime(); // Tomorrow
+    const tx = await createBounty(
+      ACCOUNT_MANTAINER.address,
+      ACCOUNT_ADMIN.address,
+      {
+        unit: "lovelace",
+        amount: -100n
+      },
+      BigInt(deadline),
+      bounty_id,
+      lucid
+    );
     signAndSubmitCreate(lucid, tx);
   });
 });
