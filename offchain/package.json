@@ -13,7 +13,8 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "prepack": "rm -rf dist && npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "create-bounty": "mocha --timeout 0"
   },
   "author": "Filabs",
   "license": "ISC",
@@ -23,6 +24,8 @@
     "tsup": "^8.0.2"
   },
   "devDependencies": {
-    "@types/node": "^20.12.11"
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.12.11",
+    "mocha": "^10.4.0"
   }
 }

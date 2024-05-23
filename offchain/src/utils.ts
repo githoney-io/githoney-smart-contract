@@ -1,12 +1,11 @@
-import { creationFee, MIN_ADA, rewardFee } from "./constants";
+import { creationFee, githoneyAddr, rewardFee } from "./constants";
 import { WalletT } from "./types";
 import dotenv from "dotenv";
-import { Address, AddressDetails, Lucid, Utils } from "lucid-cardano";
+import { Address, Lucid, Utils } from "lucid-cardano";
 
 dotenv.config();
 
 function validatorParams(lucid: Lucid) {
-  const githoneyAddr = process.env.GITHONEY_ADDR!;
   const gitHoneyCredentials = lucid.utils.getAddressDetails(githoneyAddr);
   const gitHoneyWallet: WalletT = {
     paymentKey: gitHoneyCredentials.paymentCredential!.hash,

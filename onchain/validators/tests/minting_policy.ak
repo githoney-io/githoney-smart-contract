@@ -28,7 +28,7 @@ test wrong_datum() fail {
   checks.check_minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
 }
 
-test fee_not_paid() {
+test no_reward_assets() {
   let ctx = test_utils.mk_mp_script_context()
 
   expect Some(outputs) = list.tail(ctx.transaction.outputs)
@@ -46,6 +46,29 @@ test fee_not_paid() {
       transaction: Transaction {
         ..ctx.transaction,
         outputs: list.push(outputs, wrong_bounty),
+      },
+    }
+  !checks.check_minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+}
+
+test fee_not_paid() {
+  let ctx = test_utils.mk_mp_script_context()
+
+  expect Some(bounty_utxo) = list.head(ctx.transaction.outputs)
+  let out_githoney_wallet =
+    Output {
+      address: mocks.mk_githoney_address(),
+      value: value.zero(),
+      datum: NoDatum,
+      reference_script: None,
+    }
+
+  let wrong_ctx =
+    ScriptContext {
+      ..ctx,
+      transaction: Transaction {
+        ..ctx.transaction,
+        outputs: [bounty_utxo, out_githoney_wallet],
       },
     }
   !checks.check_minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
