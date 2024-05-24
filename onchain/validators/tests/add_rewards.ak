@@ -1,5 +1,5 @@
 use aiken/list.{head}
-use aiken/transaction/value.{add, from_lovelace}
+use aiken/transaction/value.{add}
 use aiken/transaction.{ScriptContext, Transaction, Output}
 use test_utils.{mk_transition_script_context, change_output_value}
 use utils.{to_githoney_datum}
