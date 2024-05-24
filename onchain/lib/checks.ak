@@ -29,7 +29,7 @@ pub fn is_utxo_value_valid(policy_id: ByteArray, value: Value) {
 }
 
 pub fn is_utxo_datum_valid(tx: Transaction, datum: GithoneyDatum) {
-  datum.merged == False && is_tx_before_deadline(tx, datum.deadline)
+  (datum.merged == False)? && is_tx_before_deadline(tx, datum.deadline)?
 }
 
 pub fn is_tx_before_deadline(tx: Transaction, deadline: Int) {
