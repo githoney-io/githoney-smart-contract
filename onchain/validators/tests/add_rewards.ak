@@ -1,5 +1,5 @@
 use aiken/list.{head}
-use aiken/transaction/value.{add}
+use aiken/transaction/value.{add, from_lovelace}
 use aiken/transaction.{ScriptContext, Transaction, Output}
 use test_utils.{mk_transition_script_context, change_output_value}
 use utils.{to_githoney_datum}
@@ -7,7 +7,7 @@ use types.{GithoneyDatum, AddRewards}
 use validations
 use mocks
 
-test happy_path() {
+test success() {
   let script_ctx = mk_transition_script_context(AddRewards)
   expect Some(script_output) = head(script_ctx.transaction.outputs)
   let script_output_value =
@@ -17,3 +17,23 @@ test happy_path() {
   let datum: GithoneyDatum = to_githoney_datum(script_input.output.datum)
   validations.add_rewards(datum, script_ctx)
 }
+
+test without_new_rewards() {
+  let script_ctx = mk_transition_script_context(AddRewards)
+  expect Some(script_input) = head(script_ctx.transaction.inputs)
+  let datum: GithoneyDatum = to_githoney_datum(script_input.output.datum)
+  !validations.add_rewards(datum, script_ctx)
+}
+
+test bad_datum() {
+  let script_ctx = mk_transition_script_context(AddRewards)
+  expect Some(script_input) = head(script_ctx.transaction.inputs)
+  let datum: GithoneyDatum = to_githoney_datum(script_input.output.datum)
+  let bad_datum = GithoneyDatum {
+    ..datum,
+    merged: True
+  }
+  !validations.add_rewards(bad_datum, script_ctx)
+}
+
+
