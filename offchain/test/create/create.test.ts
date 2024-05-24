@@ -7,20 +7,9 @@ import {
 } from "../emulatorConfig";
 import { Lucid } from "lucid-cardano";
 import { createBounty } from "../../src/operations/create";
+import { signAndSubmitCreate } from "../utils";
 
 const lucid = await Lucid.new(emulator, "Custom");
-
-const signAndSubmitCreate = async (lucid: Lucid, tx: any) => {
-  emulator.awaitBlock(1);
-
-  lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
-  const createTx = await lucid
-    .fromTx(tx)
-    .sign()
-    .complete()
-    .then((signedTx) => signedTx.submit());
-  console.log("SUCCESS CREATE BOUNTY", createTx);
-};
 
 describe("Create tests", () => {
   const now = new Date();
@@ -78,3 +67,5 @@ describe("Create tests", () => {
     signAndSubmitCreate(lucid, tx);
   });
 });
+
+export { signAndSubmitCreate };

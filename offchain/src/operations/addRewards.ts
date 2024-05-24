@@ -39,8 +39,8 @@ async function addRewards(
 
   const cbor = tx.toString();
   console.debug("END addRewards");
-  console.debug("Add Rewards", cbor);
+  console.debug(`Add Rewards: ${cbor}`);
   return cbor;
 }
 
-export default addRewards;
+export { addRewards };
