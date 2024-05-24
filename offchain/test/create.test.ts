@@ -4,10 +4,10 @@ import {
   ACCOUNT_MANTAINER,
   bounty_id,
   emulator
-} from "../emulatorConfig";
+} from "./emulatorConfig";
 import { Lucid } from "lucid-cardano";
-import { createBounty } from "../../src/operations/create";
-import { signAndSubmitCreate } from "../utils";
+import { createBounty } from "../src/operations/create";
+import { signAndSubmitCreate } from "./utils";
 
 const lucid = await Lucid.new(emulator, "Custom");
 
@@ -67,5 +67,3 @@ describe("Create tests", () => {
     signAndSubmitCreate(lucid, tx);
   });
 });
-
-export { signAndSubmitCreate };

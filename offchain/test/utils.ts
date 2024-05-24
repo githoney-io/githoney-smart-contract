@@ -1,6 +1,5 @@
 import { Lucid } from "lucid-cardano";
 import { ACCOUNT_0, ACCOUNT_MANTAINER, emulator } from "./emulatorConfig";
-import { addRewards } from "../src/operations/addRewards";
 
 const signAndSubmitCreate = async (lucid: Lucid, tx: any) => {
   emulator.awaitBlock(1);
