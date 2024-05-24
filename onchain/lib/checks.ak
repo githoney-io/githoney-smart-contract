@@ -1,14 +1,17 @@
 use aiken/interval.{Finite}
 use aiken/option.{is_some}
-use aiken/transaction.{ScriptContext, Transaction}
-use aiken/transaction/credential.{from_script}
+use aiken/transaction.{Transaction}
 use aiken/transaction/value.{
   Value, from_asset, from_lovelace, is_zero, merge, negate, quantity_of,
 }
-use types.{GithoneyDatum, GithoneyFee}
+use aiken/list
+use types.{GithoneyDatum, VerificationKeyHash}
 use utils.{
-  control_token_name, get_first_output, get_minting_info, min_ada,
-  to_githoney_datum, value_paid_to,
+  control_token_name, min_ada,
+}
+
+pub fn is_signed_by(transaction: Transaction, vk: VerificationKeyHash) {
+  list.has(transaction.extra_signatories, vk)
 }
 
 pub fn is_utxo_value_valid(policy_id: ByteArray, value: Value) {
@@ -57,34 +60,4 @@ pub fn is_merge_datum_valid(old_datum: GithoneyDatum, new_datum: GithoneyDatum) 
   new_datum == expected_datum
 }
 
-// Main validation of the githoney token minting policy
-pub fn check_minting_policy(
-  githoney_fee: GithoneyFee,
-  ctx: ScriptContext,
-) -> Bool {
-  let (own_policy, minted_name, minted_quantity) =
-    get_minting_info(ctx.transaction)
 
-  let is_token_burned = minted_quantity == -1
-  if is_token_burned {
-    True
-  } else {
-    let script_output = get_first_output(ctx)
-    let datum = to_githoney_datum(script_output.datum)
-
-    let is_minting_only_one_control_token =
-      minted_quantity == 1 && minted_name == control_token_name
-
-    let is_script_output_address_valid =
-      script_output.address == from_script(own_policy)
-    let is_creation_fee_paid =
-      value_paid_to(githoney_fee.githoney_wallet, ctx.transaction) == from_lovelace(
-        githoney_fee.bounty_creation_fee,
-      )
-
-    let valid_datum = is_utxo_datum_valid(ctx.transaction, datum)
-    let valid_value = is_utxo_value_valid(own_policy, script_output.value)
-
-    is_creation_fee_paid? && is_minting_only_one_control_token? && is_script_output_address_valid? && valid_datum? && valid_value?
-  }
-}

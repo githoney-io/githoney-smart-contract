@@ -1,4 +1,4 @@
-use aiken/transaction.{InlineDatum, Output}
+use aiken/transaction.{InlineDatum, Output, Input, OutputReference, TransactionId}
 use aiken/transaction/credential.{
   Address, ScriptCredential, VerificationKeyCredential,
 }
@@ -121,7 +121,19 @@ pub fn mk_githoney_wallet() {
 // ========================================
 // INPUTS
 // ========================================
+pub fn script_out_ref(){
+  OutputReference {
+    transaction_id: TransactionId { hash: transaction_id },
+    output_index: 1,
+  }
+}
 
+pub fn mk_input_bounty_utxo() {
+  Input {
+    output: mk_output_bounty_utxo(),
+    output_reference: script_out_ref(),
+  }
+}
 // ========================================
 // OUTPUTS
 // ========================================
@@ -167,3 +179,4 @@ pub fn mk_output_bounty_utxo() {
 // ========================================
 // EXTRA
 // ========================================
+
