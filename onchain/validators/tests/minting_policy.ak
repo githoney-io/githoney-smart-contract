@@ -71,7 +71,7 @@ test fee_not_paid() {
         outputs: [bounty_utxo, out_githoney_wallet],
       },
     }
-  !checks.check_minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+  !minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
 }
 
 test wrong_value() {

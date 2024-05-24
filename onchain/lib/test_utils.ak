@@ -3,12 +3,14 @@ use aiken/interval.{Finite, Interval, IntervalBound}
 use aiken/hash.{Blake2b_256, Hash}
 use aiken/transaction.{
   Input, Mint, Spend, NoDatum, Output, OutputReference, ScriptContext, Transaction,
-  TransactionId, ScriptPurpose, Redeemer
+  TransactionId, ScriptPurpose, Redeemer, InlineDatum
 }
 use aiken/transaction/credential.{Address}
 use aiken/transaction/value.{Value}
 use aiken/bytearray
-use aiken/list.{span, at, concat, tail, push}
+use aiken/list.{span, at, concat, tail, push, head}
+use aiken/option
+use types.{GithoneyDatum}
 use mocks
 
 /// Converts a given ScriptPurpose into a ByteArray representation.
@@ -80,6 +82,37 @@ pub fn change_output_value(ctx: ScriptContext, index: Int, new_value: Value) -> 
   ScriptContext {
     ..ctx,
     transaction: Transaction {..ctx.transaction, outputs: concat(out1, out2)}
+  }
+}
+
+pub fn change_script_output_datum(ctx: ScriptContext, datum: GithoneyDatum) -> ScriptContext {
+  expect Some(output) = head(ctx.transaction.outputs)
+  let outputs = option.or_else(tail(ctx.transaction.outputs), [])
+  let outputs = outputs |> push(
+    Output {
+      ..output,
+      datum: InlineDatum(datum)
+    }
+  )
+  ScriptContext {
+    ..ctx,
+    transaction: Transaction {..ctx.transaction, outputs: outputs}
+  }
+}
+
+pub fn change_script_upper_bound(ctx: ScriptContext, upper_bound: Int) -> ScriptContext {
+  ScriptContext {
+    ..ctx,
+    transaction: Transaction {
+      ..ctx.transaction,
+      validity_range: Interval {
+        ..ctx.transaction.validity_range,
+        upper_bound: IntervalBound {
+          bound_type: Finite(upper_bound),
+          is_inclusive: True,
+        }
+      }
+    }
   }
 }
 
