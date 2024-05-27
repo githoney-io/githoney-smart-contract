@@ -54,31 +54,31 @@ type GithoneyValidatorRedeemerT = Data.Static<
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace GithoneyValidatorRedeemer {
   export const AddRewards = () =>
-    Data.to(
+    Data.to<GithoneyValidatorRedeemerT>(
       "AddRewards",
       GithoneyValidatorRedeemerSchema as unknown as GithoneyValidatorRedeemerT
     );
 
   export const Assign = () =>
-    Data.to(
+    Data.to<GithoneyValidatorRedeemerT>(
       "Assign",
       GithoneyValidatorRedeemerSchema as unknown as GithoneyValidatorRedeemerT
     );
 
   export const Merge = () =>
-    Data.to(
+    Data.to<GithoneyValidatorRedeemerT>(
       "Merge",
       GithoneyValidatorRedeemerSchema as unknown as GithoneyValidatorRedeemerT
     );
 
   export const Close = () =>
-    Data.to(
+    Data.to<GithoneyValidatorRedeemerT>(
       "Close",
       GithoneyValidatorRedeemerSchema as unknown as GithoneyValidatorRedeemerT
     );
 
   export const Claim = () =>
-    Data.to(
+    Data.to<GithoneyValidatorRedeemerT>(
       "Claim",
       GithoneyValidatorRedeemerSchema as unknown as GithoneyValidatorRedeemerT
     );
