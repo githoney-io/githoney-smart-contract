@@ -85,7 +85,7 @@ const ACCOUNT_0 = await generateAccount({
 });
 
 const ACCOUNT_CONTRIBUTOR = await generateAccount({
-  lovelace: 100n
+  lovelace: 50_000_000n
 });
 
 const emulator = new Emulator([
@@ -97,15 +97,27 @@ const emulator = new Emulator([
 ]);
 
 //////////////////// UTILS ////////////////////
+const signAndSubmit = async (lucid: Lucid, tx: any) => {
+  const txId = await lucid
+    .fromTx(tx)
+    .sign()
+    .complete()
+    .then((signedTx) => signedTx.submit());
+  console.log("SUCCESS", txId);
+  return { txId };
+};
+
 export {
   ACCOUNT_ADMIN,
   ACCOUNT_MANTAINER,
   ACCOUNT_GITHONEY,
+  ACCOUNT_CONTRIBUTOR,
   ACCOUNT_0,
   emulator,
   tokenAUnit,
   tokenBUnit,
   tokenCUnit,
   controlTokenUnit,
-  bounty_id
+  bounty_id,
+  signAndSubmit
 };

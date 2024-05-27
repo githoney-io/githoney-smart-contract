@@ -3,11 +3,11 @@ import {
   ACCOUNT_ADMIN,
   ACCOUNT_MANTAINER,
   bounty_id,
-  emulator
+  emulator,
+  signAndSubmit
 } from "./emulatorConfig";
 import { Lucid } from "lucid-cardano";
 import { createBounty } from "../src/operations/create";
-import { signAndSubmitCreate } from "./utils";
 
 const lucid = await Lucid.new(emulator, "Custom");
 
@@ -28,7 +28,9 @@ describe("Create tests", () => {
       bounty_id,
       lucid
     );
-    signAndSubmitCreate(lucid, tx);
+    emulator.awaitBlock(1);
+    lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
+    await signAndSubmit(lucid, tx);
   });
 
   it("Bounty with deadline in the past", async () => {
@@ -46,7 +48,9 @@ describe("Create tests", () => {
       bounty_id,
       lucid
     );
-    signAndSubmitCreate(lucid, tx);
+    emulator.awaitBlock(1);
+    lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
+    await signAndSubmit(lucid, tx);
   });
 
   it("Bounty with negative fees", async () => {
@@ -64,6 +68,8 @@ describe("Create tests", () => {
       bounty_id,
       lucid
     );
-    signAndSubmitCreate(lucid, tx);
+    emulator.awaitBlock(1);
+    lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
+    await signAndSubmit(lucid, tx);
   });
 });
