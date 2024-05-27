@@ -4,11 +4,8 @@ use aiken/transaction.{Transaction}
 use aiken/transaction/value.{
   Value, from_asset, from_lovelace, is_zero, merge, negate, quantity_of,
 }
-use aiken/list
 use types.{GithoneyDatum, VerificationKeyHash}
-use utils.{
-  control_token_name, min_ada,
-}
+use utils.{control_token_name, min_ada}
 
 pub fn is_signed_by(transaction: Transaction, vk: VerificationKeyHash) {
   list.has(transaction.extra_signatories, vk)
@@ -59,5 +56,3 @@ pub fn is_merge_datum_valid(old_datum: GithoneyDatum, new_datum: GithoneyDatum) 
   let expected_datum = GithoneyDatum { ..old_datum, merged: True }
   new_datum == expected_datum
 }
-
-

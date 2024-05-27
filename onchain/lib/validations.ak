@@ -1,18 +1,15 @@
-
 use aiken/option.{is_none, is_some}
-use aiken/transaction.{ScriptContext, Output}
-use aiken/transaction/credential.{from_script, ScriptCredential}
-use aiken/transaction/value.{
- PolicyId, from_lovelace, negate, quantity_of,
+use aiken/transaction.{Output, ScriptContext}
+use aiken/transaction/credential.{ScriptCredential, from_script}
+use aiken/transaction/value.{PolicyId, from_lovelace, negate, quantity_of}
+use checks.{
+  is_assign_datum_valid, is_merge_datum_valid, is_signed_by,
+  is_tx_before_deadline, is_utxo_datum_valid, is_utxo_value_valid,
 }
 use types.{GithoneyDatum, GithoneyFee}
 use utils.{
-  control_token_name, get_first_output, get_minting_info, min_ada,
-  to_githoney_datum, value_paid_to, get_script_input, value_grater_than
-}
-use checks.{
-  is_tx_before_deadline, is_utxo_datum_valid, is_utxo_value_valid,
-  is_assign_datum_valid, is_merge_datum_valid, is_signed_by,
+  control_token_name, get_first_output, get_minting_info, get_script_input,
+  min_ada, to_githoney_datum, value_grater_than, value_paid_to,
 }
 
 pub fn control_token_input_and_policy(ctx: ScriptContext) -> (Output, PolicyId) {
@@ -22,8 +19,8 @@ pub fn control_token_input_and_policy(ctx: ScriptContext) -> (Output, PolicyId) 
   let is_there_one_control_token =
     quantity_of(script_input.value, control_token_policy, control_token_name) == 1
   if !is_there_one_control_token {
-    error(@"There should be exactly one control token in the inputs")
-  } else{
+    fail @"There should be exactly one control token in the inputs"
+  } else {
     (script_input, control_token_policy)
   }
 }
@@ -38,8 +35,7 @@ pub fn add_rewards(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
   let is_datum_the_same = datum == new_datum
   let is_value_grater_than_before =
     value_grater_than(script_output.value, script_input.value)
-  let is_utxo_address_the_same =
-    script_input.address == script_output.address
+  let is_utxo_address_the_same = script_input.address == script_output.address
 
   is_datum_the_same? && is_tx_before_deadline? && is_utxo_address_the_same? && is_value_grater_than_before?
 }
@@ -53,8 +49,7 @@ pub fn assign(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
     is_tx_before_deadline(ctx.transaction, datum.deadline)
   let contributor_isnt_assigned = is_none(datum.contributor_wallet)
   let is_new_datum_valid = is_assign_datum_valid(datum, new_datum)
-  let is_utxo_address_the_same =
-    script_input.address == script_output.address
+  let is_utxo_address_the_same = script_input.address == script_output.address
   let expected_value = value.merge(script_input.value, from_lovelace(min_ada))
   let is_utxo_value_valid = script_output.value == expected_value
 
@@ -71,8 +66,7 @@ pub fn merge(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
     is_tx_before_deadline(ctx.transaction, datum.deadline)
   let contributor_is_assigned = is_some(datum.contributor_wallet)
   let is_new_datum_valid = is_merge_datum_valid(datum, new_datum)
-  let is_utxo_address_the_same =
-    script_input.address == script_output.address
+  let is_utxo_address_the_same = script_input.address == script_output.address
   let expected_value = value.merge(script_input.value, negate(min_ada_value))
   let is_utxo_value_valid = script_output.value == expected_value
   let is_signed_by_admin =
@@ -128,10 +122,7 @@ pub fn claim(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
 }
 
 // Main validation of the githoney token minting policy
-pub fn minting_policy(
-  githoney_fee: GithoneyFee,
-  ctx: ScriptContext,
-) -> Bool {
+pub fn minting_policy(githoney_fee: GithoneyFee, ctx: ScriptContext) -> Bool {
   let (own_policy, minted_name, minted_quantity) =
     get_minting_info(ctx.transaction)
 
