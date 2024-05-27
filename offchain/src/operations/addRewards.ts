@@ -1,5 +1,5 @@
 import { buildGithoneyValidator } from "../scripts";
-import { Lucid, OutRef } from "lucid-cardano";
+import { Constr, Data, Lucid, OutRef } from "lucid-cardano";
 import { GithoneyDatumT, GithoneyValidatorRedeemer } from "../types";
 import { validatorParams } from "../utils";
 
@@ -30,8 +30,12 @@ async function addRewards(
   };
 
   lucid.selectWalletFrom({ address: address });
+  const now = new Date();
+  const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+
   const tx = await lucid
     .newTx()
+    .validTo(sixHoursFromNow.getTime())
     .collectFrom([utxo], GithoneyValidatorRedeemer.AddRewards())
     .payToContract(validatorAddress, { inline: utxo.datum! }, newAssets)
     .attachSpendingValidator(gitHoneyValidator)
