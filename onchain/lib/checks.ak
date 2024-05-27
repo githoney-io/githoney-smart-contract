@@ -1,5 +1,6 @@
 use aiken/interval.{Finite}
 use aiken/option.{is_some, is_none}
+use aiken/list
 use aiken/transaction.{Transaction}
 use aiken/transaction/value.{
   Value, from_asset, from_lovelace, is_zero, merge, negate, quantity_of,
