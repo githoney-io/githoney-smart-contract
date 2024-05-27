@@ -1,5 +1,5 @@
 import { buildGithoneyValidator } from "../scripts";
-import { Constr, Data, Lucid, OutRef } from "lucid-cardano";
+import { Lucid, OutRef } from "lucid-cardano";
 import { GithoneyDatumT, GithoneyValidatorRedeemer } from "../types";
 import { validatorParams } from "../utils";
 
