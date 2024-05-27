@@ -155,7 +155,7 @@ pub fn mk_output_bounty_utxo() {
         admin_wallet: mk_admin_wallet(),
         maintainer_wallet: mk_maintainer_wallet(),
         contributor_wallet: None,
-        bounty_id,
+        bounty_id: bounty_id,
         deadline: 1718938800,
         merged: False,
       },
