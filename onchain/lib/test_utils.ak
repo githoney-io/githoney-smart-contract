@@ -54,6 +54,26 @@ pub fn script_purpose_compare(a: ScriptPurpose, b: ScriptPurpose) -> Ordering {
   bytearray.compare(byte_a, byte_b)
 }
 
+pub fn add_extra_signature(ctx: ScriptContext, signature: ByteArray) -> ScriptContext {
+  ScriptContext {
+    ..ctx,
+    transaction: Transaction {
+      ..ctx.transaction,
+      extra_signatories: ctx.transaction.extra_signatories |> push(signature)
+    }
+  }
+}
+
+pub fn add_output(ctx: ScriptContext, output: Output) -> ScriptContext {
+  ScriptContext {
+    ..ctx,
+    transaction: Transaction {
+      ..ctx.transaction,
+      outputs: concat (ctx.transaction.outputs, [output])
+    }
+  }
+}
+
 pub fn input_with_assets(transaction_id: ByteArray, output_index: Int, address: Address, value: Value) -> Input {
   Input {
     output_reference: OutputReference {
@@ -85,6 +105,41 @@ pub fn change_output_value(ctx: ScriptContext, index: Int, new_value: Value) -> 
   }
 }
 
+pub fn change_output_address(ctx: ScriptContext, index: Int, new_address: Address) -> ScriptContext {
+  expect Some(output) = at(ctx.transaction.outputs, index)
+  let output =
+    Output {
+      ..output,
+      address: new_address
+    }
+  let (out1, out2) = span(ctx.transaction.outputs, index)
+  expect Some(out2) = tail(out2)
+  let out2 = out2 |> push(output)
+  ScriptContext {
+    ..ctx,
+    transaction: Transaction {..ctx.transaction, outputs: concat(out1, out2)}
+  }
+}
+
+pub fn change_input_value(ctx: ScriptContext, index: Int, new_value: Value) -> ScriptContext {
+  expect Some(input) = at(ctx.transaction.inputs, index)
+  let input =
+    Input {
+      ..input,
+      output: Output {
+        ..input.output,
+        value: new_value
+      }
+    }
+  let (inp1, inp2) = span(ctx.transaction.inputs, index)
+  expect Some(inp2) = tail(inp2)
+  let inp2 = inp2 |> push(input)
+  ScriptContext {
+    ..ctx,
+    transaction: Transaction {..ctx.transaction, inputs: concat(inp1, inp2)}
+  }
+}
+
 pub fn change_script_output_datum(ctx: ScriptContext, datum: GithoneyDatum) -> ScriptContext {
   expect Some(output) = head(ctx.transaction.outputs)
   let outputs = option.or_else(tail(ctx.transaction.outputs), [])
@@ -97,6 +152,25 @@ pub fn change_script_output_datum(ctx: ScriptContext, datum: GithoneyDatum) -> S
   ScriptContext {
     ..ctx,
     transaction: Transaction {..ctx.transaction, outputs: outputs}
+  }
+}
+
+
+pub fn change_script_input_datum(ctx: ScriptContext, datum: GithoneyDatum) -> ScriptContext {
+  expect Some(input) = head(ctx.transaction.inputs)
+  let inputs = option.or_else(tail(ctx.transaction.inputs), [])
+  let inputs = inputs |> push(
+    Input {
+      ..input,
+      output: Output {
+        ..input.output,
+        datum: InlineDatum(datum)
+      }
+    }
+  )
+  ScriptContext {
+    ..ctx,
+    transaction: Transaction {..ctx.transaction, inputs: inputs}
   }
 }
 
@@ -185,7 +259,7 @@ pub fn mk_transition_script_context(redeemer: Redeemer) -> ScriptContext {
   let rewards_input = input_with_assets(
     mocks.transaction_id,
     1,
-    mocks.mk_maintainer_address(),
+    mocks.mk_admin_address(),
     value.from_lovelace(4_000_000)
       |> value.add(mocks.token_b_policy, mocks.token_b_name, 10_000),
   )
