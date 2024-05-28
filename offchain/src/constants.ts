@@ -9,7 +9,7 @@ const Roles = {
   CONTRIBUTOR: "Contributor"
 };
 
-const MIN_ADA = 2_000_000n;
+const MIN_ADA = 3_000_000n;
 
 const controlTokenName = "controlToken";
 const creationFee = process.env.CREATION_FEE!;

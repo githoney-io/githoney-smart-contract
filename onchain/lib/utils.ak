@@ -13,7 +13,7 @@ use types.{GithoneyDatum, Wallet}
 
 pub const control_token_name: ByteArray = "controlToken"
 
-pub const min_ada: Int = 2_000_000
+pub const min_ada: Int = 3_000_000
 
 // Returns the minting information of a transaction.
 pub fn get_minting_info(tx: Transaction) -> (PolicyId, AssetName, Int) {
