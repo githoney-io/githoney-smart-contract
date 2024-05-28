@@ -4,12 +4,14 @@ import {
   fromText,
   generateSeedPhrase,
   Lucid,
+  OutRef,
   toUnit
 } from "lucid-cardano";
 import { controlTokenName } from "../src/constants";
 import { buildGithoneyMintingPolicy } from "../src/scripts";
 import { validatorParams } from "../src/utils";
 import { createBounty } from "../src/operations/create";
+import { assignContributor } from "../src/operations/assignContributor";
 
 const tokenA = {
   policy_id: "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb",
@@ -104,7 +106,8 @@ const signAndSubmit = async (lucid: Lucid, tx: any) => {
     .sign()
     .complete()
     .then((signedTx) => signedTx.submit());
-  console.log("SUCCESS", txId);
+  emulator.awaitBlock(3);
+  console.log("SUCCESS, TxId:", txId);
   return { txId };
 };
 
@@ -116,7 +119,7 @@ const newBounty = async (lucid: Lucid) => {
     ACCOUNT_MANTAINER.address,
     ACCOUNT_ADMIN.address,
     {
-      unit: "lovelace",
+      unit: tokenAUnit,
       amount: 100n
     },
     BigInt(deadline),
@@ -127,7 +130,19 @@ const newBounty = async (lucid: Lucid) => {
 
   lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
   const txId = await signAndSubmit(lucid, createTx);
-  emulator.awaitBlock(3);
+  return txId;
+};
+
+const newAssign = async (lucid: Lucid, createOutRef: OutRef) => {
+  const assignTx = await assignContributor(
+    createOutRef,
+    ACCOUNT_CONTRIBUTOR.address,
+    lucid
+  );
+  emulator.awaitBlock(1);
+
+  lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
+  const txId = await signAndSubmit(lucid, assignTx);
   return txId;
 };
 
@@ -144,5 +159,6 @@ export {
   controlTokenUnit,
   bounty_id,
   signAndSubmit,
-  newBounty
+  newBounty,
+  newAssign
 };
