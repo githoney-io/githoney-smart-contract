@@ -151,6 +151,16 @@ pub fn script_input_without_control_token(ctx: ScriptContext) -> ScriptContext {
   change_input_value(ctx, 0, new_value)
 }
 
+pub fn remove_mint_from_context(ctx: ScriptContext) -> ScriptContext {
+  ScriptContext {
+    ..ctx,
+    transaction: Transaction {
+      ..ctx.transaction,
+      mint: value.to_minted_value(value.zero()),
+    },
+  }
+}
+
 pub fn change_script_output_datum(
   ctx: ScriptContext,
   datum: GithoneyDatum,
