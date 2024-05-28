@@ -120,7 +120,7 @@ const newBounty = async (lucid: Lucid) => {
     ACCOUNT_ADMIN.address,
     {
       unit: tokenAUnit,
-      amount: 100n
+      amount: 1_000n
     },
     BigInt(deadline),
     bounty_id,

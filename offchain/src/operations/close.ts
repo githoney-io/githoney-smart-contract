@@ -33,11 +33,18 @@ async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
   const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
 
   lucid.selectWalletFrom({ address: adminAddr });
-  const tx = await lucid
+  const signerPkh =
+    lucid.utils.getAddressDetails(adminAddr).paymentCredential?.hash!;
+  const now = new Date();
+  const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+
+  const tx = lucid
     .newTx()
+    .validTo(sixHoursFromNow.getTime())
     .collectFrom([utxo], GithoneyValidatorRedeemer.Close())
     .mintAssets({ [controlTokenUnit]: BigInt(-1) }, Data.void())
     .attachSpendingValidator(gitHoneyValidator)
+    .addSignerKey(signerPkh)
     .attachMintingPolicy(mintingPolicy);
 
   const txWithPayments = await (
@@ -46,7 +53,7 @@ async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
 
   const cbor = txWithPayments.toString();
   console.debug("END close");
-  console.debug("close", cbor);
+  console.debug(`Close ${cbor}`);
   return cbor;
 }
 
