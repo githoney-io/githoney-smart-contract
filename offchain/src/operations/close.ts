@@ -8,7 +8,11 @@ import {
   fromText,
   toUnit
 } from "lucid-cardano";
-import { GithoneyDatumT, GithoneyValidatorRedeemer } from "../types";
+import {
+  GithoneyDatum,
+  GithoneyDatumT,
+  GithoneyValidatorRedeemer
+} from "../types";
 import { keyPairsToAddress, validatorParams } from "../utils";
 import { MIN_ADA, controlTokenName } from "../constants";
 
@@ -20,7 +24,7 @@ async function close(utxoRef: OutRef, lucid: Lucid): Promise<string> {
   const mintingPolicy = buildGithoneyValidator(scriptParams);
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingPolicy);
   const [utxo] = await lucid.utxosByOutRef([utxoRef]);
-  const datum: GithoneyDatumT = await lucid.datumOf(utxo);
+  const datum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
   const adminAddr = await keyPairsToAddress(lucid, datum.admin);
   const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
 
