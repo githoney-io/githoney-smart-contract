@@ -1,4 +1,6 @@
-use aiken/transaction.{InlineDatum, Output, Input, OutputReference, TransactionId}
+use aiken/transaction.{
+  InlineDatum, Input, Output, OutputReference, TransactionId,
+}
 use aiken/transaction/credential.{
   Address, ScriptCredential, VerificationKeyCredential,
 }
@@ -121,7 +123,7 @@ pub fn mk_githoney_wallet() {
 // ========================================
 // INPUTS
 // ========================================
-pub fn script_out_ref(){
+pub fn script_out_ref() {
   OutputReference {
     transaction_id: TransactionId { hash: transaction_id },
     output_index: 1,
@@ -129,11 +131,9 @@ pub fn script_out_ref(){
 }
 
 pub fn mk_input_bounty_utxo() {
-  Input {
-    output: mk_output_bounty_utxo(),
-    output_reference: script_out_ref(),
-  }
+  Input { output: mk_output_bounty_utxo(), output_reference: script_out_ref() }
 }
+
 // ========================================
 // OUTPUTS
 // ========================================
@@ -145,17 +145,17 @@ pub fn mk_output_bounty_utxo() {
     },
     value: value.from_lovelace(min_ada)
       |> value.add(
-          token_a_policy,
-          token_a_name,
-          mk_githoney_fee().bounty_reward_fee,
-        ) // Reward token
+           token_a_policy,
+           token_a_name,
+           mk_githoney_fee().bounty_reward_fee,
+         ) // Reward token
       |> value.add(control_token_policy, control_token_name, 1),
     datum: InlineDatum(
       GithoneyDatum {
         admin_wallet: mk_admin_wallet(),
         maintainer_wallet: mk_maintainer_wallet(),
         contributor_wallet: None,
-        bounty_id: bounty_id,
+        bounty_id,
         deadline: 1718938800,
         merged: False,
       },
@@ -179,4 +179,3 @@ pub fn mk_output_bounty_utxo() {
 // ========================================
 // EXTRA
 // ========================================
-

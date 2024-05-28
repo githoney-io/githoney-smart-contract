@@ -74,7 +74,7 @@ pub fn merge(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
   let is_maintainer_minada_payed =
     value_paid_to(datum.maintainer_wallet, ctx.transaction) == min_ada_value
 
-  (!datum.merged)? && is_signed_by_admin? && is_new_datum_valid? && is_utxo_value_valid? && is_tx_before_deadline? && contributor_is_assigned? && is_utxo_address_the_same? && is_maintainer_minada_payed?
+  !datum.merged? && is_signed_by_admin? && is_new_datum_valid? && is_utxo_value_valid? && is_tx_before_deadline? && contributor_is_assigned? && is_utxo_address_the_same? && is_maintainer_minada_payed?
 }
 
 pub fn close(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {

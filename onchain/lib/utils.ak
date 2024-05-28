@@ -6,14 +6,13 @@ use aiken/transaction.{
 }
 use aiken/transaction/credential.{ScriptCredential}
 use aiken/transaction/value.{
-  AssetName, PolicyId, Value, quantity_of, reduce, tokens, merge
+  AssetName, PolicyId, Value, merge, quantity_of, reduce, tokens,
 }
 use types.{GithoneyDatum, Wallet}
 
 pub const control_token_name: ByteArray = "controlToken"
 
 pub const min_ada: Int = 2_000_000
-
 
 // Returns the minting information of a transaction.
 pub fn get_minting_info(tx: Transaction) -> (PolicyId, AssetName, Int) {
