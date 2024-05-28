@@ -7,9 +7,9 @@ import {
   toUnit
 } from "lucid-cardano";
 import { controlTokenName } from "../src/constants";
-import { createBounty } from "../src/operations/create";
 import { buildGithoneyMintingPolicy } from "../src/scripts";
 import { validatorParams } from "../src/utils";
+import { createBounty } from "../src/operations/create";
 
 const tokenA = {
   policy_id: "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb",
@@ -78,26 +78,71 @@ const ACCOUNT_GITHONEY = await generateAccount({
   [tokenCUnit]: 100_000_000n
 });
 
+const ACCOUNT_0 = await generateAccount({
+  lovelace: 75_000_000n,
+  [tokenAUnit]: 100_000_000n,
+  [tokenBUnit]: 100_000_000n,
+  [tokenCUnit]: 100_000_000n
+});
+
 const ACCOUNT_CONTRIBUTOR = await generateAccount({
-  lovelace: 100n
+  lovelace: 50_000_000n
 });
 
 const emulator = new Emulator([
   ACCOUNT_ADMIN,
   ACCOUNT_MANTAINER,
   ACCOUNT_CONTRIBUTOR,
-  ACCOUNT_GITHONEY
+  ACCOUNT_GITHONEY,
+  ACCOUNT_0
 ]);
 
 //////////////////// UTILS ////////////////////
+const signAndSubmit = async (lucid: Lucid, tx: any) => {
+  const txId = await lucid
+    .fromTx(tx)
+    .sign()
+    .complete()
+    .then((signedTx) => signedTx.submit());
+  console.log("SUCCESS", txId);
+  return { txId };
+};
+
+const newBounty = async (lucid: Lucid) => {
+  const now = new Date();
+  const deadline = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).getTime(); // Tomorrow
+
+  const createTx = await createBounty(
+    ACCOUNT_MANTAINER.address,
+    ACCOUNT_ADMIN.address,
+    {
+      unit: "lovelace",
+      amount: 100n
+    },
+    BigInt(deadline),
+    bounty_id,
+    lucid
+  );
+  emulator.awaitBlock(1);
+
+  lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
+  const txId = await signAndSubmit(lucid, createTx);
+  emulator.awaitBlock(3);
+  return txId;
+};
+
 export {
   ACCOUNT_ADMIN,
   ACCOUNT_MANTAINER,
   ACCOUNT_GITHONEY,
+  ACCOUNT_CONTRIBUTOR,
+  ACCOUNT_0,
   emulator,
   tokenAUnit,
   tokenBUnit,
   tokenCUnit,
   controlTokenUnit,
-  bounty_id
+  bounty_id,
+  signAndSubmit,
+  newBounty
 };

@@ -1,7 +1,12 @@
 import { buildGithoneyValidator } from "../scripts";
-import { Lucid, OutRef } from "lucid-cardano";
+import { Data, Lucid, OutRef } from "lucid-cardano";
 import { MIN_ADA } from "../constants";
-import { GithoneyDatumT, GithoneyValidatorRedeemer, mkDatum } from "../types";
+import {
+  GithoneyDatum,
+  GithoneyDatumT,
+  GithoneyValidatorRedeemer,
+  mkDatum
+} from "../types";
 import { addrToWallet, validatorParams } from "../utils";
 
 async function assignContributor(
@@ -15,8 +20,7 @@ async function assignContributor(
   const gitHoneyValidator = buildGithoneyValidator(scriptParams);
   const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
   const [utxo] = await lucid.utxosByOutRef([utxoRef]);
-  const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo);
-
+  const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
   if (oldDatum.merged) {
     throw new Error("Bounty already merged");
   }
@@ -28,14 +32,19 @@ async function assignContributor(
   }
   const contributorWallet = addrToWallet(contributorAddr, lucid);
   const newDatum = mkDatum({ ...oldDatum, contributor: contributorWallet });
+
   const newAssets = {
     ...utxo.assets,
     lovelace: utxo.assets.lovelace + MIN_ADA
   };
 
   lucid.selectWalletFrom({ address: contributorAddr });
+  const now = new Date();
+  const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+
   const tx = await lucid
     .newTx()
+    .validTo(sixHoursFromNow.getTime())
     .collectFrom([utxo], GithoneyValidatorRedeemer.Assign())
     .payToContract(validatorAddress, { inline: newDatum }, newAssets)
     .attachSpendingValidator(gitHoneyValidator)
@@ -47,4 +56,4 @@ async function assignContributor(
   return cbor;
 }
 
-export default assignContributor;
+export { assignContributor };

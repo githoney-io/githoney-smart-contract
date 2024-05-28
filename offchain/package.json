@@ -13,8 +13,13 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "prepack": "rm -rf dist && npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "create-bounty": "mocha --timeout 0"
+    "test": "mocha --timeout 0",
+    "test-create": "mocha --timeout 0 --ignore **/test/claim.test.ts --ignore **/test/addRewards.test.ts --ignore **/test/assign.test.ts --ignore **/test/merge.test.ts --ignore **/test/close.test.ts",
+    "test-addrewards": "mocha --timeout 0 --ignore **/test/create.test.ts --ignore **/test/claim.test.ts --ignore **/test/assign.test.ts --ignore **/test/merge.test.ts --ignore **/test/close.test.ts",
+    "test-assign": "mocha --timeout 0 --ignore **/test/create.test.ts --ignore **/test/addRewards.test.ts --ignore **/test/claim.test.ts --ignore **/test/merge.test.ts --ignore **/test/close.test.ts",
+    "test-merge": "mocha --timeout 0 --ignore **/test/create.test.ts --ignore **/test/addRewards.test.ts --ignore **/test/assign.test.ts --ignore **/test/claim.test.ts --ignore **/test/close.test.ts",
+    "test-close": "mocha --timeout 0 --ignore **/test/create.test.ts --ignore **/test/addRewards.test.ts --ignore **/test/assign.test.ts --ignore **/test/merge.test.ts --ignore **/test/claim.test.ts",
+    "test-claim": "mocha --timeout 0 --ignore **/test/create.test.ts --ignore **/test/addRewards.test.ts --ignore **/test/assign.test.ts --ignore **/test/merge.test.ts --ignore **/test/close.test.ts"
   },
   "author": "Filabs",
   "license": "ISC",

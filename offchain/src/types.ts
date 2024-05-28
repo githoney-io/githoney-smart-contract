@@ -1,4 +1,4 @@
-import { Data } from "lucid-cardano";
+import { Constr, Data } from "lucid-cardano";
 
 const WalletSchema = Data.Object({
   paymentKey: Data.Bytes(),
@@ -46,42 +46,23 @@ const GithoneyValidatorRedeemerSchema = Data.Enum([
   Data.Literal("Close"),
   Data.Literal("Claim")
 ]);
-
 type GithoneyValidatorRedeemerT = Data.Static<
   typeof GithoneyValidatorRedeemerSchema
 >;
 
+const multiValWrapper = (
+  val_index: number,
+  redeemer_index: number,
+  params: Data[]
+) => Data.to(new Constr(val_index, [new Constr(redeemer_index, params)]));
+
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace GithoneyValidatorRedeemer {
-  export const AddRewards = () =>
-    Data.to(
-      "AddRewards",
-      GithoneyValidatorRedeemerSchema as unknown as GithoneyValidatorRedeemerT
-    );
-
-  export const Assign = () =>
-    Data.to(
-      "Assign",
-      GithoneyValidatorRedeemerSchema as unknown as GithoneyValidatorRedeemerT
-    );
-
-  export const Merge = () =>
-    Data.to(
-      "Merge",
-      GithoneyValidatorRedeemerSchema as unknown as GithoneyValidatorRedeemerT
-    );
-
-  export const Close = () =>
-    Data.to(
-      "Close",
-      GithoneyValidatorRedeemerSchema as unknown as GithoneyValidatorRedeemerT
-    );
-
-  export const Claim = () =>
-    Data.to(
-      "Claim",
-      GithoneyValidatorRedeemerSchema as unknown as GithoneyValidatorRedeemerT
-    );
+  export const AddRewards = () => multiValWrapper(1, 0, []);
+  export const Assign = () => multiValWrapper(1, 1, []);
+  export const Merge = () => multiValWrapper(1, 2, []);
+  export const Close = () => multiValWrapper(1, 3, []);
+  export const Claim = () => multiValWrapper(1, 4, []);
 }
 
 export {

@@ -30,8 +30,12 @@ async function addRewards(
   };
 
   lucid.selectWalletFrom({ address: address });
+  const now = new Date();
+  const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+
   const tx = await lucid
     .newTx()
+    .validTo(sixHoursFromNow.getTime())
     .collectFrom([utxo], GithoneyValidatorRedeemer.AddRewards())
     .payToContract(validatorAddress, { inline: utxo.datum! }, newAssets)
     .attachSpendingValidator(gitHoneyValidator)
@@ -39,8 +43,8 @@ async function addRewards(
 
   const cbor = tx.toString();
   console.debug("END addRewards");
-  console.debug("Add Rewards", cbor);
+  console.debug(`Add Rewards: ${cbor}`);
   return cbor;
 }
 
-export default addRewards;
+export { addRewards };
