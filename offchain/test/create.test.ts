@@ -3,24 +3,13 @@ import {
   ACCOUNT_ADMIN,
   ACCOUNT_MANTAINER,
   bounty_id,
-  emulator
-} from "../emulatorConfig";
+  emulator,
+  signAndSubmit
+} from "./emulatorConfig";
 import { Lucid } from "lucid-cardano";
-import { createBounty } from "../../src/operations/create";
+import { createBounty } from "../src/operations/create";
 
 const lucid = await Lucid.new(emulator, "Custom");
-
-const signAndSubmitCreate = async (lucid: Lucid, tx: any) => {
-  emulator.awaitBlock(1);
-
-  lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
-  const createTx = await lucid
-    .fromTx(tx)
-    .sign()
-    .complete()
-    .then((signedTx) => signedTx.submit());
-  console.log("SUCCESS CREATE BOUNTY", createTx);
-};
 
 describe("Create tests", () => {
   const now = new Date();
@@ -39,7 +28,9 @@ describe("Create tests", () => {
       bounty_id,
       lucid
     );
-    signAndSubmitCreate(lucid, tx);
+    emulator.awaitBlock(1);
+    lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
+    await signAndSubmit(lucid, tx);
   });
 
   it("Bounty with deadline in the past", async () => {
@@ -57,7 +48,9 @@ describe("Create tests", () => {
       bounty_id,
       lucid
     );
-    signAndSubmitCreate(lucid, tx);
+    emulator.awaitBlock(1);
+    lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
+    await signAndSubmit(lucid, tx);
   });
 
   it("Bounty with negative fees", async () => {
@@ -75,6 +68,8 @@ describe("Create tests", () => {
       bounty_id,
       lucid
     );
-    signAndSubmitCreate(lucid, tx);
+    emulator.awaitBlock(1);
+    lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
+    await signAndSubmit(lucid, tx);
   });
 });

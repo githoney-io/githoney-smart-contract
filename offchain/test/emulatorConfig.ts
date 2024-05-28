@@ -7,7 +7,6 @@ import {
   toUnit
 } from "lucid-cardano";
 import { controlTokenName } from "../src/constants";
-import { createBounty } from "../src/operations/create";
 import { buildGithoneyMintingPolicy } from "../src/scripts";
 import { validatorParams } from "../src/utils";
 
@@ -78,26 +77,47 @@ const ACCOUNT_GITHONEY = await generateAccount({
   [tokenCUnit]: 100_000_000n
 });
 
+const ACCOUNT_0 = await generateAccount({
+  lovelace: 75_000_000n,
+  [tokenAUnit]: 100_000_000n,
+  [tokenBUnit]: 100_000_000n,
+  [tokenCUnit]: 100_000_000n
+});
+
 const ACCOUNT_CONTRIBUTOR = await generateAccount({
-  lovelace: 100n
+  lovelace: 50_000_000n
 });
 
 const emulator = new Emulator([
   ACCOUNT_ADMIN,
   ACCOUNT_MANTAINER,
   ACCOUNT_CONTRIBUTOR,
-  ACCOUNT_GITHONEY
+  ACCOUNT_GITHONEY,
+  ACCOUNT_0
 ]);
 
 //////////////////// UTILS ////////////////////
+const signAndSubmit = async (lucid: Lucid, tx: any) => {
+  const txId = await lucid
+    .fromTx(tx)
+    .sign()
+    .complete()
+    .then((signedTx) => signedTx.submit());
+  console.log("SUCCESS", txId);
+  return { txId };
+};
+
 export {
   ACCOUNT_ADMIN,
   ACCOUNT_MANTAINER,
   ACCOUNT_GITHONEY,
+  ACCOUNT_CONTRIBUTOR,
+  ACCOUNT_0,
   emulator,
   tokenAUnit,
   tokenBUnit,
   tokenCUnit,
   controlTokenUnit,
-  bounty_id
+  bounty_id,
+  signAndSubmit
 };
