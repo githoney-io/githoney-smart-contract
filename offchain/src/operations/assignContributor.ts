@@ -24,7 +24,6 @@ async function assignContributor(
     utxo.datum as string,
     GithoneyDatum as unknown as GithoneyDatumT
   );
-  console.debug("Old Datum", oldDatum);
 
   if (oldDatum.merged) {
     throw new Error("Bounty already merged");
@@ -42,8 +41,6 @@ async function assignContributor(
     newDatum as string,
     GithoneyDatum as unknown as GithoneyDatumT
   );
-
-  console.debug("New Datum", newD);
 
   const newAssets = {
     ...utxo.assets,
