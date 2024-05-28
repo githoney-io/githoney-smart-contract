@@ -44,7 +44,7 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
   const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
 
-  const feePercent = rewardFee / 10000n;
+  const feePercent = rewardFee / 10_000n;
 
   const { githoneyFee, scriptValue } = calculateRewardsFeeAndScriptValue(
     contractUtxo.assets,
@@ -53,6 +53,8 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
   );
 
   lucid.selectWalletFrom({ address: adminAddr });
+  const signerPkh =
+    lucid.utils.getAddressDetails(adminAddr).paymentCredential?.hash!;
   const now = new Date();
   const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
 
@@ -63,8 +65,9 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
     .payToContract(validatorAddress, { inline: newBountyDatum }, scriptValue)
     .payToAddress(maintainerAddr, { lovelace: MIN_ADA })
     .payToAddress(githoneyAddr, githoneyFee)
+    .addSignerKey(signerPkh)
+    .attachSpendingValidator(gitHoneyValidator)
     .complete();
-
   const cbor = tx.toString();
   console.debug("END mergeBounty");
   console.debug(`Merge Bounty: ${cbor}`);
