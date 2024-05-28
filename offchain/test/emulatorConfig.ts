@@ -9,6 +9,7 @@ import {
 import { controlTokenName } from "../src/constants";
 import { buildGithoneyMintingPolicy } from "../src/scripts";
 import { validatorParams } from "../src/utils";
+import { createBounty } from "../src/operations/create";
 
 const tokenA = {
   policy_id: "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb",
@@ -107,6 +108,29 @@ const signAndSubmit = async (lucid: Lucid, tx: any) => {
   return { txId };
 };
 
+const newBounty = async (lucid: Lucid) => {
+  const now = new Date();
+  const deadline = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).getTime(); // Tomorrow
+
+  const createTx = await createBounty(
+    ACCOUNT_MANTAINER.address,
+    ACCOUNT_ADMIN.address,
+    {
+      unit: "lovelace",
+      amount: 100n
+    },
+    BigInt(deadline),
+    bounty_id,
+    lucid
+  );
+  emulator.awaitBlock(1);
+
+  lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
+  const txId = await signAndSubmit(lucid, createTx);
+  emulator.awaitBlock(3);
+  return txId;
+};
+
 export {
   ACCOUNT_ADMIN,
   ACCOUNT_MANTAINER,
@@ -119,5 +143,6 @@ export {
   tokenCUnit,
   controlTokenUnit,
   bounty_id,
-  signAndSubmit
+  signAndSubmit,
+  newBounty
 };
