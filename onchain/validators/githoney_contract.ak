@@ -3,7 +3,7 @@ use types.{
   AddRewards, Assign, Claim, Close, GithoneyContractRedeemers, GithoneyDatum,
   GithoneyFee, Merge,
 }
-use validations.{minting_policy, add_rewards, assign, merge, close, claim}
+use validations.{add_rewards, assign, claim, close, merge, minting_policy}
 
 validator(githoney_fee: GithoneyFee) {
   fn githoney_contract(

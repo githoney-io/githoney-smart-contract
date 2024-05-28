@@ -1,12 +1,14 @@
 use aiken/list.{head}
+use aiken/transaction.{Output, ScriptContext, Transaction}
 use aiken/transaction/value.{add}
-use aiken/transaction.{ScriptContext, Transaction, Output}
-use test_utils.{mk_transition_script_context, change_output_value,
-  change_script_upper_bound}
-use utils.{to_githoney_datum}
-use types.{GithoneyDatum, AddRewards}
-use validations
 use mocks
+use test_utils.{
+  change_output_value, change_script_upper_bound, mk_transition_script_context,
+  script_input_without_control_token,
+}
+use types.{AddRewards, GithoneyDatum}
+use utils.{to_githoney_datum}
+use validations
 
 test success() {
   let script_ctx = mk_transition_script_context(AddRewards)
@@ -30,14 +32,11 @@ test bad_datum() {
   let script_ctx = mk_transition_script_context(AddRewards)
   expect Some(script_input) = head(script_ctx.transaction.inputs)
   let datum: GithoneyDatum = to_githoney_datum(script_input.output.datum)
-  let bad_datum = GithoneyDatum {
-    ..datum,
-    merged: True
-  }
+  let bad_datum = GithoneyDatum { ..datum, merged: True }
   !validations.add_rewards(bad_datum, script_ctx)
 }
 
-test after_deadline(){
+test after_deadline() {
   let script_ctx = mk_transition_script_context(AddRewards)
   expect Some(script_output) = head(script_ctx.transaction.outputs)
   let script_output_value =
@@ -50,4 +49,16 @@ test after_deadline(){
   !validations.add_rewards(datum, script_ctx)
 }
 
-
+test without_control_token() fail {
+  let script_ctx = mk_transition_script_context(AddRewards)
+  expect Some(script_output) = head(script_ctx.transaction.outputs)
+  let script_output_value =
+    script_output.value |> add(mocks.token_b_policy, mocks.token_b_name, 10000)
+  let script_ctx =
+    script_ctx
+      |> change_output_value(0, script_output_value)
+      |> script_input_without_control_token()
+  expect Some(script_input) = head(script_ctx.transaction.inputs)
+  let datum: GithoneyDatum = to_githoney_datum(script_input.output.datum)
+  validations.add_rewards(datum, script_ctx)
+}
