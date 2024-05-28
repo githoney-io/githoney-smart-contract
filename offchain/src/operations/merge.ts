@@ -11,7 +11,7 @@ import {
   GithoneyValidatorRedeemer,
   mkDatum
 } from "../types";
-import { fromText, toUnit, OutRef, Lucid, Data, Assets } from "lucid-cardano";
+import { fromText, toUnit, OutRef, Lucid, Assets } from "lucid-cardano";
 import { keyPairsToAddress, validatorParams } from "../utils";
 
 async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
@@ -52,19 +52,23 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
     controlTokenUnit
   );
 
+  lucid.selectWalletFrom({ address: adminAddr });
+  const now = new Date();
+  const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+
   const tx = await lucid
     .newTx()
+    .validTo(sixHoursFromNow.getTime())
     .collectFrom([contractUtxo], GithoneyValidatorRedeemer.Merge())
     .payToContract(validatorAddress, { inline: newBountyDatum }, scriptValue)
     .payToAddress(maintainerAddr, { lovelace: MIN_ADA })
     .payToAddress(githoneyAddr, githoneyFee)
     .complete();
 
-  lucid.selectWalletFrom({ address: adminAddr });
-  const txSigned = await tx.sign().complete();
-
+  const cbor = tx.toString();
   console.debug("END mergeBounty");
-  return txSigned.toString();
+  console.debug(`Merge Bounty: ${cbor}`);
+  return cbor;
 }
 
 function calculateRewardsFeeAndScriptValue(
@@ -88,4 +92,4 @@ function calculateRewardsFeeAndScriptValue(
   return { githoneyFee, scriptValue };
 }
 
-export default mergeBounty;
+export { mergeBounty };
