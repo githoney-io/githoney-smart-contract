@@ -13,7 +13,7 @@ import {
   GithoneyDatumT,
   GithoneyValidatorRedeemer
 } from "../types";
-import { keyPairsToAddress, validatorParams } from "../utils";
+import { clearZeroAssets, keyPairsToAddress, validatorParams } from "../utils";
 import { MIN_ADA, controlTokenName } from "../constants";
 
 async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
@@ -48,7 +48,7 @@ async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
     .attachMintingPolicy(mintingPolicy);
 
   const txWithPayments = await (
-    await addPayments(tx, bountyDatum, utxo.assets, lucid)
+    await addPayments(tx, bountyDatum, utxo.assets, controlTokenUnit, lucid)
   ).complete();
 
   const cbor = txWithPayments.toString();
@@ -61,14 +61,19 @@ const addPayments = async (
   tx: Tx,
   datum: GithoneyDatumT,
   assets: Assets,
+  controlTokenUnit: string,
   lucid: Lucid
 ): Promise<Tx> => {
   if (datum.contributor) {
     const contributorAddr = await keyPairsToAddress(lucid, datum.contributor);
     tx = tx.payToAddress(contributorAddr, { lovelace: MIN_ADA });
-    assets = { ...assets, lovelace: assets["lovelace"] - MIN_ADA };
+    assets = {
+      ...assets,
+      lovelace: assets["lovelace"] - MIN_ADA
+    };
   }
   const maintainerAddr = await keyPairsToAddress(lucid, datum.maintainer);
+  assets = clearZeroAssets({ ...assets, [controlTokenUnit]: 0n });
   tx = tx.payToAddress(maintainerAddr, assets);
   return tx;
 };

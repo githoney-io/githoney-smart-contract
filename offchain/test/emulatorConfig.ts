@@ -7,7 +7,7 @@ import {
   OutRef,
   toUnit
 } from "lucid-cardano";
-import { controlTokenName } from "../src/constants";
+import { controlTokenName, githoneyAddr } from "../src/constants";
 import { buildGithoneyMintingPolicy } from "../src/scripts";
 import { validatorParams } from "../src/utils";
 import { createBounty } from "../src/operations/create";
