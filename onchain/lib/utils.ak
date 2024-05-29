@@ -6,7 +6,8 @@ use aiken/transaction.{
 }
 use aiken/transaction/credential.{ScriptCredential}
 use aiken/transaction/value.{
-  AssetName, PolicyId, Value, merge, quantity_of, reduce, tokens,
+  AssetName, PolicyId, Value, from_asset, from_lovelace, merge,
+  quantity_of, reduce, tokens, zero,
 }
 use types.{GithoneyDatum, Wallet}
 
@@ -120,4 +121,36 @@ pub fn value_grater_than(v1: Value, v2: Value) {
       }
     },
   )
+}
+
+pub fn merge_payments_parts(
+  reward_fee: Int,
+  script_value: Value,
+  control_token_policy: PolicyId,
+) -> (Value, Value) {
+  let reward_value = merge(script_value, from_lovelace(-(2 * min_ada)))
+  let managment_assets =
+    merge(
+      from_asset(control_token_policy, control_token_name, 1),
+      from_lovelace(min_ada),
+    )
+  let (script_part, fee_part) =
+    reward_value
+      |> reduce(
+           (managment_assets, zero()),
+           fn(policy_id, token_name, quantity, acc) {
+             if policy_id == control_token_policy {
+               acc
+             } else {
+               let (reward, fee) = acc
+               let fee_amount = quantity * reward_fee / ( 100 * 100 )
+               let reward_amount = quantity - fee_amount
+               (
+                 merge(reward, from_asset(policy_id, token_name, reward_amount)),
+                 merge(fee, from_asset(policy_id, token_name, fee_amount)),
+               )
+             }
+           },
+         )
+  (script_part, fee_part)
 }
