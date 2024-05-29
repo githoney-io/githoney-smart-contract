@@ -73,12 +73,17 @@ const ACCOUNT_MANTAINER = await generateAccount({
   [tokenCUnit]: 100_000_000n
 });
 
-const ACCOUNT_GITHONEY = await generateAccount({
-  lovelace: 75_000_000n,
-  [tokenAUnit]: 100_000_000n,
-  [tokenBUnit]: 100_000_000n,
-  [tokenCUnit]: 100_000_000n
-});
+const ACCOUNT_GITHONEY = {
+  address: await (await Lucid.new(undefined, "Custom"))
+    .selectWalletFrom({ address: githoneyAddr })
+    .wallet.address(),
+  assets: {
+    lovelace: 75_000_000n,
+    [tokenAUnit]: 100_000_000n,
+    [tokenBUnit]: 100_000_000n,
+    [tokenCUnit]: 100_000_000n
+  }
+};
 
 const ACCOUNT_0 = await generateAccount({
   lovelace: 75_000_000n,
