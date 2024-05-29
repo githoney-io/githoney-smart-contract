@@ -54,11 +54,13 @@ pub const transaction_id_2 =
 pub const transaction_id_3 =
   #"f5c5b6a6d88e2ee95838f3449558818e97ed211231a64a3ce6d877348b53db6a"
 
+pub const reward_amount = 1000
+
 pub fn mk_githoney_fee() {
   GithoneyFee {
     githoney_wallet: Wallet { payment_key: githoney_addr, stake_key: None },
     bounty_creation_fee: 20000,
-    bounty_reward_fee: 10000,
+    bounty_reward_fee: 1000,
   }
 }
 
@@ -144,11 +146,7 @@ pub fn mk_output_bounty_utxo() {
       stake_credential: None,
     },
     value: value.from_lovelace(min_ada)
-      |> value.add(
-           token_a_policy,
-           token_a_name,
-           mk_githoney_fee().bounty_reward_fee,
-         ) // Reward token
+      |> value.add(token_a_policy, token_a_name, reward_amount) // Reward token
       |> value.add(control_token_policy, control_token_name, 1),
     datum: InlineDatum(
       GithoneyDatum {

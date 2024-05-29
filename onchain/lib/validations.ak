@@ -9,7 +9,8 @@ use checks.{
 use types.{GithoneyDatum, GithoneyFee}
 use utils.{
   control_token_name, get_first_output, get_minting_info, get_script_input,
-  min_ada, to_githoney_datum, value_grater_than, value_paid_to,
+  merge_payments_parts, min_ada, to_githoney_datum, value_grater_than,
+  value_paid_to,
 }
 
 pub fn control_token_input_and_policy(ctx: ScriptContext) -> (Output, PolicyId) {
@@ -56,8 +57,12 @@ pub fn assign(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
   is_new_datum_valid? && is_utxo_value_valid? && is_tx_before_deadline? && is_utxo_address_the_same? && contributor_isnt_assigned?
 }
 
-pub fn merge(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
-  let (script_input, _) = control_token_input_and_policy(ctx)
+pub fn merge(
+  githoney_fee: GithoneyFee,
+  datum: GithoneyDatum,
+  ctx: ScriptContext,
+) -> Bool {
+  let (script_input, control_token_policy) = control_token_input_and_policy(ctx)
   let script_output = get_first_output(ctx)
   let new_datum = to_githoney_datum(script_output.datum)
   let min_ada_value = from_lovelace(min_ada)
@@ -67,14 +72,22 @@ pub fn merge(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
   let contributor_is_assigned = is_some(datum.contributor_wallet)
   let is_new_datum_valid = is_merge_datum_valid(datum, new_datum)
   let is_utxo_address_the_same = script_input.address == script_output.address
-  let expected_value = value.merge(script_input.value, negate(min_ada_value))
-  let is_utxo_value_valid = script_output.value == expected_value
+  let (script_value, githoney_value) =
+    merge_payments_parts(
+      githoney_fee.bounty_reward_fee,
+      script_input.value,
+      control_token_policy,
+    )
+
+  let is_utxo_value_valid = script_output.value == script_value
+  let is_githoney_fee_payed =
+    value_paid_to(githoney_fee.githoney_wallet, ctx.transaction) == githoney_value
   let is_signed_by_admin =
     is_signed_by(ctx.transaction, datum.admin_wallet.payment_key)
   let is_maintainer_minada_payed =
     value_paid_to(datum.maintainer_wallet, ctx.transaction) == min_ada_value
 
-  !datum.merged? && is_signed_by_admin? && is_new_datum_valid? && is_utxo_value_valid? && is_tx_before_deadline? && contributor_is_assigned? && is_utxo_address_the_same? && is_maintainer_minada_payed?
+  !datum.merged? && is_signed_by_admin? && is_new_datum_valid? && is_utxo_value_valid? && is_tx_before_deadline? && contributor_is_assigned? && is_utxo_address_the_same? && is_maintainer_minada_payed? && is_githoney_fee_payed?
 }
 
 pub fn close(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {

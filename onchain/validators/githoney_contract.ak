@@ -14,7 +14,7 @@ validator(githoney_fee: GithoneyFee) {
     when redeemer is {
       AddRewards -> add_rewards(datum, ctx)
       Assign -> assign(datum, ctx)
-      Merge -> merge(datum, ctx)
+      Merge -> merge(githoney_fee, datum, ctx)
       Close -> close(datum, ctx)
       Claim -> claim(datum, ctx)
     }
