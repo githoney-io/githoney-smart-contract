@@ -49,6 +49,12 @@ describe("Close tests", async () => {
     emulator.awaitBlock(1);
 
     lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
-    await signAndSubmit(lucid, mergeTx);
+    const mergeTxId = await signAndSubmit(lucid, mergeTx);
+    const mergeOutRef: OutRef = { txHash: mergeTxId.txId, outputIndex: 0 };
+
+    const closeTx = await closeBounty(mergeOutRef, lucid);
+    emulator.awaitBlock(1);
+
+    await signAndSubmit(lucid, closeTx);
   });
 });
