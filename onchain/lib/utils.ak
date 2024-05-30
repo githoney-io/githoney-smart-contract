@@ -124,20 +124,7 @@ pub fn value_grater_than(v1: Value, v2: Value) {
 }
 
 pub fn value_grater_than_or_equal(v1: Value, v2: Value) {
-  let assets = merge(v1, v2)
-  reduce(
-    assets,
-    False,
-    fn(policy_id, token_name, _, acc) {
-      let v1_quantity = quantity_of(v1, policy_id, token_name)
-      let v2_quantity = quantity_of(v2, policy_id, token_name)
-      if v1_quantity < v2_quantity {
-        False
-      } else {
-        acc || v1_quantity >= v2_quantity
-      }
-    },
-  )
+  v1 == v2 || value_grater_than(v1, v2)
 }
 
 pub fn merge_payments_parts(
