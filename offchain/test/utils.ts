@@ -13,19 +13,20 @@ import {
   ACCOUNT_CONTRIBUTOR,
   ACCOUNT_MANTAINER,
   bounty_id,
-  emulator
+  emulator,
+  tokenAUnit
 } from "./emulatorConfig";
 
 const cexplorerUrl = "https://preprod.cexplorer.io";
 
-//////////////////// UTILS ////////////////////
 const signAndSubmit = async (lucid: Lucid, tx: any) => {
   const txId = await lucid
     .fromTx(tx)
     .sign()
     .complete()
     .then((signedTx) => signedTx.submit());
-  console.log("SUCCESS", txId);
+  emulator.awaitBlock(3);
+  console.log("SUCCESS, TxId:", txId);
   return txId;
 };
 
@@ -84,7 +85,7 @@ async function signSubmitAndWaitConfirmation(
   return txId;
 }
 
-const newBounty = async (lucid: Lucid): Promise<string> => {
+const newBounty = async (lucid: Lucid) => {
   const now = new Date();
   const deadline = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).getTime(); // Tomorrow
 
@@ -92,7 +93,7 @@ const newBounty = async (lucid: Lucid): Promise<string> => {
     ACCOUNT_MANTAINER.address,
     ACCOUNT_ADMIN.address,
     {
-      unit: "lovelace",
+      unit: tokenAUnit,
       amount: 100n
     },
     BigInt(deadline),
@@ -103,7 +104,6 @@ const newBounty = async (lucid: Lucid): Promise<string> => {
 
   lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
   const txId = await signAndSubmit(lucid, createTx);
-  emulator.awaitBlock(3);
   return txId;
 };
 

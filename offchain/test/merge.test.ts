@@ -27,7 +27,7 @@ describe("Merge tests", async () => {
 
     const assignTxId = await newAssign(lucid, createOutRef);
     const assignOutRef: OutRef = { txHash: assignTxId, outputIndex: 0 };
-
+    emulator.awaitBlock(1);
     // First merge
     const mergeTx = await mergeBounty(assignOutRef, lucid);
     emulator.awaitBlock(1);
