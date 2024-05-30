@@ -51,7 +51,7 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
   );
 
   lucid.selectWalletFrom({ address: adminAddr });
-  const signerPkh =
+  const adminPkh =
     lucid.utils.getAddressDetails(adminAddr).paymentCredential?.hash!;
   const now = new Date();
   const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
@@ -63,7 +63,7 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
     .payToContract(validatorAddress, { inline: newBountyDatum }, scriptValue)
     .payToAddress(maintainerAddr, { lovelace: MIN_ADA })
     .payToAddress(githoneyAddr, githoneyFee)
-    .addSignerKey(signerPkh)
+    .addSignerKey(adminPkh)
     .attachSpendingValidator(gitHoneyValidator)
     .complete();
   const cbor = tx.toString();
