@@ -9,7 +9,6 @@ import {
 import { controlTokenName } from "../src/constants";
 import { buildGithoneyMintingPolicy } from "../src/scripts";
 import { validatorParams } from "../src/utils";
-import { createBounty } from "../src/operations/create";
 
 const tokenA = {
   policy_id: "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb",

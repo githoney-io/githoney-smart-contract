@@ -1,16 +1,22 @@
 import { describe, it } from "mocha";
-import { ACCOUNT_0, emulator, tokenAUnit } from "./emulatorConfig";
 import { Lucid, OutRef } from "lucid-cardano";
 import { addRewards } from "../src/operations/addRewards";
-import { newBounty, signAndSubmit } from "./utils";
+import { newAssign, newBounty, signAndSubmit } from "./utils";
+import {
+  ACCOUNT_0,
+  emulator,
+  tokenAUnit,
+  ACCOUNT_ADMIN
+} from "./emulatorConfig";
+import { mergeBounty } from "../src/operations/merge";
 
 const lucid = await Lucid.new(emulator, "Custom");
 
 describe("Add Rewards tests", async () => {
   it("Add Rewards with same token", async () => {
-    const createTxId = await newBounty(lucid);
+    const createTxIdId = await newBounty(lucid);
 
-    const bountyOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
+    const bountyOutRef: OutRef = { txHash: createTxIdId, outputIndex: 0 };
     const reward = {
       unit: "lovelace",
       amount: 50n
@@ -28,9 +34,9 @@ describe("Add Rewards tests", async () => {
   });
 
   it("Add Rewards with different token", async () => {
-    const createTxId = await newBounty(lucid);
+    const createTxIdId = await newBounty(lucid);
 
-    const bountyOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
+    const bountyOutRef: OutRef = { txHash: createTxIdId, outputIndex: 0 };
     const reward = {
       unit: tokenAUnit,
       amount: 75n
@@ -47,22 +53,32 @@ describe("Add Rewards tests", async () => {
     await signAndSubmit(lucid, addRewardsTx);
   });
 
-  // it("Add Rewards with already merged bounty", async () => {
-  // TODO - Add merged bounty
-  //   const bountyOutRef: OutRef = { txHash: txId, outputIndex: 0 };
-  //   const reward = {
-  //     unit: tokenAUnit,
-  //     amount: 100n
-  //   };
-  //   const addRewardsTx = await addRewards(
-  //     bountyOutRef,
-  //     ACCOUNT_0.address,
-  //     reward,
-  //     lucid
-  //   );
-  //   emulator.awaitBlock(1);
+  it("Add Rewards with already merged bounty", async () => {
+    const createTxId = await newBounty(lucid);
+    const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
-  //   lucid.selectWalletFromSeed(ACCOUNT_0.seedPhrase);
-  //   signAndSubmit(lucid, addRewardsTx);
-  // });
+    const assignTxId = await newAssign(lucid, createOutRef);
+    const assignOutRef: OutRef = { txHash: assignTxId, outputIndex: 0 };
+
+    const mergeTx = await mergeBounty(assignOutRef, lucid);
+    emulator.awaitBlock(1);
+    lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
+    const mergeTxId = await signAndSubmit(lucid, mergeTx);
+    const mergeOutRef: OutRef = { txHash: mergeTxId, outputIndex: 0 };
+
+    const reward = {
+      unit: tokenAUnit,
+      amount: 100n
+    };
+    const addRewardsTx = await addRewards(
+      mergeOutRef,
+      ACCOUNT_0.address,
+      reward,
+      lucid
+    );
+    emulator.awaitBlock(1);
+
+    lucid.selectWalletFromSeed(ACCOUNT_0.seedPhrase);
+    await signAndSubmit(lucid, addRewardsTx);
+  });
 });

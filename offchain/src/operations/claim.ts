@@ -1,6 +1,10 @@
 import { buildGithoneyValidator } from "../scripts";
 import { Data, Lucid, OutRef, fromText, toUnit } from "lucid-cardano";
-import { GithoneyDatumT, GithoneyValidatorRedeemer } from "../types";
+import {
+  GithoneyDatum,
+  GithoneyDatumT,
+  GithoneyValidatorRedeemer
+} from "../types";
 import { addrToWallet, validatorParams } from "../utils";
 import { controlTokenName } from "../constants";
 
@@ -16,7 +20,7 @@ async function claim(
   const mintingPolicy = buildGithoneyValidator(scriptParams);
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingPolicy);
   const [utxo] = await lucid.utxosByOutRef([utxoRef]);
-  const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo);
+  const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
 
   if (!oldDatum.merged) {
     throw new Error("Bounty is not merged");

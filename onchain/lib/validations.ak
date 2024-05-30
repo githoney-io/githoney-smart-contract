@@ -10,7 +10,7 @@ use types.{GithoneyDatum, GithoneyFee}
 use utils.{
   control_token_name, get_first_output, get_minting_info, get_script_input,
   merge_payments_parts, min_ada, to_githoney_datum, value_grater_than,
-  value_paid_to,
+  value_grater_than_or_equal, value_paid_to,
 }
 
 pub fn control_token_input_and_policy(ctx: ScriptContext) -> (Output, PolicyId) {
@@ -78,16 +78,19 @@ pub fn merge(
       script_input.value,
       control_token_policy,
     )
-
   let is_utxo_value_valid = script_output.value == script_value
   let is_githoney_fee_payed =
-    value_paid_to(githoney_fee.githoney_wallet, ctx.transaction) == githoney_value
+    value_grater_than_or_equal(
+      value_paid_to(githoney_fee.githoney_wallet, ctx.transaction),
+      githoney_value,
+    )
   let is_signed_by_admin =
     is_signed_by(ctx.transaction, datum.admin_wallet.payment_key)
   let is_maintainer_minada_payed =
     value_paid_to(datum.maintainer_wallet, ctx.transaction) == min_ada_value
+  let is_datum_not_merged = !datum.merged
 
-  !datum.merged? && is_signed_by_admin? && is_new_datum_valid? && is_utxo_value_valid? && is_tx_before_deadline? && contributor_is_assigned? && is_utxo_address_the_same? && is_maintainer_minada_payed? && is_githoney_fee_payed?
+  is_datum_not_merged? && is_signed_by_admin? && is_new_datum_valid? && is_utxo_value_valid? && is_tx_before_deadline? && contributor_is_assigned? && is_utxo_address_the_same? && is_maintainer_minada_payed? && is_githoney_fee_payed?
 }
 
 pub fn close(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
@@ -116,8 +119,9 @@ pub fn close(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
     is_signed_by(ctx.transaction, datum.admin_wallet.payment_key)
   let is_control_token_burnt =
     minted_quantity == -1 && minted_name == control_token_name && policy_id == control_token_policy
+  let is_datum_not_merged = !datum.merged
 
-  !datum.merged? && is_signed_by_admin? && are_payments_valid? && is_control_token_burnt?
+  is_datum_not_merged? && is_signed_by_admin? && are_payments_valid? && is_control_token_burnt?
 }
 
 pub fn claim(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
