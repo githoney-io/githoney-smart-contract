@@ -10,7 +10,7 @@ use types.{GithoneyDatum, GithoneyFee}
 use utils.{
   control_token_name, get_first_output, get_minting_info, get_script_input,
   merge_payments_parts, min_ada, to_githoney_datum, value_grater_than,
-  value_paid_to,
+  value_grater_than_or_equal, value_paid_to,
 }
 
 pub fn control_token_input_and_policy(ctx: ScriptContext) -> (Output, PolicyId) {
@@ -78,10 +78,12 @@ pub fn merge(
       script_input.value,
       control_token_policy,
     )
-
   let is_utxo_value_valid = script_output.value == script_value
   let is_githoney_fee_payed =
-    value_paid_to(githoney_fee.githoney_wallet, ctx.transaction) == githoney_value
+    value_grater_than_or_equal(
+      value_paid_to(githoney_fee.githoney_wallet, ctx.transaction),
+      githoney_value,
+    )
   let is_signed_by_admin =
     is_signed_by(ctx.transaction, datum.admin_wallet.payment_key)
   let is_maintainer_minada_payed =

@@ -44,11 +44,9 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
   const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
 
-  const feePercent = rewardFee / 10_000n;
-
   const { githoneyFee, scriptValue } = calculateRewardsFeeAndScriptValue(
     contractUtxo.assets,
-    feePercent,
+    rewardFee,
     controlTokenUnit
   );
 
@@ -76,7 +74,7 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
 
 function calculateRewardsFeeAndScriptValue(
   assets: Assets,
-  feePercent: bigint,
+  rewardFee: bigint,
   controlTokenUnit: string
 ) {
   let githoneyFee: Assets = {};
@@ -87,8 +85,8 @@ function calculateRewardsFeeAndScriptValue(
   };
   delete assets[controlTokenUnit];
   for (const [asset, amount] of Object.entries(assets)) {
-    githoneyFee[asset] = amount * feePercent;
-    scriptValue[asset] = amount * (1n - feePercent);
+    githoneyFee[asset] = (amount * rewardFee) / 10_000n;
+    scriptValue[asset] = (amount * (10_000n - rewardFee)) / 10_000n;
   }
   scriptValue[controlTokenUnit] = 1n;
   scriptValue["lovelace"] = scriptValue["lovelace"] + MIN_ADA;

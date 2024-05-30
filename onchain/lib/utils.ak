@@ -6,8 +6,8 @@ use aiken/transaction.{
 }
 use aiken/transaction/credential.{ScriptCredential}
 use aiken/transaction/value.{
-  AssetName, PolicyId, Value, from_asset, from_lovelace, merge,
-  quantity_of, reduce, tokens, zero,
+  AssetName, PolicyId, Value, from_asset, from_lovelace, merge, quantity_of,
+  reduce, tokens, zero,
 }
 use types.{GithoneyDatum, Wallet}
 
@@ -123,6 +123,23 @@ pub fn value_grater_than(v1: Value, v2: Value) {
   )
 }
 
+pub fn value_grater_than_or_equal(v1: Value, v2: Value) {
+  let assets = merge(v1, v2)
+  reduce(
+    assets,
+    False,
+    fn(policy_id, token_name, _, acc) {
+      let v1_quantity = quantity_of(v1, policy_id, token_name)
+      let v2_quantity = quantity_of(v2, policy_id, token_name)
+      if v1_quantity < v2_quantity {
+        False
+      } else {
+        acc || v1_quantity >= v2_quantity
+      }
+    },
+  )
+}
+
 pub fn merge_payments_parts(
   reward_fee: Int,
   script_value: Value,
@@ -137,20 +154,20 @@ pub fn merge_payments_parts(
   let (script_part, fee_part) =
     reward_value
       |> reduce(
-           (managment_assets, zero()),
-           fn(policy_id, token_name, quantity, acc) {
-             if policy_id == control_token_policy {
-               acc
-             } else {
-               let (reward, fee) = acc
-               let fee_amount = quantity * reward_fee / ( 100 * 100 )
-               let reward_amount = quantity - fee_amount
-               (
-                 merge(reward, from_asset(policy_id, token_name, reward_amount)),
-                 merge(fee, from_asset(policy_id, token_name, fee_amount)),
-               )
-             }
-           },
-         )
+          (managment_assets, zero()),
+          fn(policy_id, token_name, quantity, acc) {
+            if policy_id == control_token_policy {
+              acc
+            } else {
+              let (reward, fee) = acc
+              let fee_amount = quantity * reward_fee / ( 100 * 100 )
+              let reward_amount = quantity - fee_amount
+              (
+                merge(reward, from_asset(policy_id, token_name, reward_amount)),
+                merge(fee, from_asset(policy_id, token_name, fee_amount)),
+              )
+            }
+          },
+        )
   (script_part, fee_part)
 }
