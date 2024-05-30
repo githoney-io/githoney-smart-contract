@@ -2,7 +2,7 @@ use aiken/option.{is_none, is_some}
 use aiken/transaction.{Output, ScriptContext}
 use aiken/transaction/credential.{ScriptCredential, from_script}
 use aiken/transaction/value.{
-  PolicyId, ada_asset_name, ada_policy_id, from_lovelace, negate, quantity_of,
+  PolicyId, ada_asset_name, ada_policy_id, from_lovelace, quantity_of,
 }
 use checks.{
   is_assign_datum_valid, is_merge_datum_valid, is_signed_by,
@@ -114,8 +114,14 @@ pub fn close(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
           )
         is_contributor_pay_valid? && is_maintainer_pay_valid?
       }
-      None ->
-        value_paid_to(datum.maintainer_wallet, ctx.transaction) == script_input.value
+      None -> {
+        let is_maintainer_pay_valid =
+          value_paid_to(datum.maintainer_wallet, ctx.transaction) == (
+            script_input.value
+              |> value.add(control_token_policy, control_token_name, -1)
+          )
+        is_maintainer_pay_valid?
+      }
     }
 
   let is_signed_by_admin =
