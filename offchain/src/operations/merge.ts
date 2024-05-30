@@ -11,7 +11,7 @@ import {
   GithoneyValidatorRedeemer,
   mkDatum
 } from "../types";
-import { fromText, toUnit, OutRef, Lucid, Data, Assets } from "lucid-cardano";
+import { fromText, toUnit, OutRef, Lucid, Assets } from "lucid-cardano";
 import { keyPairsToAddress, validatorParams } from "../utils";
 
 async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
@@ -44,32 +44,37 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
   const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
 
-  const feePercent = rewardFee / 10000n;
-
   const { githoneyFee, scriptValue } = calculateRewardsFeeAndScriptValue(
     contractUtxo.assets,
-    feePercent,
+    rewardFee,
     controlTokenUnit
   );
 
+  lucid.selectWalletFrom({ address: adminAddr });
+  const adminPkh =
+    lucid.utils.getAddressDetails(adminAddr).paymentCredential?.hash!;
+  const now = new Date();
+  const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+
   const tx = await lucid
     .newTx()
+    .validTo(sixHoursFromNow.getTime())
     .collectFrom([contractUtxo], GithoneyValidatorRedeemer.Merge())
     .payToContract(validatorAddress, { inline: newBountyDatum }, scriptValue)
     .payToAddress(maintainerAddr, { lovelace: MIN_ADA })
     .payToAddress(githoneyAddr, githoneyFee)
+    .addSignerKey(adminPkh)
+    .attachSpendingValidator(gitHoneyValidator)
     .complete();
-
-  lucid.selectWalletFrom({ address: adminAddr });
-  const txSigned = await tx.sign().complete();
-
+  const cbor = tx.toString();
   console.debug("END mergeBounty");
-  return txSigned.toString();
+  console.debug(`Merge Bounty: ${cbor}`);
+  return cbor;
 }
 
 function calculateRewardsFeeAndScriptValue(
   assets: Assets,
-  feePercent: bigint,
+  rewardFee: bigint,
   controlTokenUnit: string
 ) {
   let githoneyFee: Assets = {};
@@ -80,12 +85,12 @@ function calculateRewardsFeeAndScriptValue(
   };
   delete assets[controlTokenUnit];
   for (const [asset, amount] of Object.entries(assets)) {
-    githoneyFee[asset] = amount * feePercent;
-    scriptValue[asset] = amount * (1n - feePercent);
+    githoneyFee[asset] = (amount * rewardFee) / 10_000n;
+    scriptValue[asset] = (amount * (10_000n - rewardFee)) / 10_000n;
   }
   scriptValue[controlTokenUnit] = 1n;
   scriptValue["lovelace"] = scriptValue["lovelace"] + MIN_ADA;
   return { githoneyFee, scriptValue };
 }
 
-export default mergeBounty;
+export { mergeBounty };

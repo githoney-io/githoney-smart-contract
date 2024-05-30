@@ -1,6 +1,10 @@
 import { buildGithoneyValidator } from "../scripts";
 import { Lucid, OutRef } from "lucid-cardano";
-import { GithoneyDatumT, GithoneyValidatorRedeemer } from "../types";
+import {
+  GithoneyDatum,
+  GithoneyDatumT,
+  GithoneyValidatorRedeemer
+} from "../types";
 import { validatorParams } from "../utils";
 
 async function addRewards(
@@ -15,7 +19,7 @@ async function addRewards(
   const gitHoneyValidator = buildGithoneyValidator(scriptParams);
   const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
   const [utxo] = await lucid.utxosByOutRef([utxoRef]);
-  const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo);
+  const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
 
   if (oldDatum.merged) {
     throw new Error("Bounty already merged");
