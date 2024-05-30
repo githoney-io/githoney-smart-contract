@@ -16,7 +16,7 @@ import {
 import { keyPairsToAddress, validatorParams } from "../utils";
 import { MIN_ADA, controlTokenName } from "../constants";
 
-async function close(utxoRef: OutRef, lucid: Lucid): Promise<string> {
+async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
   console.debug("START close");
   const scriptParams = validatorParams(lucid);
 
@@ -66,4 +66,4 @@ const addPayments = async (
   return tx;
 };
 
-export default close;
+export { closeBounty };
