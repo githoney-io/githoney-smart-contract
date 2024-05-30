@@ -55,4 +55,4 @@ async function claim(
   return cbor;
 }
 
-export default claim;
+export { claim };

@@ -3,11 +3,11 @@ import {
   ACCOUNT_ADMIN,
   ACCOUNT_MANTAINER,
   bounty_id,
-  emulator,
-  signAndSubmit
+  emulator
 } from "./emulatorConfig";
 import { Lucid } from "lucid-cardano";
 import { createBounty } from "../src/operations/create";
+import { signAndSubmit } from "./utils";
 
 const lucid = await Lucid.new(emulator, "Custom");
 

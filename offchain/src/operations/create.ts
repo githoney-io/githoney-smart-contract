@@ -54,7 +54,7 @@ async function createBounty(
     admin: adminWallet,
     maintainer: maintainerWallet,
     contributor: null,
-    bounty_id,
+    bounty_id: fromText(bounty_id),
     deadline,
     merged: false
   });

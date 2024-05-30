@@ -1,16 +1,16 @@
-import dotenv from "dotenv";
 import {
   Address,
   C,
   Emulator,
   Lucid,
+  OutRef,
   PrivateKey,
-  fromHex,
-  toHex
+  fromHex
 } from "lucid-cardano";
-import { createBounty } from "../src";
+import { assignContributor, createBounty } from "../src";
 import {
   ACCOUNT_ADMIN,
+  ACCOUNT_CONTRIBUTOR,
   ACCOUNT_MANTAINER,
   bounty_id,
   emulator
@@ -107,7 +107,21 @@ const newBounty = async (lucid: Lucid): Promise<string> => {
   return txId;
 };
 
+const newAssign = async (lucid: Lucid, createOutRef: OutRef) => {
+  const assignTx = await assignContributor(
+    createOutRef,
+    ACCOUNT_CONTRIBUTOR.address,
+    lucid
+  );
+  emulator.awaitBlock(1);
+
+  lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
+  const txId = await signAndSubmit(lucid, assignTx);
+  return txId;
+};
+
 export {
+  newAssign,
   newBounty,
   signAndSubmit,
   waitForUtxosUpdate,

@@ -56,4 +56,4 @@ async function assignContributor(
   return cbor;
 }
 
-export default assignContributor;
+export { assignContributor };
