@@ -24,8 +24,12 @@ async function close(utxoRef: OutRef, lucid: Lucid): Promise<string> {
   const mintingPolicy = buildGithoneyValidator(scriptParams);
   const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingPolicy);
   const [utxo] = await lucid.utxosByOutRef([utxoRef]);
-  const datum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
-  const adminAddr = await keyPairsToAddress(lucid, datum.admin);
+  const bountyDatum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
+
+  if (bountyDatum.merged) {
+    throw new Error("Bounty already merged");
+  }
+  const adminAddr = await keyPairsToAddress(lucid, bountyDatum.admin);
   const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
 
   lucid.selectWalletFrom({ address: adminAddr });
@@ -37,7 +41,7 @@ async function close(utxoRef: OutRef, lucid: Lucid): Promise<string> {
     .attachMintingPolicy(mintingPolicy);
 
   const txWithPayments = await (
-    await addPayments(tx, datum, utxo.assets, lucid)
+    await addPayments(tx, bountyDatum, utxo.assets, lucid)
   ).complete();
 
   const cbor = txWithPayments.toString();
