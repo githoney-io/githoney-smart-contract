@@ -36,7 +36,7 @@ const controlToken = {
   asset_name: controlTokenName
 };
 
-const bounty_id = "abc123";
+const bounty_id = "Bounty Name Test";
 
 const tokenAUnit = toUnit(tokenA.policy_id, fromText(tokenA.asset_name));
 const tokenBUnit = toUnit(tokenB.policy_id, fromText(tokenB.asset_name));
@@ -97,40 +97,6 @@ const emulator = new Emulator([
   ACCOUNT_0
 ]);
 
-//////////////////// UTILS ////////////////////
-const signAndSubmit = async (lucid: Lucid, tx: any) => {
-  const txId = await lucid
-    .fromTx(tx)
-    .sign()
-    .complete()
-    .then((signedTx) => signedTx.submit());
-  console.log("SUCCESS", txId);
-  return { txId };
-};
-
-const newBounty = async (lucid: Lucid) => {
-  const now = new Date();
-  const deadline = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).getTime(); // Tomorrow
-
-  const createTx = await createBounty(
-    ACCOUNT_MANTAINER.address,
-    ACCOUNT_ADMIN.address,
-    {
-      unit: "lovelace",
-      amount: 100n
-    },
-    BigInt(deadline),
-    bounty_id,
-    lucid
-  );
-  emulator.awaitBlock(1);
-
-  lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
-  const txId = await signAndSubmit(lucid, createTx);
-  emulator.awaitBlock(3);
-  return txId;
-};
-
 export {
   ACCOUNT_ADMIN,
   ACCOUNT_MANTAINER,
@@ -142,7 +108,5 @@ export {
   tokenBUnit,
   tokenCUnit,
   controlTokenUnit,
-  bounty_id,
-  signAndSubmit,
-  newBounty
+  bounty_id
 };

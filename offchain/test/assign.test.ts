@@ -1,20 +1,15 @@
 import { describe, it } from "mocha";
-import {
-  emulator,
-  signAndSubmit,
-  ACCOUNT_CONTRIBUTOR,
-  newBounty,
-  ACCOUNT_0
-} from "./emulatorConfig";
+import { emulator, ACCOUNT_CONTRIBUTOR, ACCOUNT_0 } from "./emulatorConfig";
 import { Lucid, OutRef } from "lucid-cardano";
-import { assignContributor } from "../src/operations/assignContributor";
+import { newBounty, signAndSubmit } from "./utils";
+import { assignContributor } from "../src";
 
 const lucid = await Lucid.new(emulator, "Custom");
 
 describe("Assign Contributor tests", async () => {
   it("Assign Contributor", async () => {
-    const createTx = await newBounty(lucid);
-    const bountyOutRef: OutRef = { txHash: createTx.txId, outputIndex: 0 };
+    const createTxId = await newBounty(lucid);
+    const bountyOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
     const assignTx = await assignContributor(
       bountyOutRef,
@@ -43,8 +38,8 @@ describe("Assign Contributor tests", async () => {
   // });
 
   it("Assign Contributor with contributor already assigned", async () => {
-    const createTx = await newBounty(lucid);
-    const bountyOutRef: OutRef = { txHash: createTx.txId, outputIndex: 0 };
+    const createTxId = await newBounty(lucid);
+    const bountyOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
     const assignTx = await assignContributor(
       bountyOutRef,
       ACCOUNT_CONTRIBUTOR.address,
@@ -53,12 +48,12 @@ describe("Assign Contributor tests", async () => {
     emulator.awaitBlock(1);
 
     lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
-    const tx = await signAndSubmit(lucid, assignTx);
+    const txId = await signAndSubmit(lucid, assignTx);
 
     emulator.awaitBlock(1);
 
     const assignTx2 = await assignContributor(
-      { txHash: tx.txId, outputIndex: 0 },
+      { txHash: txId, outputIndex: 0 },
       ACCOUNT_0.address,
       lucid
     );
