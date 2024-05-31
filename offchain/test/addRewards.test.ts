@@ -6,11 +6,10 @@ import {
   signAndSubmit,
   newBounty,
   newAssign,
-  ACCOUNT_ADMIN
+  newMerge
 } from "./emulatorConfig";
 import { Lucid, OutRef } from "lucid-cardano";
 import { addRewards } from "../src/operations/addRewards";
-import { mergeBounty } from "../src/operations/merge";
 
 const lucid = await Lucid.new(emulator, "Custom");
 
@@ -62,10 +61,7 @@ describe("Add Rewards tests", async () => {
     const assignTxId = await newAssign(lucid, createOutRef);
     const assignOutRef: OutRef = { txHash: assignTxId.txId, outputIndex: 0 };
 
-    const mergeTx = await mergeBounty(assignOutRef, lucid);
-    emulator.awaitBlock(1);
-    lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
-    const mergeTxId = await signAndSubmit(lucid, mergeTx);
+    const mergeTxId = await newMerge(lucid, assignOutRef);
     const mergeOutRef: OutRef = { txHash: mergeTxId.txId, outputIndex: 0 };
 
     const reward = {

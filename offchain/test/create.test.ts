@@ -39,7 +39,7 @@ describe("Create tests", () => {
       const deadline = new Date(
         now.getTime() - 1000 * 60 * 60 * 24 * 1
       ).getTime(); // Yesterday
-      const tx = await createBounty(
+      await createBounty(
         ACCOUNT_MANTAINER.address,
         ACCOUNT_ADMIN.address,
         {
@@ -64,7 +64,7 @@ describe("Create tests", () => {
       const deadline = new Date(
         now.getTime() + 1000 * 60 * 60 * 24 * 2
       ).getTime();
-      const tx = await createBounty(
+      await createBounty(
         ACCOUNT_MANTAINER.address,
         ACCOUNT_ADMIN.address,
         {

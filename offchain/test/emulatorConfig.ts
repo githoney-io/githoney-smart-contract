@@ -12,6 +12,7 @@ import { buildGithoneyMintingPolicy } from "../src/scripts";
 import { validatorParams } from "../src/utils";
 import { createBounty } from "../src/operations/create";
 import { assignContributor } from "../src/operations/assignContributor";
+import { mergeBounty } from "../src/operations/merge";
 
 const tokenA = {
   policy_id: "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb",
@@ -138,9 +139,9 @@ const newBounty = async (lucid: Lucid) => {
   return txId;
 };
 
-const newAssign = async (lucid: Lucid, createOutRef: OutRef) => {
+const newAssign = async (lucid: Lucid, outRef: OutRef) => {
   const assignTx = await assignContributor(
-    createOutRef,
+    outRef,
     ACCOUNT_CONTRIBUTOR.address,
     lucid
   );
@@ -148,6 +149,14 @@ const newAssign = async (lucid: Lucid, createOutRef: OutRef) => {
 
   lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
   const txId = await signAndSubmit(lucid, assignTx);
+  return txId;
+};
+
+const newMerge = async (lucid: Lucid, outRef: OutRef) => {
+  const mergeTx = await mergeBounty(outRef, lucid);
+  emulator.awaitBlock(1);
+  lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
+  const txId = await signAndSubmit(lucid, mergeTx);
   return txId;
 };
 
@@ -165,5 +174,6 @@ export {
   bounty_id,
   signAndSubmit,
   newBounty,
-  newAssign
+  newAssign,
+  newMerge
 };
