@@ -118,7 +118,7 @@ const signAndSubmit = async (lucid: Lucid, tx: any) => {
 
 const newBounty = async (lucid: Lucid) => {
   const now = new Date();
-  const deadline = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).getTime(); // Tomorrow
+  const deadline = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2).getTime(); // 2 days from now
 
   const createTx = await createBounty(
     ACCOUNT_MANTAINER.address,

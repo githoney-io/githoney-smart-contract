@@ -30,6 +30,13 @@ async function createBounty(
     [controlTokenUnit]: 1n
   };
 
+  const now = new Date();
+  const tomorrow = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).getTime();
+
+  if (deadline < tomorrow) {
+    throw new Error("Deadline must be at least 24 hours from now");
+  }
+
   if (reward.amount < 1n) {
     throw new Error("Negative fees are not allowed");
   }
@@ -60,7 +67,6 @@ async function createBounty(
   });
 
   lucid.selectWalletFrom({ address: maintainerAddr });
-  const now = new Date();
   const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
 
   const tx = await lucid
