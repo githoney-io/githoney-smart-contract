@@ -8,7 +8,7 @@ import {
 import { addrToWallet, validatorParams } from "../utils";
 import { controlTokenName } from "../constants";
 
-async function claim(
+async function claimBounty(
   utxoRef: OutRef,
   lucid: Lucid,
   contributorAddr: string
@@ -22,11 +22,11 @@ async function claim(
   const [utxo] = await lucid.utxosByOutRef([utxoRef]);
   const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
 
-  if (!oldDatum.merged) {
-    throw new Error("Bounty is not merged");
-  }
   if (!oldDatum.contributor) {
     throw new Error("Bounty doesn't have a contributor");
+  }
+  if (!oldDatum.merged) {
+    throw new Error("Bounty is not merged");
   }
   const contributorWallet = addrToWallet(contributorAddr, lucid);
   if (
@@ -55,4 +55,4 @@ async function claim(
   return cbor;
 }
 
-export default claim;
+export { claimBounty };
