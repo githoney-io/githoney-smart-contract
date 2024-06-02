@@ -5,7 +5,7 @@ import {
   GithoneyDatumT,
   GithoneyValidatorRedeemer
 } from "../types";
-import { addrToWallet, validatorParams } from "../utils";
+import { addrToWallet, clearZeroAssets, validatorParams } from "../utils";
 import { controlTokenName } from "../constants";
 
 async function claimBounty(
@@ -40,10 +40,16 @@ async function claimBounty(
   lucid.selectWalletFrom({
     address: contributorAddr
   });
+
+  const contributorPayment = clearZeroAssets({
+    ...utxo.assets,
+    [controlTokenUnit]: 0n
+  });
+
   const tx = await lucid
     .newTx()
     .collectFrom([utxo], GithoneyValidatorRedeemer.Claim())
-    .payToAddress(contributorAddr, utxo.assets)
+    .payToAddress(contributorAddr, contributorPayment)
     .mintAssets({ [controlTokenUnit]: BigInt(-1) }, Data.void())
     .attachSpendingValidator(gitHoneyValidator)
     .attachMintingPolicy(mintingPolicy)
