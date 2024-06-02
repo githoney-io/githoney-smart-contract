@@ -140,7 +140,10 @@ pub fn claim(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
   let (policy_id, minted_name, minted_quantity) =
     get_minting_info(ctx.transaction)
   let is_contributor_pay_valid =
-    value_paid_to(contributor_wallet, ctx.transaction) == script_input.value
+    value_paid_to(contributor_wallet, ctx.transaction) == (
+      script_input.value
+        |> value.add(control_token_policy, control_token_name, -1)
+    )
   let is_control_token_burnt =
     minted_quantity == -1 && minted_name == control_token_name && policy_id == control_token_policy
 
