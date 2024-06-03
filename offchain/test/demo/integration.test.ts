@@ -35,13 +35,12 @@ const maintainerAddress = await lucidMaintainer.wallet.address();
 console.debug(`MAINTAINER address: ${maintainerAddress}\n`);
 
 describe("Integration tests", async () => {
-  it("Normal flow", async () => {
-    return;
+  it("Demo Normal flow", async () => {
     const tokenAPolicy =
       "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb";
     const tokenAName = fromText("tokenA");
     const tokenAUnit = toUnit(tokenAPolicy, tokenAName);
-    const reward = { unit: tokenAPolicy, amount: 10000n };
+    const reward = { unit: tokenAUnit, amount: 100n };
     const deadline = BigInt(
       new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).getTime()
     );
@@ -56,7 +55,10 @@ describe("Integration tests", async () => {
     );
 
     console.debug(`Creating bounty ${bounty_id} with rewards ${reward}`);
-    const createTxId = await signSubmitAndWaitConfirmation(lucid, createCbor);
+    const createTxId = await signSubmitAndWaitConfirmation(
+      lucidMaintainer,
+      createCbor
+    );
 
     console.debug(`Assigning contributor with addr ${contributorAddr}`);
     const assignCbor = await assignContributor(
