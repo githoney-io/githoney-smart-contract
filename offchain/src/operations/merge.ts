@@ -12,7 +12,7 @@ import {
   mkDatum
 } from "../types";
 import { fromText, toUnit, OutRef, Lucid, Assets } from "lucid-cardano";
-import { keyPairsToAddress, validatorParams } from "../utils";
+import { keyPairsToAddress, validatorParams, clearZeroAssets } from "../utils";
 
 async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
   console.debug("START mergeBounty");
@@ -93,6 +93,7 @@ function calculateRewardsFeeAndScriptValue(
   }
   scriptValue[controlTokenUnit] = 1n;
   scriptValue["lovelace"] = scriptValue["lovelace"] + MIN_ADA;
+  scriptValue = clearZeroAssets(scriptValue);
   return { githoneyFee, scriptValue };
 }
 
