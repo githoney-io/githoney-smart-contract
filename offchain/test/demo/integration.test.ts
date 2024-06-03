@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { describe, it } from "mocha";
-import { Blockfrost, Lucid, fromText, toText, toUnit } from "lucid-cardano";
+import { Blockfrost, Lucid } from "lucid-cardano";
 import {
   assignContributor,
   claimBounty,
@@ -9,6 +9,7 @@ import {
 } from "../../src";
 import { githoneyAddr } from "../../src/constants";
 import { signSubmitAndWaitConfirmation } from "../utils";
+import { tokenAUnit } from "../emulatorConfig";
 
 dotenv.config();
 const {
@@ -41,10 +42,6 @@ console.debug(`MAINTAINER address: ${maintainerAddress}\n`);
 
 describe("Integration tests", async () => {
   it("Demo Normal flow", async () => {
-    const tokenAPolicy =
-      "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb";
-    const tokenAName = fromText("tokenA");
-    const tokenAUnit = toUnit(tokenAPolicy, tokenAName);
     const reward = { unit: tokenAUnit, amount: 100n };
     const deadline = BigInt(
       new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).getTime()
