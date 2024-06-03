@@ -13,6 +13,7 @@ import { validatorParams } from "../src/utils";
 import { createBounty } from "../src/operations/create";
 import { assignContributor } from "../src/operations/assignContributor";
 import { mergeBounty } from "../src/operations/merge";
+import { closeBounty } from "../src/operations/close";
 
 const tokenA = {
   policy_id: "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb",
@@ -160,6 +161,14 @@ const newMerge = async (lucid: Lucid, outRef: OutRef) => {
   return txId;
 };
 
+const newClose = async (lucid: Lucid, outRef: OutRef) => {
+  const closeTx = await closeBounty(outRef, lucid);
+  emulator.awaitBlock(1);
+  lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
+  const txId = await signAndSubmit(lucid, closeTx);
+  return txId;
+};
+
 export {
   ACCOUNT_ADMIN,
   ACCOUNT_MANTAINER,
@@ -175,5 +184,6 @@ export {
   signAndSubmit,
   newBounty,
   newAssign,
-  newMerge
+  newMerge,
+  newClose
 };

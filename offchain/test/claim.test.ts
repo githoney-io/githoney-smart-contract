@@ -36,6 +36,32 @@ describe("Claim tests", async () => {
     await signAndSubmit(lucid, claimTx);
   });
 
+  it("Claim bounty after close", async () => {
+    try {
+      const createTx = await newBounty(lucid);
+      const createOutRef: OutRef = { txHash: createTx.txId, outputIndex: 0 };
+
+      const assignTxId = await newAssign(lucid, createOutRef);
+      const assignOutRef: OutRef = { txHash: assignTxId.txId, outputIndex: 0 };
+
+      const closeTx = await newClose(lucid, assignOutRef);
+      const closeOutRef: OutRef = { txHash: closeTx.txId, outputIndex: 0 };
+
+      const claimTx = await claimBounty(
+        closeOutRef,
+        lucid,
+        ACCOUNT_CONTRIBUTOR.address
+      );
+      emulator.awaitBlock(1);
+      lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
+      await signAndSubmit(lucid, claimTx);
+    } catch (e) {
+      const error = e as Error;
+      expect(error.message).to.equal("This UTxO does not have a datum hash.");
+      console.log("Error:", error.message);
+    }
+  });
+
   it("Claim bounty not merged", async () => {
     try {
       const createTx = await newBounty(lucid);
