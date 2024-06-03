@@ -50,6 +50,7 @@ build/Release
 
 # Dependency directories
 offchain/node_modules/
+offchain/package-lock.json
 jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)

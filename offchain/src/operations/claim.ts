@@ -5,10 +5,10 @@ import {
   GithoneyDatumT,
   GithoneyValidatorRedeemer
 } from "../types";
-import { addrToWallet, validatorParams } from "../utils";
+import { addrToWallet, clearZeroAssets, validatorParams } from "../utils";
 import { controlTokenName } from "../constants";
 
-async function claim(
+async function claimBounty(
   utxoRef: OutRef,
   lucid: Lucid,
   contributorAddr: string
@@ -22,11 +22,11 @@ async function claim(
   const [utxo] = await lucid.utxosByOutRef([utxoRef]);
   const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
 
-  if (!oldDatum.merged) {
-    throw new Error("Bounty is not merged");
-  }
   if (!oldDatum.contributor) {
     throw new Error("Bounty doesn't have a contributor");
+  }
+  if (!oldDatum.merged) {
+    throw new Error("Bounty is not merged");
   }
   const contributorWallet = addrToWallet(contributorAddr, lucid);
   if (
@@ -40,10 +40,16 @@ async function claim(
   lucid.selectWalletFrom({
     address: contributorAddr
   });
+
+  const contributorPayment = clearZeroAssets({
+    ...utxo.assets,
+    [controlTokenUnit]: 0n
+  });
+
   const tx = await lucid
     .newTx()
     .collectFrom([utxo], GithoneyValidatorRedeemer.Claim())
-    .payToAddress(contributorAddr, utxo.assets)
+    .payToAddress(contributorAddr, contributorPayment)
     .mintAssets({ [controlTokenUnit]: BigInt(-1) }, Data.void())
     .attachSpendingValidator(gitHoneyValidator)
     .attachMintingPolicy(mintingPolicy)
@@ -55,4 +61,4 @@ async function claim(
   return cbor;
 }
 
-export default claim;
+export { claimBounty };

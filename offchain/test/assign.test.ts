@@ -6,11 +6,11 @@ import {
   newBounty,
   ACCOUNT_0,
   newAssign,
-  ACCOUNT_ADMIN
+  newMerge
 } from "./emulatorConfig";
 import { Lucid, OutRef } from "lucid-cardano";
 import { assignContributor } from "../src/operations/assignContributor";
-import { mergeBounty } from "../src/operations/merge";
+import { expect } from "chai";
 
 const lucid = await Lucid.new(emulator, "Custom");
 
@@ -31,49 +31,47 @@ describe("Assign Contributor tests", async () => {
   });
 
   it("Assign Contributor with already merged bounty", async () => {
-    const createTx = await newBounty(lucid);
-    const createOutRef: OutRef = { txHash: createTx.txId, outputIndex: 0 };
+    try {
+      const createTx = await newBounty(lucid);
+      const createOutRef: OutRef = { txHash: createTx.txId, outputIndex: 0 };
 
-    const assignTxId = await newAssign(lucid, createOutRef);
-    const assignOutRef: OutRef = { txHash: assignTxId.txId, outputIndex: 0 };
+      const assignTxId = await newAssign(lucid, createOutRef);
+      const assignOutRef: OutRef = { txHash: assignTxId.txId, outputIndex: 0 };
 
-    const mergeTx = await mergeBounty(assignOutRef, lucid);
-    emulator.awaitBlock(1);
-    lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
-    const mergeTxId = await signAndSubmit(lucid, mergeTx);
-    const mergeOutRef: OutRef = { txHash: mergeTxId.txId, outputIndex: 0 };
+      const mergeTxId = await newMerge(lucid, assignOutRef);
+      const mergeOutRef: OutRef = { txHash: mergeTxId.txId, outputIndex: 0 };
 
-    const assignTx = await assignContributor(
-      mergeOutRef,
-      ACCOUNT_CONTRIBUTOR.address,
-      lucid
-    );
-    emulator.awaitBlock(1);
-
-    lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
-    await signAndSubmit(lucid, assignTx);
+      await assignContributor(mergeOutRef, ACCOUNT_CONTRIBUTOR.address, lucid);
+    } catch (e) {
+      const error = e as Error;
+      expect(error.message).to.equal("Bounty already merged");
+      console.log("Error:", error.message);
+    }
   });
 
   it("Assign Contributor with contributor already assigned", async () => {
-    const createTx = await newBounty(lucid);
-    const bountyOutRef: OutRef = { txHash: createTx.txId, outputIndex: 0 };
-    const assignTx = await assignContributor(
-      bountyOutRef,
-      ACCOUNT_CONTRIBUTOR.address,
-      lucid
-    );
-    emulator.awaitBlock(1);
+    try {
+      const createTx = await newBounty(lucid);
+      const bountyOutRef: OutRef = { txHash: createTx.txId, outputIndex: 0 };
+      const assignTx = await assignContributor(
+        bountyOutRef,
+        ACCOUNT_CONTRIBUTOR.address,
+        lucid
+      );
+      emulator.awaitBlock(1);
 
-    lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
-    const tx = await signAndSubmit(lucid, assignTx);
+      lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
+      const tx = await signAndSubmit(lucid, assignTx);
 
-    const assignTx2 = await assignContributor(
-      { txHash: tx.txId, outputIndex: 0 },
-      ACCOUNT_0.address,
-      lucid
-    );
-    emulator.awaitBlock(1);
-
-    await signAndSubmit(lucid, assignTx2);
+      await assignContributor(
+        { txHash: tx.txId, outputIndex: 0 },
+        ACCOUNT_0.address,
+        lucid
+      );
+    } catch (e) {
+      const error = e as Error;
+      expect(error.message).to.equal("Bounty already has a contributor");
+      console.log("Error:", error.message);
+    }
   });
 });
