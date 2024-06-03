@@ -16,11 +16,11 @@
     "test": "mocha --timeout 0",
     "test-demo": "mocha --timeout 0 --grep 'Demo'",
     "test-create": "mocha --timeout 0 --grep 'Create'",
-    "test-addrewards": "mocha --timeout 0 --grep 'Add",
-    "test-assign": "mocha --timeout 0 --grep 'Assign",
-    "test-merge": "mocha --timeout 0 --grep 'Merge",
-    "test-close": "mocha --timeout 0 --grep 'Close",
-    "test-claim": "mocha --timeout 0 --grep 'Claim"
+    "test-addrewards": "mocha --timeout 0 --grep 'Add'",
+    "test-assign": "mocha --timeout 0 --grep 'Assign'",
+    "test-merge": "mocha --timeout 0 --grep 'Merge'",
+    "test-close": "mocha --timeout 0 --grep 'Close'",
+    "test-claim": "mocha --timeout 0 --grep 'Claim'"
   },
   "author": "Filabs",
   "license": "ISC",
