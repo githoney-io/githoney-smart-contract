@@ -52,10 +52,10 @@ describe("Create tests", () => {
       );
     } catch (e) {
       const error = e as Error;
+      console.log("Error:", error.message);
       expect(error.message).to.equal(
         "Deadline must be at least 24 hours from now"
       );
-      console.log("Error:", error.message);
     }
   });
 
@@ -77,8 +77,8 @@ describe("Create tests", () => {
       );
     } catch (e) {
       const error = e as Error;
-      expect(error.message).to.equal("Negative fees are not allowed");
       console.log("Error:", error.message);
+      expect(error.message).to.equal("Negative fees are not allowed");
     }
   });
 });

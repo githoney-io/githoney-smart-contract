@@ -42,8 +42,8 @@ describe("Merge tests", async () => {
       await mergeBounty(mergeOutRef, lucid);
     } catch (e) {
       const error = e as Error;
+      console.log("Error:", error);
       expect(error.message).to.equal("Bounty already merged");
-      console.log("Error:", error.message);
     }
   });
 
@@ -55,8 +55,8 @@ describe("Merge tests", async () => {
       await mergeBounty(bountyOutRef, lucid);
     } catch (e) {
       const error = e as Error;
-      expect(error.message).to.equal("Bounty doesn't have a contributor");
       console.log("Error:", error.message);
+      expect(error.message).to.equal("Bounty doesn't have a contributor");
     }
   });
 });
