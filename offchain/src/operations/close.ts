@@ -13,7 +13,7 @@ import {
   GithoneyDatumT,
   GithoneyValidatorRedeemer
 } from "../types";
-import { keyPairsToAddress, validatorParams } from "../utils";
+import { clearZeroAssets, keyPairsToAddress, validatorParams } from "../utils";
 import { MIN_ADA, controlTokenName } from "../constants";
 
 async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
@@ -33,20 +33,27 @@ async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
   const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
 
   lucid.selectWalletFrom({ address: adminAddr });
-  const tx = await lucid
+  const adminPkh =
+    lucid.utils.getAddressDetails(adminAddr).paymentCredential?.hash!;
+  const now = new Date();
+  const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
+
+  const tx = lucid
     .newTx()
+    .validTo(sixHoursFromNow.getTime())
     .collectFrom([utxo], GithoneyValidatorRedeemer.Close())
     .mintAssets({ [controlTokenUnit]: BigInt(-1) }, Data.void())
     .attachSpendingValidator(gitHoneyValidator)
+    .addSignerKey(adminPkh)
     .attachMintingPolicy(mintingPolicy);
 
   const txWithPayments = await (
-    await addPayments(tx, bountyDatum, utxo.assets, lucid)
+    await addPayments(tx, bountyDatum, utxo.assets, controlTokenUnit, lucid)
   ).complete();
 
   const cbor = txWithPayments.toString();
   console.debug("END close");
-  console.debug("close", cbor);
+  console.debug(`Close ${cbor}`);
   return cbor;
 }
 
@@ -54,14 +61,19 @@ const addPayments = async (
   tx: Tx,
   datum: GithoneyDatumT,
   assets: Assets,
+  controlTokenUnit: string,
   lucid: Lucid
 ): Promise<Tx> => {
   if (datum.contributor) {
     const contributorAddr = await keyPairsToAddress(lucid, datum.contributor);
     tx = tx.payToAddress(contributorAddr, { lovelace: MIN_ADA });
-    assets = { ...assets, lovelace: assets["lovelace"] - MIN_ADA };
+    assets = {
+      ...assets,
+      lovelace: assets["lovelace"] - MIN_ADA
+    };
   }
   const maintainerAddr = await keyPairsToAddress(lucid, datum.maintainer);
+  assets = clearZeroAssets({ ...assets, [controlTokenUnit]: 0n });
   tx = tx.payToAddress(maintainerAddr, assets);
   return tx;
 };

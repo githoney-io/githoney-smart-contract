@@ -7,7 +7,7 @@ import {
   OutRef,
   toUnit
 } from "lucid-cardano";
-import { controlTokenName } from "../src/constants";
+import { controlTokenName, githoneyAddr } from "../src/constants";
 import { buildGithoneyMintingPolicy } from "../src/scripts";
 import { validatorParams } from "../src/utils";
 import { createBounty } from "../src/operations/create";
@@ -73,12 +73,17 @@ const ACCOUNT_MANTAINER = await generateAccount({
   [tokenCUnit]: 100_000_000n
 });
 
-const ACCOUNT_GITHONEY = await generateAccount({
-  lovelace: 75_000_000n,
-  [tokenAUnit]: 100_000_000n,
-  [tokenBUnit]: 100_000_000n,
-  [tokenCUnit]: 100_000_000n
-});
+const ACCOUNT_GITHONEY = {
+  address: await (await Lucid.new(undefined, "Custom"))
+    .selectWalletFrom({ address: githoneyAddr })
+    .wallet.address(),
+  assets: {
+    lovelace: 75_000_000n,
+    [tokenAUnit]: 100_000_000n,
+    [tokenBUnit]: 100_000_000n,
+    [tokenCUnit]: 100_000_000n
+  }
+};
 
 const ACCOUNT_0 = await generateAccount({
   lovelace: 75_000_000n,
@@ -120,7 +125,7 @@ const newBounty = async (lucid: Lucid) => {
     ACCOUNT_ADMIN.address,
     {
       unit: tokenAUnit,
-      amount: 100n
+      amount: 1_000n
     },
     BigInt(deadline),
     bounty_id,
