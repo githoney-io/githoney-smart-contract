@@ -1,7 +1,7 @@
 import { creationFee, githoneyAddr, rewardFee } from "./constants";
 import { WalletT } from "./types";
 import dotenv from "dotenv";
-import { Address, Lucid, Utils } from "lucid-cardano";
+import { Address, Assets, Lucid, Utils } from "lucid-cardano";
 
 dotenv.config();
 
@@ -44,4 +44,14 @@ async function keyPairsToAddress(
   );
 }
 
-export { validatorParams, addrToWallet, keyPairsToAddress };
+function clearZeroAssets(assets: Assets): Assets {
+  const keys = Object.keys(assets);
+  for (let k = 0; k < keys.length; k++) {
+    if (assets[keys[k]] === BigInt(0)) {
+      delete assets[keys[k]];
+    }
+  }
+  return assets;
+}
+
+export { validatorParams, addrToWallet, keyPairsToAddress, clearZeroAssets };

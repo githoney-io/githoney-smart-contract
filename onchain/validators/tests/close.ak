@@ -17,7 +17,8 @@ test success() {
   let output =
     Output {
       address: mocks.mk_maintainer_address(),
-      value: script_input.output.value,
+      value: script_input.output.value
+        |> value.add(mocks.control_token_policy, mocks.control_token_name, -1),
       datum: NoDatum,
       reference_script: None,
     }
@@ -41,7 +42,8 @@ test success_with_contributor() {
   let maintainer_pay_output =
     Output {
       address: mocks.mk_maintainer_address(),
-      value: merge(script_input.output.value, negate(from_lovelace(min_ada))),
+      value: merge(script_input.output.value, negate(from_lovelace(min_ada)))
+        |> value.add(mocks.control_token_policy, mocks.control_token_name, -1),
       datum: NoDatum,
       reference_script: None,
     }
