@@ -25,7 +25,10 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
     contractUtxo,
     GithoneyDatum
   );
-
+  const rewardfee = BigInt(rewardFee);
+  if (rewardfee < 0n || rewardfee > 10_000n) {
+    throw new Error("Reward fee must be between 0 and 10000");
+  }
   if (bountyDatum.merged) {
     throw new Error("Bounty already merged");
   }
@@ -46,7 +49,7 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
 
   const { githoneyFee, scriptValue } = calculateRewardsFeeAndScriptValue(
     contractUtxo.assets,
-    rewardFee,
+    rewardfee,
     controlTokenUnit
   );
 

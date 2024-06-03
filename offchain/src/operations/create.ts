@@ -33,6 +33,9 @@ async function createBounty(
   const now = new Date();
   const tomorrow = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).getTime();
 
+  if (BigInt(creationFee) < 2_000_000n) {
+    throw new Error("Creation fee must be at least 2 ADA");
+  }
   if (deadline < tomorrow) {
     throw new Error("Deadline must be at least 24 hours from now");
   }
