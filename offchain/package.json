@@ -25,12 +25,14 @@
   "author": "Filabs",
   "license": "ISC",
   "dependencies": {
+    "chai": "^5.1.1",
     "dotenv": "^16.4.5",
     "lucid-cardano": "^0.10.7",
     "ts-node": "^10.9.2",
     "tsup": "^8.0.2"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.16",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.12.11",
     "mocha": "^10.4.0"

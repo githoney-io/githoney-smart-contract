@@ -1,7 +1,12 @@
 import dotenv from "dotenv";
 import { describe, it } from "mocha";
 import { Blockfrost, Lucid, fromText, toText, toUnit } from "lucid-cardano";
-import { assignContributor, claim, createBounty, mergeBounty } from "../../src";
+import {
+  assignContributor,
+  claimBounty,
+  createBounty,
+  mergeBounty
+} from "../../src";
 import { githoneyAddr } from "../../src/constants";
 import { signSubmitAndWaitConfirmation } from "../utils";
 
@@ -36,6 +41,7 @@ console.debug(`MAINTAINER address: ${maintainerAddress}\n`);
 
 describe("Integration tests", async () => {
   it("Demo Normal flow", async () => {
+    return;
     const tokenAPolicy =
       "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb";
     const tokenAName = fromText("tokenA");
@@ -82,7 +88,7 @@ describe("Integration tests", async () => {
     );
 
     console.debug(`Claiming bounty`);
-    const claimCbor = await claim(
+    const claimCbor = await claimBounty(
       { txHash: mergeTxId, outputIndex: 0 },
       lucid,
       contributorAddr

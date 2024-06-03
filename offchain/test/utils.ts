@@ -7,7 +7,12 @@ import {
   PrivateKey,
   fromHex
 } from "lucid-cardano";
-import { assignContributor, createBounty } from "../src";
+import {
+  assignContributor,
+  closeBounty,
+  createBounty,
+  mergeBounty
+} from "../src";
 import {
   ACCOUNT_ADMIN,
   ACCOUNT_CONTRIBUTOR,
@@ -18,17 +23,6 @@ import {
 } from "./emulatorConfig";
 
 const cexplorerUrl = "https://preprod.cexplorer.io";
-
-const signAndSubmit = async (lucid: Lucid, tx: any) => {
-  const txId = await lucid
-    .fromTx(tx)
-    .sign()
-    .complete()
-    .then((signedTx) => signedTx.submit());
-  emulator.awaitBlock(3);
-  console.log("SUCCESS, TxId:", txId);
-  return txId;
-};
 
 /**
  * Waits until the utxos related to the lucid's address and the capsule address are updated by the provided tx id.
@@ -85,11 +79,22 @@ async function signSubmitAndWaitConfirmation(
   return txId;
 }
 
+const signAndSubmit = async (lucid: Lucid, tx: any) => {
+  const txId = await lucid
+    .fromTx(tx)
+    .sign()
+    .complete()
+    .then((signedTx) => signedTx.submit());
+  emulator.awaitBlock(3);
+  console.log("SUCCESS, TxId:", txId);
+  return txId;
+};
+
 const newBounty = async (lucid: Lucid) => {
   const now = new Date();
-  const deadline = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).getTime(); // Tomorrow
+  const deadline = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2).getTime(); // 2 days from now
 
-  const createTx = await createBounty(
+  const createTxId = await createBounty(
     ACCOUNT_MANTAINER.address,
     ACCOUNT_ADMIN.address,
     {
@@ -103,13 +108,13 @@ const newBounty = async (lucid: Lucid) => {
   emulator.awaitBlock(1);
 
   lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
-  const txId = await signAndSubmit(lucid, createTx);
+  const txId = await signAndSubmit(lucid, createTxId);
   return txId;
 };
 
-const newAssign = async (lucid: Lucid, createOutRef: OutRef) => {
+const newAssign = async (lucid: Lucid, outRef: OutRef) => {
   const assignTx = await assignContributor(
-    createOutRef,
+    outRef,
     ACCOUNT_CONTRIBUTOR.address,
     lucid
   );
@@ -120,9 +125,27 @@ const newAssign = async (lucid: Lucid, createOutRef: OutRef) => {
   return txId;
 };
 
+const newMerge = async (lucid: Lucid, outRef: OutRef) => {
+  const mergeTx = await mergeBounty(outRef, lucid);
+  emulator.awaitBlock(1);
+  lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
+  const txId = await signAndSubmit(lucid, mergeTx);
+  return txId;
+};
+
+const newClose = async (lucid: Lucid, outRef: OutRef) => {
+  const closeTx = await closeBounty(outRef, lucid);
+  emulator.awaitBlock(1);
+  lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
+  const txId = await signAndSubmit(lucid, closeTx);
+  return txId;
+};
+
 export {
   newAssign,
   newBounty,
+  newMerge,
+  newClose,
   signAndSubmit,
   waitForUtxosUpdate,
   privateKeyToAddress,
