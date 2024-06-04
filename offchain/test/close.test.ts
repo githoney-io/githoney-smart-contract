@@ -17,7 +17,7 @@ describe("Close tests", async () => {
     const assignOutRef: OutRef = { txHash: assignTxId, outputIndex: 0 };
 
     const closeTx = await closeBounty(assignOutRef, lucid);
-    emulator.awaitBlock(1);
+    emulator.awaitBlock(3);
 
     lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
     await signAndSubmit(lucid, closeTx);
@@ -28,7 +28,7 @@ describe("Close tests", async () => {
     const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
     const closeTx = await closeBounty(createOutRef, lucid);
-    emulator.awaitBlock(1);
+    emulator.awaitBlock(3);
 
     lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
     await signAndSubmit(lucid, closeTx);
@@ -43,7 +43,7 @@ describe("Close tests", async () => {
       const assignOutRef: OutRef = { txHash: assignTxId, outputIndex: 0 };
 
       const mergeTx = await mergeBounty(assignOutRef, lucid);
-      emulator.awaitBlock(1);
+      emulator.awaitBlock(3);
 
       lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
       const mergeTxId = await signAndSubmit(lucid, mergeTx);

@@ -15,16 +15,6 @@ const tokenA = {
   asset_name: "tokenA"
 };
 
-const tokenB = {
-  policy_id: "e405207b08c38ea5815e2df27ad409b037adec32f7285ef0d15f6aa9",
-  asset_name: "tokenB"
-};
-
-const tokenC = {
-  policy_id: "e8399c4bb9c7bb89f11091469165e4c917229df34edbb2bb2d15c8b4",
-  asset_name: "tokenC"
-};
-
 const lucid = await Lucid.new();
 const scriptParams = validatorParams(lucid);
 const mintingScript = buildGithoneyMintingPolicy(scriptParams);
@@ -38,8 +28,7 @@ const controlToken = {
 const bounty_id = "Bounty Name Test";
 
 const tokenAUnit = toUnit(tokenA.policy_id, fromText(tokenA.asset_name));
-const tokenBUnit = toUnit(tokenB.policy_id, fromText(tokenB.asset_name));
-const tokenCUnit = toUnit(tokenC.policy_id, fromText(tokenC.asset_name));
+
 const controlTokenUnit = toUnit(
   controlToken.policy_id,
   fromText(controlToken.asset_name)
@@ -57,17 +46,13 @@ const generateAccount = async (assets: Assets) => {
 };
 
 const ACCOUNT_ADMIN = await generateAccount({
-  lovelace: 75_000_000n,
-  [tokenAUnit]: 100_000_000n,
-  [tokenBUnit]: 100_000_000n,
-  [tokenCUnit]: 100_000_000n
+  lovelace: 1_000_000_000n,
+  [tokenAUnit]: 1_000_000_000n
 });
 
 const ACCOUNT_MANTAINER = await generateAccount({
-  lovelace: 75_000_000n,
-  [tokenAUnit]: 100_000_000n,
-  [tokenBUnit]: 100_000_000n,
-  [tokenCUnit]: 100_000_000n
+  lovelace: 1_000_000_000n,
+  [tokenAUnit]: 1_000_000_000n
 });
 
 const ACCOUNT_GITHONEY = {
@@ -75,18 +60,14 @@ const ACCOUNT_GITHONEY = {
     .selectWalletFrom({ address: githoneyAddr })
     .wallet.address(),
   assets: {
-    lovelace: 75_000_000n,
-    [tokenAUnit]: 100_000_000n,
-    [tokenBUnit]: 100_000_000n,
-    [tokenCUnit]: 100_000_000n
+    lovelace: 1_000_000_000n,
+    [tokenAUnit]: 1_000_000_000n
   }
 };
 
 const ACCOUNT_0 = await generateAccount({
-  lovelace: 75_000_000n,
-  [tokenAUnit]: 100_000_000n,
-  [tokenBUnit]: 100_000_000n,
-  [tokenCUnit]: 100_000_000n
+  lovelace: 1_000_000_000n,
+  [tokenAUnit]: 1_000_000_000n
 });
 
 const ACCOUNT_CONTRIBUTOR = await generateAccount({
@@ -109,8 +90,6 @@ export {
   ACCOUNT_0,
   emulator,
   tokenAUnit,
-  tokenBUnit,
-  tokenCUnit,
   controlTokenUnit,
   bounty_id
 };
