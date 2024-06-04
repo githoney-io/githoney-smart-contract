@@ -1,13 +1,7 @@
 import { describe, it } from "mocha";
 import { Lucid, OutRef } from "lucid-cardano";
 import { newAssign, newBounty, newMerge, signAndSubmit } from "./utils";
-import {
-  ACCOUNT_0,
-  emulator,
-  tokenAUnit,
-  ACCOUNT_ADMIN
-} from "./emulatorConfig";
-import { mergeBounty } from "../src/operations/merge";
+import { ACCOUNT_0, emulator, tokenAUnit } from "./emulatorConfig";
 import { addRewards } from "../src/operations/addRewards";
 import { expect } from "chai";
 
@@ -28,7 +22,7 @@ describe("Add Rewards tests", async () => {
       reward,
       lucid
     );
-    emulator.awaitBlock(1);
+    emulator.awaitBlock(3);
 
     lucid.selectWalletFromSeed(ACCOUNT_0.seedPhrase);
     await signAndSubmit(lucid, addRewardsTx);
@@ -48,7 +42,7 @@ describe("Add Rewards tests", async () => {
       reward,
       lucid
     );
-    emulator.awaitBlock(1);
+    emulator.awaitBlock(3);
 
     lucid.selectWalletFromSeed(ACCOUNT_0.seedPhrase);
     await signAndSubmit(lucid, addRewardsTx);
@@ -72,8 +66,8 @@ describe("Add Rewards tests", async () => {
       await addRewards(mergeOutRef, ACCOUNT_0.address, reward, lucid);
     } catch (e) {
       const error = e as Error;
-      expect(error.message).to.equal("Bounty already merged");
       console.log("Error:", error.message);
+      expect(error.message).to.equal("Bounty already merged");
     }
   });
 });

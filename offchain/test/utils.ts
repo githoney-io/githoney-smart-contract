@@ -105,7 +105,7 @@ const newBounty = async (lucid: Lucid) => {
     bounty_id,
     lucid
   );
-  emulator.awaitBlock(1);
+  emulator.awaitBlock(3);
 
   lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
   const txId = await signAndSubmit(lucid, createTxId);
@@ -118,7 +118,7 @@ const newAssign = async (lucid: Lucid, outRef: OutRef) => {
     ACCOUNT_CONTRIBUTOR.address,
     lucid
   );
-  emulator.awaitBlock(1);
+  emulator.awaitBlock(3);
 
   lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
   const txId = await signAndSubmit(lucid, assignTx);
@@ -127,7 +127,7 @@ const newAssign = async (lucid: Lucid, outRef: OutRef) => {
 
 const newMerge = async (lucid: Lucid, outRef: OutRef) => {
   const mergeTx = await mergeBounty(outRef, lucid);
-  emulator.awaitBlock(1);
+  emulator.awaitBlock(3);
   lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
   const txId = await signAndSubmit(lucid, mergeTx);
   return txId;
@@ -135,7 +135,7 @@ const newMerge = async (lucid: Lucid, outRef: OutRef) => {
 
 const newClose = async (lucid: Lucid, outRef: OutRef) => {
   const closeTx = await closeBounty(outRef, lucid);
-  emulator.awaitBlock(1);
+  emulator.awaitBlock(3);
   lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
   const txId = await signAndSubmit(lucid, closeTx);
   return txId;

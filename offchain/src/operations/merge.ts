@@ -89,7 +89,7 @@ function calculateRewardsFeeAndScriptValue(
   delete assets[controlTokenUnit];
   for (const [asset, amount] of Object.entries(assets)) {
     githoneyFee[asset] = (amount * rewardFee) / 10_000n;
-    scriptValue[asset] = (amount * (10_000n - rewardFee)) / 10_000n;
+    scriptValue[asset] = amount - githoneyFee[asset];
   }
   scriptValue[controlTokenUnit] = 1n;
   scriptValue["lovelace"] = scriptValue["lovelace"] + MIN_ADA;

@@ -29,7 +29,7 @@ describe("Create tests", () => {
       bounty_id,
       lucid
     );
-    emulator.awaitBlock(1);
+    emulator.awaitBlock(3);
     lucid.selectWalletFromSeed(ACCOUNT_MANTAINER.seedPhrase);
     await signAndSubmit(lucid, tx);
   });

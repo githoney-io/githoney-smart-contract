@@ -29,7 +29,7 @@ describe("Claim tests", async () => {
       lucid,
       ACCOUNT_CONTRIBUTOR.address
     );
-    emulator.awaitBlock(1);
+    emulator.awaitBlock(3);
     lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
     await signAndSubmit(lucid, claimTx);
   });
@@ -50,7 +50,7 @@ describe("Claim tests", async () => {
         lucid,
         ACCOUNT_CONTRIBUTOR.address
       );
-      emulator.awaitBlock(1);
+      emulator.awaitBlock(3);
       lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
       await signAndSubmit(lucid, claimTx);
     } catch (e) {

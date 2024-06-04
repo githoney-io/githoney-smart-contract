@@ -17,7 +17,7 @@ describe("Assign Contributor tests", async () => {
       ACCOUNT_CONTRIBUTOR.address,
       lucid
     );
-    emulator.awaitBlock(1);
+    emulator.awaitBlock(3);
 
     lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
     await signAndSubmit(lucid, assignTx);
@@ -51,7 +51,7 @@ describe("Assign Contributor tests", async () => {
         ACCOUNT_CONTRIBUTOR.address,
         lucid
       );
-      emulator.awaitBlock(1);
+      emulator.awaitBlock(3);
 
       lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
       const txId = await signAndSubmit(lucid, assignTx);

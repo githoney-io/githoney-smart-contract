@@ -16,7 +16,7 @@ describe("Merge tests", async () => {
     const assignOutRef: OutRef = { txHash: assignTxId, outputIndex: 0 };
 
     const mergeTx = await mergeBounty(assignOutRef, lucid);
-    emulator.awaitBlock(1);
+    emulator.awaitBlock(3);
 
     lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
     await signAndSubmit(lucid, mergeTx);
@@ -32,17 +32,17 @@ describe("Merge tests", async () => {
 
       // First merge
       const mergeTx = await mergeBounty(assignOutRef, lucid);
-      emulator.awaitBlock(1);
+      emulator.awaitBlock(3);
       lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
       const mergeTxId = await signAndSubmit(lucid, mergeTx);
-      emulator.awaitBlock(1);
+      emulator.awaitBlock(3);
 
       // Second merge
       const mergeOutRef: OutRef = { txHash: mergeTxId, outputIndex: 0 };
       await mergeBounty(mergeOutRef, lucid);
     } catch (e) {
       const error = e as Error;
-      console.log("Error:", error);
+      console.log("Error:", error.message);
       expect(error.message).to.equal("Bounty already merged");
     }
   });
