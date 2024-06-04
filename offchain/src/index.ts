@@ -2,6 +2,7 @@ import { createBounty } from "./operations/create";
 import { closeBounty } from "./operations/close";
 import { mergeBounty } from "./operations/merge";
 import { claimBounty } from "./operations/claim";
+import { addRewards } from "./operations/addRewards";
 import { assignContributor } from "./operations/assignContributor";
 
 export {
@@ -9,5 +10,6 @@ export {
   closeBounty,
   mergeBounty,
   assignContributor,
-  claimBounty
+  claimBounty,
+  addRewards
 };
