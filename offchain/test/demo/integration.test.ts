@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { describe, it } from "mocha";
-import { Blockfrost, Lucid, fromText, toText, toUnit } from "lucid-cardano";
+import { Blockfrost, Lucid, fromText, toUnit } from "lucid-cardano";
 import {
   assignContributor,
   claimBounty,
@@ -11,21 +11,15 @@ import {
 import {
   MIN_ADA,
   controlTokenName,
+  creationFee,
   githoneyAddr,
   rewardFee
 } from "../../src/constants";
 import { signSubmitAndWaitConfirmation } from "../utils";
 import { GithoneyDatum } from "../../src/types";
 import { assert } from "console";
-import {
-  addrToWallet,
-  keyPairsToAddress,
-  validatorParams
-} from "../../src/utils";
-import {
-  buildGithoneyMintingPolicy,
-  buildGithoneyValidator
-} from "../../src/scripts";
+import { keyPairsToAddress, validatorParams } from "../../src/utils";
+import { buildGithoneyMintingPolicy } from "../../src/scripts";
 
 dotenv.config();
 const {
@@ -59,9 +53,6 @@ console.debug(`MAINTAINER address: ${maintainerAddress}\n`);
 describe("Integration tests", async () => {
   it("Demo Normal flow", async () => {
     const scriptParams = validatorParams(lucid);
-
-    const gitHoneyValidator = buildGithoneyValidator(scriptParams);
-    const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
     const mintingScript = buildGithoneyMintingPolicy(scriptParams);
 
     const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
@@ -96,6 +87,8 @@ describe("Integration tests", async () => {
       createCbor
     );
     const createOutRef = { txHash: createTxId, outputIndex: 0 };
+    const githoneyOutRef = { txHash: createTxId, outputIndex: 1 };
+    const [githoneyUtxo] = await lucid.utxosByOutRef([githoneyOutRef]);
     const [createUtxo] = await lucid.utxosByOutRef([createOutRef]);
     const createDatum = await lucid.datumOf(createUtxo, GithoneyDatum);
 
@@ -107,6 +100,10 @@ describe("Integration tests", async () => {
 
     assert(createDatum.bounty_id === fromText(bounty_id), "Bounty id mismatch");
     assert(createDatum.deadline === deadline, "Deadline mismatch");
+    assert(
+      githoneyUtxo.assets["lovelace"] === creationFee,
+      "Githoney payment wrong"
+    );
     Object.entries(createUtxo.assets).forEach(([k, v]) => {
       assert(
         utxoAssets[k] === v,

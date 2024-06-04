@@ -73,7 +73,7 @@ async function createBounty(
     .newTx()
     .validTo(sixHoursFromNow.getTime())
     .payToContract(validatorAddress, { inline: bountyDatum }, utxoAssets)
-    .payToAddress(githoneyAddr, { lovelace: BigInt(creationFee) })
+    .payToAddress(githoneyAddr, { lovelace: creationFee })
     .mintAssets(mintAssets, Data.void())
     .attachMintingPolicy(mintingScript)
     .complete();
