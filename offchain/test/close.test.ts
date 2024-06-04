@@ -52,8 +52,8 @@ describe("Close tests", async () => {
       await closeBounty(mergeOutRef, lucid);
     } catch (e) {
       const error = e as Error;
-      expect(error.message).to.equal("Bounty already merged");
       console.log("Error:", error.message);
+      expect(error.message).to.equal("Bounty already merged");
     }
   });
 });

@@ -12,7 +12,7 @@ import {
   mkDatum
 } from "../types";
 import { fromText, toUnit, OutRef, Lucid, Assets } from "lucid-cardano";
-import { keyPairsToAddress, validatorParams } from "../utils";
+import { keyPairsToAddress, validatorParams, clearZeroAssets } from "../utils";
 
 async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
   console.debug("START mergeBounty");
@@ -25,7 +25,10 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
     contractUtxo,
     GithoneyDatum
   );
-
+  const rewardfee = BigInt(rewardFee);
+  if (rewardfee < 0n || rewardfee > 10_000n) {
+    throw new Error("Reward fee must be between 0 and 10000");
+  }
   if (bountyDatum.merged) {
     throw new Error("Bounty already merged");
   }
@@ -46,7 +49,7 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
 
   const { githoneyFee, scriptValue } = calculateRewardsFeeAndScriptValue(
     contractUtxo.assets,
-    rewardFee,
+    rewardfee,
     controlTokenUnit
   );
 
@@ -90,6 +93,7 @@ function calculateRewardsFeeAndScriptValue(
   }
   scriptValue[controlTokenUnit] = 1n;
   scriptValue["lovelace"] = scriptValue["lovelace"] + MIN_ADA;
+  scriptValue = clearZeroAssets(scriptValue);
   return { githoneyFee, scriptValue };
 }
 
