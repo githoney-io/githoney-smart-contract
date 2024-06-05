@@ -42,7 +42,7 @@ This transaction creates a `BountyUtxo` locking the reward assets plus min ADA a
 
 ```typescript
 /**
- * Builds a `createBounty` transaction. The tx is built in the context of the maintainer or admin wallet.
+ * Builds a `createBounty` transaction. The tx is built in the context of the maintainer wallet.
  * @param maintainerAddr The maintainer's address.
  * @param adminAddr The admin's address.
  * @param reward The reward asset and amount to be locked in the bounty UTxO.
@@ -92,7 +92,7 @@ Sets the contributor's `PaymentPubKeyHash` to the `BountyUtxo` datum and adds th
 
 ```typescript
 /**
- * Builds an `assignContributor` transaction. The tx is built in the context of the admin wallet.
+ * Builds an `assignContributor` transaction. The tx is built in the context of the contributor wallet.
  * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
  * @param contributorAddr The contributor's address.
  * @param lucid Lucid instance.
