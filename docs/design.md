@@ -5,7 +5,7 @@
 This document describes the technical design of the GitHoney dApp - the script UTxOs involved, the operations that take place during the bounty lifecycle, and the necessary validators and minting policies.
 
 There will be a single `BountyUtxo` for each bounty, holding the reward assets deposited by the maintainers. A `ControlToken` will be minted and held in the `BountyUtxo` during the bounty creation. Initially, the contributor field in the datum will be null until a developer decides to work on that bounty, at which point their `PaymentPubKeyHash` will be added to the datum. The `ControlToken` ensures the correctness of the `BountyUtxo` datum, the initial payment of the bounty creation fee to GitHoney, and also that the reward assets are not null. The presence of the `ControlToken` within a UTxO held at the validator address will serve as proof that the UTxO is a `BountyUtxo`.
-**Multivalidators** will be utilized in the implementation, which is why both scripts share the same parameters. Consequently, the script address and the minting policy ID are identical. This enables us to identify the policy ID of the `ControlToken` within the validator and the validator address within the minting policy.
+**Multivalidators** will be utilized, meaning both scripts share the same parameters. Consequently, the script address and the minting policy ID are identical. This enables identification of the policy ID of the `ControlToken` within the validator and the validator address within the minting policy.
 
 ## UTxOs Specification
 
@@ -30,15 +30,19 @@ There will be a single `BountyUtxo` for each bounty, holding the reward assets d
 > - reward_assets
 > - `ControlToken`
 
+### ControlToken
+
+The `ControlToken` is a minted token that is used to validate the `BountyUtxo` and ensure the correctness of the datum.
+
 ## Transactions
 
 ### Create BountyUtxo
 
-This transaction creates a `BountyUtxo` locking the reward assets plus min ADA and a `ControlToken`. It sets the maintainer, deadline, bounty_id, admin, and merged (*False*) in the datum.
+This transaction creates a `BountyUtxo` locking the reward assets plus min ADA and a `ControlToken`. It sets the maintainer, deadline, bounty_id, admin, and merged (*set to False*) in the datum.
 
 ```typescript
 /**
- * Builds a `createBounty` transaction. The tx is built in the context of the admin wallet.
+ * Builds a `createBounty` transaction. The tx is built in the context of the maintainer or admin wallet.
  * @param maintainerAddr The maintainer's address.
  * @param adminAddr The admin's address.
  * @param reward The reward asset and amount to be locked in the bounty UTxO.
@@ -65,7 +69,7 @@ Adds additional reward assets to an existing `BountyUtxo`.
 
 ```typescript
 /**
- * Builds an `addReward` transaction. The tx is built in the context of the admin wallet.
+ * Builds an `addReward` transaction. The tx is built in the context of any wallet.
  * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
  * @param address The address of the current wallet.
  * @param reward The reward asset and amount to be added.
@@ -130,7 +134,7 @@ async function closeBounty(
 
 ### Merge Bounty
 
-Pays GitHoney the reward assets times `BountyRewardFee`. Updates the merged field to True. The contributor's min ADAs remain in the UTxO.
+Pays GitHoney the reward assets multiplied by the `BountyRewardFee`. Updates the merged field to *True*. The contributor's min ADAs remain in the UTxO.
 
 ```typescript
 /**
