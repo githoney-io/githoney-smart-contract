@@ -8,13 +8,14 @@ import {
   mkDatum
 } from "../types";
 import { addrToWallet, validatorParams } from "../utils";
+import logger from "../logger";
 
 async function assignContributor(
   utxoRef: OutRef,
   contributorAddr: string,
   lucid: Lucid
 ): Promise<string> {
-  console.debug("START assignContributor");
+  logger.info("START assignContributor");
   const scriptParams = validatorParams(lucid);
 
   const gitHoneyValidator = buildGithoneyValidator(scriptParams);
@@ -51,8 +52,8 @@ async function assignContributor(
     .complete();
 
   const cbor = tx.toString();
-  console.debug("END assignContributor");
-  console.debug("Assign Colaborator", cbor);
+  logger.info("END assignContributor");
+  logger.info("Assign Colaborator", cbor);
   return cbor;
 }
 

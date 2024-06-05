@@ -15,9 +15,10 @@ import {
 } from "../types";
 import { clearZeroAssets, keyPairsToAddress, validatorParams } from "../utils";
 import { MIN_ADA, controlTokenName } from "../constants";
+import logger from "../logger";
 
 async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
-  console.debug("START close");
+  logger.info("START close");
   const scriptParams = validatorParams(lucid);
 
   const gitHoneyValidator = buildGithoneyValidator(scriptParams);
@@ -52,8 +53,8 @@ async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
   ).complete();
 
   const cbor = txWithPayments.toString();
-  console.debug("END close");
-  console.debug(`Close ${cbor}`);
+  logger.info("END close");
+  logger.info(`Close ${cbor}`);
   return cbor;
 }
 

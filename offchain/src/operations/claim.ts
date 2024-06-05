@@ -7,13 +7,14 @@ import {
 } from "../types";
 import { addrToWallet, clearZeroAssets, validatorParams } from "../utils";
 import { controlTokenName } from "../constants";
+import logger from "../logger";
 
 async function claimBounty(
   utxoRef: OutRef,
   lucid: Lucid,
   contributorAddr: string
 ): Promise<string> {
-  console.debug("START claim");
+  logger.info("START claim");
   const scriptParams = validatorParams(lucid);
 
   const gitHoneyValidator = buildGithoneyValidator(scriptParams);
@@ -56,8 +57,8 @@ async function claimBounty(
     .complete();
 
   const cbor = tx.toString();
-  console.debug("END claim");
-  console.debug(`Claim ${cbor}`);
+  logger.info("END claim");
+  logger.info(`Claim ${cbor}`);
   return cbor;
 }
 

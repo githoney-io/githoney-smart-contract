@@ -13,9 +13,10 @@ import {
 } from "../types";
 import { fromText, toUnit, OutRef, Lucid, Assets } from "lucid-cardano";
 import { keyPairsToAddress, validatorParams, clearZeroAssets } from "../utils";
+import logger from "../logger";
 
 async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
-  console.debug("START mergeBounty");
+  logger.info("START mergeBounty");
   const scriptParams = validatorParams(lucid);
   const gitHoneyValidator = buildGithoneyValidator(scriptParams);
   const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
@@ -70,8 +71,8 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
     .attachSpendingValidator(gitHoneyValidator)
     .complete();
   const cbor = tx.toString();
-  console.debug("END mergeBounty");
-  console.debug(`Merge Bounty: ${cbor}`);
+  logger.info("END mergeBounty");
+  logger.info(`Merge Bounty: ${cbor}`);
   return cbor;
 }
 

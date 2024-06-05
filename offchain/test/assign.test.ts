@@ -4,6 +4,7 @@ import { assignContributor } from "../src";
 import { emulator, ACCOUNT_CONTRIBUTOR, ACCOUNT_0 } from "./emulatorConfig";
 import { Lucid, OutRef } from "lucid-cardano";
 import { expect } from "chai";
+import logger from "../src/logger";
 
 const lucid = await Lucid.new(emulator, "Custom");
 
@@ -37,7 +38,7 @@ describe("Assign Contributor tests", async () => {
       await assignContributor(mergeOutRef, ACCOUNT_CONTRIBUTOR.address, lucid);
     } catch (e) {
       const error = e as Error;
-      console.log("Error:", error.message);
+      logger.error(error.message);
       expect(error.message).to.equal("Bounty already merged");
     }
   });
@@ -63,7 +64,7 @@ describe("Assign Contributor tests", async () => {
       );
     } catch (e) {
       const error = e as Error;
-      console.log("Error:", error.message);
+      logger.error(error.message);
       expect(error.message).to.equal("Bounty already has a contributor");
     }
   });

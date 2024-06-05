@@ -10,6 +10,7 @@ import {
   newMerge,
   signAndSubmit
 } from "./utils";
+import logger from "../src/logger";
 
 const lucid = await Lucid.new(emulator, "Custom");
 
@@ -55,7 +56,7 @@ describe("Claim tests", async () => {
       await signAndSubmit(lucid, claimTx);
     } catch (e) {
       const error = e as Error;
-      console.log("Error:", error.message);
+      logger.error(error.message);
       expect(error.message).to.equal("This UTxO does not have a datum hash.");
     }
   });
@@ -71,7 +72,7 @@ describe("Claim tests", async () => {
       await claimBounty(assignOutRef, lucid, ACCOUNT_CONTRIBUTOR.address);
     } catch (e) {
       const error = e as Error;
-      console.log("Error:", error.message);
+      logger.error(error.message);
       expect(error.message).to.equal("Bounty is not merged");
     }
   });
@@ -84,7 +85,7 @@ describe("Claim tests", async () => {
       await claimBounty(createOutRef, lucid, ACCOUNT_CONTRIBUTOR.address);
     } catch (e) {
       const error = e as Error;
-      console.log("Error:", error.message);
+      logger.error(error.message);
       expect(error.message).to.equal("Bounty doesn't have a contributor");
     }
   });
@@ -103,7 +104,7 @@ describe("Claim tests", async () => {
       await claimBounty(mergeOutRef, lucid, ACCOUNT_0.address);
     } catch (e) {
       const error = e as Error;
-      console.log("Error:", error.message);
+      logger.error(error.message);
       expect(error.message).to.equal("Invalid contributor");
     }
   });

@@ -8,6 +8,7 @@ import {
 } from "../constants";
 import { mkDatum } from "../types";
 import { addrToWallet, validatorParams } from "../utils";
+import logger from "../logger";
 
 async function createBounty(
   maintainerAddr: string,
@@ -17,7 +18,7 @@ async function createBounty(
   bounty_id: string,
   lucid: Lucid
 ): Promise<string> {
-  console.debug("START createBounty");
+  logger.info("START createBounty");
   const scriptParams = validatorParams(lucid);
 
   const gitHoneyValidator = buildGithoneyValidator(scriptParams);
@@ -54,10 +55,10 @@ async function createBounty(
   const maintainerWallet = addrToWallet(maintainerAddr, lucid);
   const adminWallet = addrToWallet(adminAddr, lucid);
 
-  console.debug("Maintainer Address", maintainerAddr);
-  console.debug("Githoney Address", githoneyAddr);
+  logger.info("Maintainer Address", maintainerAddr);
+  logger.info("Githoney Address", githoneyAddr);
   // New tx to pay to the contract the minAda and mint the admin, githoney, developer and mantainer tokens
-  console.debug("Rewards", rewardAssets);
+  logger.info("Rewards", rewardAssets);
   lucid.selectWalletFrom({ address: maintainerAddr });
 
   const bountyDatum = mkDatum({
@@ -82,8 +83,8 @@ async function createBounty(
     .complete();
 
   const cbor = tx.toString();
-  console.debug("END createBounty");
-  console.debug(`Create ${cbor}`);
+  logger.info("END createBounty");
+  logger.info(`Create ${cbor}`);
   return cbor;
 }
 

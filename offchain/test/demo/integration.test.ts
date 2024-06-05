@@ -20,6 +20,7 @@ import { GithoneyDatum } from "../../src/types";
 import { assert } from "console";
 import { keyPairsToAddress, validatorParams } from "../../src/utils";
 import { buildGithoneyMintingPolicy } from "../../src/scripts";
+import logger from "../../src/logger";
 
 dotenv.config();
 const {
@@ -38,17 +39,17 @@ const lucid = await Lucid.new(blockfrost, "Preprod");
 const lucidGithoney = await Lucid.new(blockfrost, "Preprod");
 lucidGithoney.selectWalletFromSeed(GITHONEY_SEED!);
 const creatorAddress = await lucidGithoney.wallet.address();
-console.debug(`GITHONEY address: ${creatorAddress}\n`);
+logger.info(`GITHONEY address: ${creatorAddress}\n`);
 
 const lucidContributor = await Lucid.new(blockfrost, "Preprod");
 lucidContributor.selectWalletFromSeed(CONTRIBUTOR_SEED!);
 const contributorAddr = await lucidContributor.wallet.address();
-console.debug(`CONTRIBUTOR address: ${contributorAddr}\n`);
+logger.info(`CONTRIBUTOR address: ${contributorAddr}\n`);
 
 const lucidMaintainer = await Lucid.new(blockfrost, "Preprod");
 lucidMaintainer.selectWalletFromSeed(MAINTAINER_SEED!);
 const maintainerAddress = await lucidMaintainer.wallet.address();
-console.debug(`MAINTAINER address: ${maintainerAddress}\n`);
+logger.info(`MAINTAINER address: ${maintainerAddress}\n`);
 
 describe("Integration tests", async () => {
   it("Demo Normal flow", async () => {
@@ -81,7 +82,7 @@ describe("Integration tests", async () => {
       lucid
     );
 
-    console.debug(`Creating bounty ${bounty_id}`);
+    logger.info(`Creating bounty ${bounty_id}`);
     const createTxId = await signSubmitAndWaitConfirmation(
       lucidMaintainer,
       createCbor
@@ -119,7 +120,7 @@ describe("Integration tests", async () => {
       lucid
     );
 
-    console.debug(`Adding reward to bounty`);
+    logger.info(`Adding reward to bounty`);
     const addRewardTxId = await signSubmitAndWaitConfirmation(
       lucidMaintainer,
       addRewardCbor
@@ -132,7 +133,7 @@ describe("Integration tests", async () => {
     );
 
     // ASSIGN CONTRIBUTOR
-    console.debug(`Assigning contributor with addr ${contributorAddr}`);
+    logger.info(`Assigning contributor with addr ${contributorAddr}`);
     const assignCbor = await assignContributor(
       { txHash: addRewardTxId, outputIndex: 0 },
       contributorAddr,
@@ -159,7 +160,7 @@ describe("Integration tests", async () => {
     ); // contributor Min ADA
 
     // MERGE BOUNTY
-    console.debug(`Merging bounty`);
+    logger.info(`Merging bounty`);
     const mergeCbor = await mergeBounty(
       { txHash: assignTxId, outputIndex: 0 },
       lucid
@@ -186,7 +187,7 @@ describe("Integration tests", async () => {
     );
 
     // CLAIM BOUNTY
-    console.debug(`Claiming bounty`);
+    logger.info(`Claiming bounty`);
     const claimCbor = await claimBounty(
       { txHash: mergeTxId, outputIndex: 0 },
       lucid,

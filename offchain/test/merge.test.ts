@@ -4,6 +4,7 @@ import { Lucid, OutRef } from "lucid-cardano";
 import { mergeBounty } from "../src/operations/merge";
 import { newAssign, newBounty, signAndSubmit } from "./utils";
 import { expect } from "chai";
+import logger from "../src/logger";
 
 const lucid = await Lucid.new(emulator, "Custom");
 
@@ -42,7 +43,7 @@ describe("Merge tests", async () => {
       await mergeBounty(mergeOutRef, lucid);
     } catch (e) {
       const error = e as Error;
-      console.log("Error:", error.message);
+      logger.error(error.message);
       expect(error.message).to.equal("Bounty already merged");
     }
   });
@@ -55,7 +56,7 @@ describe("Merge tests", async () => {
       await mergeBounty(bountyOutRef, lucid);
     } catch (e) {
       const error = e as Error;
-      console.log("Error:", error.message);
+      logger.error(error.message);
       expect(error.message).to.equal("Bounty doesn't have a contributor");
     }
   });

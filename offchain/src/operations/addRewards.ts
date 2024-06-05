@@ -6,6 +6,7 @@ import {
   GithoneyValidatorRedeemer
 } from "../types";
 import { validatorParams } from "../utils";
+import logger from "../logger";
 
 async function addRewards(
   utxoRef: OutRef,
@@ -13,7 +14,7 @@ async function addRewards(
   reward: { unit: string; amount: bigint },
   lucid: Lucid
 ): Promise<string> {
-  console.debug("START addRewards");
+  logger.info("START addRewards");
   const scriptParams = validatorParams(lucid);
 
   const gitHoneyValidator = buildGithoneyValidator(scriptParams);
@@ -46,8 +47,8 @@ async function addRewards(
     .complete();
 
   const cbor = tx.toString();
-  console.debug("END addRewards");
-  console.debug(`Add Rewards: ${cbor}`);
+  logger.info("END addRewards");
+  logger.info(`Add Rewards: ${cbor}`);
   return cbor;
 }
 

@@ -5,6 +5,7 @@ import { mergeBounty } from "../src/operations/merge";
 import { closeBounty } from "../src/operations/close";
 import { newAssign, newBounty, signAndSubmit } from "./utils";
 import { expect } from "chai";
+import logger from "../src/logger";
 
 const lucid = await Lucid.new(emulator, "Custom");
 
@@ -52,7 +53,7 @@ describe("Close tests", async () => {
       await closeBounty(mergeOutRef, lucid);
     } catch (e) {
       const error = e as Error;
-      console.log("Error:", error.message);
+      logger.error(error.message);
       expect(error.message).to.equal("Bounty already merged");
     }
   });

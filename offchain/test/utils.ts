@@ -21,6 +21,7 @@ import {
   emulator,
   tokenAUnit
 } from "./emulatorConfig";
+import logger from "../src/logger";
 
 const cexplorerUrl = "https://preprod.cexplorer.io";
 
@@ -31,7 +32,7 @@ async function waitForUtxosUpdate(lucid: Lucid, txId: string): Promise<void> {
   let userUtxosUpdated = false;
   let scriptUtxoUpdated = false;
   while (!userUtxosUpdated || !scriptUtxoUpdated) {
-    console.debug("Waiting for utxos update...");
+    logger.info("Waiting for utxos update...");
     await new Promise((r) => setTimeout(r, 10000));
     const utxos = await lucid.wallet.getUtxos();
     const scriptUtxos = await lucid.utxosByOutRef([
@@ -71,10 +72,10 @@ async function signSubmitAndWaitConfirmation(
   if (provider instanceof Emulator) {
     provider.awaitBlock(1);
   } else {
-    console.debug(`${cexplorerUrl}/tx/${txId}`);
-    console.debug("Waiting tx confirmation");
+    logger.info(`${cexplorerUrl}/tx/${txId}`);
+    logger.info("Waiting tx confirmation");
     await waitForUtxosUpdate(lucid, txId);
-    console.debug("Utxos updated");
+    logger.info("Utxos updated");
   }
   return txId;
 }

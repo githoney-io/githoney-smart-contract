@@ -9,6 +9,7 @@ import {
 import { Lucid } from "lucid-cardano";
 import { createBounty } from "../src/operations/create";
 import { signAndSubmit } from "./utils";
+import logger from "../src/logger";
 
 const lucid = await Lucid.new(emulator, "Custom");
 
@@ -52,7 +53,7 @@ describe("Create tests", () => {
       );
     } catch (e) {
       const error = e as Error;
-      console.log("Error:", error.message);
+      logger.error(error.message);
       expect(error.message).to.equal(
         "Deadline must be at least 24 hours from now"
       );
@@ -77,7 +78,7 @@ describe("Create tests", () => {
       );
     } catch (e) {
       const error = e as Error;
-      console.log("Error:", error.message);
+      logger.error(error.message);
       expect(error.message).to.equal("Negative fees are not allowed");
     }
   });
