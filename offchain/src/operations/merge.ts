@@ -15,13 +15,13 @@ import { fromText, toUnit, OutRef, Lucid, Assets } from "lucid-cardano";
 import { keyPairsToAddress, validatorParams, clearZeroAssets } from "../utils";
 import logger from "../logger";
 
-async function mergeBounty(ref_input: OutRef, lucid: Lucid) {
-  logger.info("START mergeBounty");
+async function mergeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
+  console.debug("START mergeBounty");
   const scriptParams = validatorParams(lucid);
   const gitHoneyValidator = buildGithoneyValidator(scriptParams);
   const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
 
-  const [contractUtxo] = await lucid.utxosByOutRef([ref_input]);
+  const [contractUtxo] = await lucid.utxosByOutRef([utxoRef]);
   const bountyDatum: GithoneyDatumT = await lucid.datumOf(
     contractUtxo,
     GithoneyDatum
