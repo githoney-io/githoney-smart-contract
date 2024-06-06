@@ -38,7 +38,7 @@ The `ControlToken` is a minted token that is used to validate the `BountyUtxo` a
 
 ### Create BountyUtxo
 
-This transaction creates a `BountyUtxo` locking the reward assets plus min ADA and a `ControlToken`. It sets the maintainer, deadline, bounty*id, admin, and merged (\_set to False*) in the datum.
+This transaction creates a `BountyUtxo` locking the reward assets plus min ADA and a `ControlToken`. It sets the maintainer, deadline, bounty_id, admin, and merged (*set to False*) in the datum.
 
 ```typescript
 /**
@@ -118,7 +118,10 @@ The admin closes the bounty, returning the reward assets to the maintainer and b
  * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
  * @returns The cbor of the unsigned transaction.
  */
-async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string>;
+async function closeBounty(
+  utxoRef: OutRef,
+  lucid: Lucid
+): Promise<string>;
 ```
 
 #### Close Bounty Before Contributor Assignment
@@ -131,7 +134,7 @@ async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string>;
 
 ### Merge Bounty
 
-Pays GitHoney the reward assets multiplied by the `BountyRewardFee`. Updates the merged field to _True_. The contributor's min ADAs remain in the UTxO.
+Pays GitHoney the reward assets multiplied by the `BountyRewardFee`. Updates the merged field to *True*. The contributor's min ADAs remain in the UTxO.
 
 ```typescript
 /**
@@ -172,14 +175,14 @@ async function claimBounty(
 
 - Params: `GitHoneyAddress`, `BountyCreationFee`, and `BountyRewardFee`.
 
-#### _AddReward Redeemer_
+#### *AddReward Redeemer*
 
 - `BountyUtxo` input with a control token.
 - The `deadline` has not been reached.
 - `BountyUtxo` output value includes the input value plus additional reward assets.
 - Datum doesn't change.
 
-#### _AssignContributor Redeemer_
+#### *AssignContributor Redeemer*
 
 - `BountyUtxo` input with a control token.
 - The `deadline` has not been reached.
@@ -187,7 +190,7 @@ async function claimBounty(
 - Contributor's `PaymentPubKeyHash` is added to the `BountyUtxo` datum, and the rest of the datum fields are the same.
 - UTxO assets are the same plus min ADAs.
 
-#### _CloseBounty Redeemer_
+#### *CloseBounty Redeemer*
 
 - `BountyUtxo` input with a control token.
 - `ControlToken` is burnt.
@@ -196,7 +199,7 @@ async function claimBounty(
 - If the `contributor` is setted the min ADAs are paid back to the contributor.
 - Datum Admin address signed the transaction.
 
-#### _MergeBounty Redeemer_
+#### *MergeBounty Redeemer*
 
 - `BountyUtxo` input with a control token.
 - The merged field is False.
@@ -206,7 +209,7 @@ async function claimBounty(
 - Datum Admin address signed the transaction.
 - Datum merged field is updated to True, and the rest of the datum fields are the same.
 
-#### _ClaimBounty Redeemer_
+#### *ClaimBounty Redeemer*
 
 - `BountyUtxo` input with a control token.
 - The merged field is True.
