@@ -4,6 +4,7 @@ use aiken/transaction/credential.{ScriptCredential, from_script}
 use aiken/transaction/value.{
   PolicyId, ada_asset_name, ada_policy_id, from_lovelace, quantity_of,
 }
+use aiken/list
 use checks.{
   is_assign_datum_valid, is_merge_datum_valid, is_signed_by,
   is_tx_before_deadline, is_utxo_datum_valid, is_utxo_value_valid,
@@ -12,7 +13,7 @@ use types.{GithoneyDatum, GithoneyFee}
 use utils.{
   control_token_name, get_first_output, get_minting_info, get_script_input,
   merge_payments_parts, min_ada, to_githoney_datum, value_grater_than,
-  value_grater_than_or_equal, value_paid_to,
+  value_grater_than_or_equal, value_paid_to, is_output_script_utxo
 }
 
 pub fn control_token_input_and_policy(ctx: ScriptContext) -> (Output, PolicyId) {
@@ -158,7 +159,8 @@ pub fn minting_policy(githoney_fee: GithoneyFee, ctx: ScriptContext) -> Bool {
 
   let is_token_burned = minted_quantity == -1
   if is_token_burned {
-    True
+    let outputs_scripts = ctx.transaction.outputs |> list.filter(is_output_script_utxo)
+    outputs_scripts == []
   } else {
     let script_output = get_first_output(ctx)
     let datum = to_githoney_datum(script_output.datum)

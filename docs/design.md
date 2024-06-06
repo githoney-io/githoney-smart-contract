@@ -38,7 +38,7 @@ The `ControlToken` is a minted token that is used to validate the `BountyUtxo` a
 
 ### Create BountyUtxo
 
-This transaction creates a `BountyUtxo` locking the reward assets plus min ADA and a `ControlToken`. It sets the maintainer, deadline, bounty_id, admin, and merged (*set to False*) in the datum.
+This transaction creates a `BountyUtxo` locking the reward assets plus min ADA and a `ControlToken`. It sets the maintainer, deadline, bounty*id, admin, and merged (\_set to False*) in the datum.
 
 ```typescript
 /**
@@ -58,7 +58,7 @@ async function createBounty(
   deadline: bigint,
   bounty_id: string,
   lucid: Lucid
-): Promise<string>
+): Promise<string>;
 ```
 
 ![createBounty diagram](img/createBounty.png "Create Bounty Tx")
@@ -81,7 +81,7 @@ async function addRewards(
   address: string,
   reward: { unit: string; amount: bigint },
   lucid: Lucid
-): Promise<string>
+): Promise<string>;
 ```
 
 ![addReward diagram](img/addRewards.png "Add Reward Tx")
@@ -102,7 +102,7 @@ async function assignContributor(
   utxoRef: OutRef,
   contributorAddr: string,
   lucid: Lucid
-): Promise<string>
+): Promise<string>;
 ```
 
 ![assignContributor diagram](img/assignContributor.png "Assign Contributor Tx")
@@ -118,10 +118,7 @@ The admin closes the bounty, returning the reward assets to the maintainer and b
  * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
  * @returns The cbor of the unsigned transaction.
  */
-async function closeBounty(
-    utxoRef: OutRef,
-    lucid: Lucid
-): Promise<string>
+async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string>;
 ```
 
 #### Close Bounty Before Contributor Assignment
@@ -134,7 +131,7 @@ async function closeBounty(
 
 ### Merge Bounty
 
-Pays GitHoney the reward assets multiplied by the `BountyRewardFee`. Updates the merged field to *True*. The contributor's min ADAs remain in the UTxO.
+Pays GitHoney the reward assets multiplied by the `BountyRewardFee`. Updates the merged field to _True_. The contributor's min ADAs remain in the UTxO.
 
 ```typescript
 /**
@@ -143,10 +140,7 @@ Pays GitHoney the reward assets multiplied by the `BountyRewardFee`. Updates the
  * @param lucid Lucid instance.
  * @returns The cbor of the unsigned transaction.
  */
-async function mergeBounty(
-    ref_input: OutRef,
-    lucid: Lucid
-): Promise<string>
+async function mergeBounty(ref_input: OutRef, lucid: Lucid): Promise<string>;
 ```
 
 ![mergeBounty diagram](img/merge.png "Merge Bounty Tx")
@@ -167,7 +161,7 @@ async function claimBounty(
   utxoRef: OutRef,
   lucid: Lucid,
   contributorAddr: string
-): Promise<string>
+): Promise<string>;
 ```
 
 ![claimBounty diagram](img/claim.png "Claim Bounty Tx")
@@ -178,14 +172,14 @@ async function claimBounty(
 
 - Params: `GitHoneyAddress`, `BountyCreationFee`, and `BountyRewardFee`.
 
-#### *AddReward Redeemer*
+#### _AddReward Redeemer_
 
 - `BountyUtxo` input with a control token.
 - The `deadline` has not been reached.
 - `BountyUtxo` output value includes the input value plus additional reward assets.
 - Datum doesn't change.
 
-#### *AssignContributor Redeemer*
+#### _AssignContributor Redeemer_
 
 - `BountyUtxo` input with a control token.
 - The `deadline` has not been reached.
@@ -193,7 +187,7 @@ async function claimBounty(
 - Contributor's `PaymentPubKeyHash` is added to the `BountyUtxo` datum, and the rest of the datum fields are the same.
 - UTxO assets are the same plus min ADAs.
 
-#### *CloseBounty Redeemer*
+#### _CloseBounty Redeemer_
 
 - `BountyUtxo` input with a control token.
 - `ControlToken` is burnt.
@@ -202,7 +196,7 @@ async function claimBounty(
 - If the `contributor` is setted the min ADAs are paid back to the contributor.
 - Datum Admin address signed the transaction.
 
-#### *MergeBounty Redeemer*
+#### _MergeBounty Redeemer_
 
 - `BountyUtxo` input with a control token.
 - The merged field is False.
@@ -212,7 +206,7 @@ async function claimBounty(
 - Datum Admin address signed the transaction.
 - Datum merged field is updated to True, and the rest of the datum fields are the same.
 
-#### *ClaimBounty Redeemer*
+#### _ClaimBounty Redeemer_
 
 - `BountyUtxo` input with a control token.
 - The merged field is True.
@@ -235,4 +229,4 @@ async function claimBounty(
 
 #### BURN
 
-- No restrictions.
+- There are no script outputs.
