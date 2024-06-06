@@ -232,4 +232,4 @@ async function claimBounty(
 
 #### BURN
 
-- There are no script outputs.
+- Without checks
