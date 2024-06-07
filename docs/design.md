@@ -4,8 +4,9 @@
 
 This document describes the technical design of the GitHoney dApp - the script UTxOs involved, the operations that take place during the bounty lifecycle, and the necessary validators and minting policies.
 
-There will be a single `BountyUtxo` for each bounty, holding the reward assets deposited by the maintainers. A `ControlToken` will be minted and held in the `BountyUtxo` during the bounty creation. Initially, the contributor field in the datum will be null until a developer decides to work on that bounty, at which point their `PaymentPubKeyHash` will be added to the datum. The `ControlToken` ensures the correctness of the `BountyUtxo` datum, the initial payment of the bounty creation fee to GitHoney, and also that the reward assets are not null. The presence of the `ControlToken` within a UTxO held at the validator address will serve as proof that the UTxO is a `BountyUtxo`.
-**Multivalidators** will be utilized, meaning both scripts share the same parameters. Consequently, the script address and the minting policy ID are identical. This enables identification of the policy ID of the `ControlToken` within the validator and the validator address within the minting policy.
+There will be a single `BountyUtxo` for each bounty, holding the reward assets deposited by the maintainers. A `BountyIdToken` will be minted and held in the `BountyUtxo` during the bounty creation. Initially, the contributor field in the datum will be null until a developer decides to work on that bounty, at which point their `PaymentPubKeyHash` will be added to the datum. The `BountyIdToken` ensures the correctness of the `BountyUtxo` datum, the initial payment of the bounty creation fee to GitHoney, and also that the reward assets are not null. The presence of the `BountyIdToken` within a UTxO held at the validator address will prove that the UTxO is a `BountyUtxo`. The `BountyIdToken` will be burnt when the bounty is closed or claimed, and the token name will be the bounty identifier.
+**Multivalidators** will be utilized, meaning both scripts share the same parameters. Consequently, the script address and the minting policy ID are identical. This enables identification of the policy ID of the `BountyIdToken` within the validator and the validator address within the minting policy.
+Additionally, global parameters of the validator and minting policy are stored in the `Settings Utxo` identified by an `NFT policy ID`. This will allow for easy updating of the parameters without the need to redeploy the scripts.
 
 ## UTxOs Specification
 
@@ -13,14 +14,14 @@ There will be a single `BountyUtxo` for each bounty, holding the reward assets d
 
 > #### Address
 >
-> - Parameterized on the `GitHoneyAddress`, `BountyCreationFee`, and `BountyRewardFee`.
+> - Parameterized on the `NFT policy ID`.
 >
 > #### Datum
 >
 > - admin: **PaymentPubKeyHash**
 > - maintainer: **PaymentPubKeyHash**
 > - contributor: **Optional(PaymentPubKeyHash)** (if assigned)
-> - bounty_id: **String**
+> - bounty_reward_fee: **Bigint**
 > - deadline: **POSIXTime**
 > - merged: **Bool**
 >
@@ -28,24 +29,24 @@ There will be a single `BountyUtxo` for each bounty, holding the reward assets d
 >
 > - minAda
 > - reward_assets
-> - `ControlToken`
+> - `BountyIdToken`
 
-### ControlToken
+### BountyIdToken
 
-The `ControlToken` is a minted token that is used to validate the `BountyUtxo` and ensure the correctness of the datum.
+The `BountyIdToken` is a minted token that is used to validate the `BountyUtxo`, identifies the bounty with the token name and ensure the correctness of the datum.
 
 ## Transactions
 
 ### Create BountyUtxo
 
-This transaction creates a `BountyUtxo` locking the reward assets plus min ADA and a `ControlToken`. It sets the maintainer, deadline, bounty_id, admin, and merged (*set to False*) in the datum.
+This transaction creates a `BountyUtxo` locking the reward assets plus min ADA and a `BountyIdToken`. It sets the maintainer, deadline, admin, and merged (\_set to False\*) in the datum.
 
 ```typescript
 /**
  * Builds a `createBounty` transaction. The tx is built in the context of the maintainer wallet.
  * @param maintainerAddr The maintainer's address.
  * @param adminAddr The admin's address.
- * @param reward The reward asset and amount to be locked in the bounty UTxO.
+ * @param rewards The reward assets and amount to be locked in the bounty UTxO.
  * @param deadline The deadline for the bounty.
  * @param bounty_id The bounty identifier.
  * @param lucid Lucid instance.
@@ -54,7 +55,7 @@ This transaction creates a `BountyUtxo` locking the reward assets plus min ADA a
 async function createBounty(
   maintainerAddr: string,
   adminAddr: string,
-  reward: { unit: string; amount: bigint },
+  rewards: assets,
   deadline: bigint,
   bounty_id: string,
   lucid: Lucid
@@ -72,14 +73,14 @@ Adds additional reward assets to an existing `BountyUtxo`.
  * Builds an `addReward` transaction. The tx is built in the context of any wallet.
  * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
  * @param address The address of the current wallet.
- * @param reward The reward asset and amount to be added.
+ * @param rewards The reward assets and amount to be added.
  * @param lucid Lucid instance.
  * @returns The cbor of the unsigned transaction.
  */
 async function addRewards(
   utxoRef: OutRef,
   address: string,
-  reward: { unit: string; amount: bigint },
+  rewards: assets,
   lucid: Lucid
 ): Promise<string>;
 ```
@@ -109,7 +110,7 @@ async function assignContributor(
 
 ### Close Bounty
 
-The admin closes the bounty, returning the reward assets to the maintainer and burning the `ControlToken`. If a contributor is assigned, the min ADA is returned to them.
+The admin closes the bounty, returning the reward assets to the maintainer and burning the `BountyIdToken`. If a contributor is assigned, the min ADA is returned to them.
 
 ```typescript
 /**
@@ -118,10 +119,7 @@ The admin closes the bounty, returning the reward assets to the maintainer and b
  * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
  * @returns The cbor of the unsigned transaction.
  */
-async function closeBounty(
-  utxoRef: OutRef,
-  lucid: Lucid
-): Promise<string>;
+async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string>;
 ```
 
 #### Close Bounty Before Contributor Assignment
@@ -134,7 +132,7 @@ async function closeBounty(
 
 ### Merge Bounty
 
-Pays GitHoney the reward assets multiplied by the `BountyRewardFee`. Updates the merged field to *True*. The contributor's min ADAs remain in the UTxO.
+Pays GitHoney the reward assets multiplied by the `BountyRewardFee`. Updates the merged field to _True_. The contributor's min ADAs remain in the UTxO.
 
 ```typescript
 /**
@@ -150,7 +148,7 @@ async function mergeBounty(ref_input: OutRef, lucid: Lucid): Promise<string>;
 
 ### Claim Bounty
 
-Pays the contributor the remaining reward assets and burns the `ControlToken`.
+Pays the contributor the remaining reward assets and burns the `BountyIdToken`.
 
 ```typescript
 /**
@@ -169,20 +167,40 @@ async function claimBounty(
 
 ![claimBounty diagram](img/claim.png "Claim Bounty Tx")
 
+## Settings Transactions
+
+### Deploy Settings
+
+This transaction deploys the `GlobalSettings` UTxO, which holds the global parameters of the dApp. The NFT policy ID of the minted token identifies the `GlobalSettings` UTxO. Besides the settings the utxo will hold also the `Githoney Validator` code, due to this utxo will be used as reference input of all the redeemers of the `Githoney Validator`.
+
+![deploySettings diagram](img/deploySettings.png "Deploy Settings Tx")
+
+### Update Settings
+
+Updates the global parameters of the dApp, changing the datum of the `GlobalSettings` UTxO.
+
+![updateSettings diagram](img/updateSettings.png "Update Settings Tx")
+
+### Close Settings
+
+Closes the `GlobalSettings` UTxO, burning the NFT and refunding the ADA locked to githoney.
+
+![closeSettings diagram](img/closeSettings.png "Close Settings Tx")
+
 ## Validators & Minting Policies
 
 ### BountyValidator
 
-- Params: `GitHoneyAddress`, `BountyCreationFee`, and `BountyRewardFee`.
+- Params: `NFT policy ID`.
 
-#### *AddReward Redeemer*
+#### _AddReward Redeemer_
 
 - `BountyUtxo` input with a control token.
 - The `deadline` has not been reached.
 - `BountyUtxo` output value includes the input value plus additional reward assets.
 - Datum doesn't change.
 
-#### *AssignContributor Redeemer*
+#### _AssignContributor Redeemer_
 
 - `BountyUtxo` input with a control token.
 - The `deadline` has not been reached.
@@ -190,16 +208,16 @@ async function claimBounty(
 - Contributor's `PaymentPubKeyHash` is added to the `BountyUtxo` datum, and the rest of the datum fields are the same.
 - UTxO assets are the same plus min ADAs.
 
-#### *CloseBounty Redeemer*
+#### _CloseBounty Redeemer_
 
 - `BountyUtxo` input with a control token.
-- `ControlToken` is burnt.
+- `BountyIdToken` is burnt.
 - The merged field is False.
 - Reward assets and the min ADAs are paid back to the maintainer.
 - If the `contributor` is setted the min ADAs are paid back to the contributor.
 - Datum Admin address signed the transaction.
 
-#### *MergeBounty Redeemer*
+#### _MergeBounty Redeemer_
 
 - `BountyUtxo` input with a control token.
 - The merged field is False.
@@ -209,26 +227,59 @@ async function claimBounty(
 - Datum Admin address signed the transaction.
 - Datum merged field is updated to True, and the rest of the datum fields are the same.
 
-#### *ClaimBounty Redeemer*
+#### _ClaimBounty Redeemer_
 
 - `BountyUtxo` input with a control token.
 - The merged field is True.
-- `ControlToken` is burnt.
+- `BountyIdToken` is burnt.
 - The remaining reward assets in UTxO are paid to the `contributor`'s `PaymentPubKeyHash`.
 
-### mintingPolicy
+### Control Token mintingPolicy
 
-- Params: `BountyCreationFee`, `BountyRewardFee`, `GitHoneyAddress`.
+- Params: `NFT policy ID`.
 
 #### MINT
 
-- A single `ControlToken` is minted.
+- A single `BountyIdToken` is minted.
 - The minted token and the min ADAs are paid to the `BountyValidatorAddress`.
 - There are some reward assets paid to the `BountyUtxo`.
 - The datum of the `BountyUtxo` is checked for correctness:
 - Deadline must be in the future.
 - Merged field must be False.
 - Contributor field must be null.
+- Bounty reward fee must be greater than 0.
+
+#### BURN
+
+- Without checks
+
+### SettingsValidator
+
+- No Params
+
+#### _UpdateSettings Redeemer_
+
+- The datum `GitHoneyAddress` signed the transaction.
+- There is only one token besides ADA in the input `Settings Utxo`.
+- The token is in the output `Settings Utxo`.
+- The new datum have the correct format.
+
+#### _CloseSettings Redeemer_
+
+- The datum `GitHoneyAddress` signed the transaction.
+- The `Settings Utxo` value is payed to the `GitHoneyAddress`.
+- The NFT is burnt.
+
+### SettingsMintingPolicy
+
+- Params: `OutRef`
+
+#### MINT
+
+- Only one token is minted.
+- The `OutRef` is in the inputs.
+- The token is paid to the first output that has a script address and a datum
+  with the correct format.
 
 #### BURN
 
