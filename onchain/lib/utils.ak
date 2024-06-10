@@ -13,6 +13,8 @@ use types.{GithoneyDatum, SettingsDatum, Wallet}
 
 pub const settings_token_name: ByteArray = "settingsNFT"
 
+pub const settings_nft_name: ByteArray = "SettingsNFT"
+
 pub const min_ada: Int = 3_000_000
 
 // Returns the minting information of a transaction.

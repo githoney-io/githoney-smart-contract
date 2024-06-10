@@ -9,6 +9,11 @@ pub type GithoneyContractRedeemers {
   Claim
 }
 
+pub type SettingsRedeemers {
+  UpdateSettings
+  CloseSettings
+}
+
 pub type Wallet {
   payment_key: VerificationKeyHash,
   stake_key: Option<VerificationKeyHash>,
