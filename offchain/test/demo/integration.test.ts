@@ -19,7 +19,7 @@ import { signSubmitAndWaitConfirmation } from "../utils";
 import { GithoneyDatum } from "../../src/types";
 import { assert } from "console";
 import { keyPairsToAddress, validatorParams } from "../../src/utils";
-import { buildGithoneyMintingPolicy } from "../../src/scripts";
+import { githoneyMintingPolicy } from "../../src/scripts";
 import logger from "../../src/logger";
 
 dotenv.config();
@@ -54,10 +54,10 @@ logger.info(`MAINTAINER address: ${maintainerAddress}\n`);
 describe("Integration tests", async () => {
   it("Demo Normal flow", async () => {
     const scriptParams = validatorParams(lucid);
-    const mintingScript = buildGithoneyMintingPolicy(scriptParams);
+    const mintingScript = githoneyMintingPolicy(scriptParams);
 
     const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
-    const controlTokenUnit = toUnit(
+    const bountyIdTokenUnit = toUnit(
       mintingPolicyid,
       fromText(controlTokenName)
     );
@@ -95,7 +95,7 @@ describe("Integration tests", async () => {
 
     const utxoAssets = {
       lovelace: 3_000_000n, // Min ADA
-      [controlTokenUnit]: 1n,
+      [bountyIdTokenUnit]: 1n,
       [tokenAUnit]: 100n
     };
 

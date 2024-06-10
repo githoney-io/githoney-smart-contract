@@ -11,7 +11,6 @@ const DatumSchema = Data.Object({
   admin: WalletSchema,
   maintainer: WalletSchema,
   contributor: Data.Nullable(WalletSchema),
-  bounty_id: Data.Bytes(),
   deadline: Data.Integer(),
   merged: Data.Boolean()
 });
@@ -23,7 +22,6 @@ function mkDatum(params: {
   admin: WalletT;
   maintainer: WalletT;
   contributor: WalletT | null;
-  bounty_id: string;
   deadline: bigint;
   merged: boolean;
 }): string {
@@ -31,7 +29,6 @@ function mkDatum(params: {
     admin: params.admin,
     maintainer: params.maintainer,
     contributor: params.contributor,
-    bounty_id: params.bounty_id,
     deadline: params.deadline,
     merged: params.merged
   };

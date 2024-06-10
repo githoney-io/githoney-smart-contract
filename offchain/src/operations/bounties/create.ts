@@ -1,16 +1,11 @@
-import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
-import { Data, fromText, toUnit, Lucid } from "lucid-cardano";
-import {
-  controlTokenName,
-  MIN_ADA,
-  creationFee,
-  githoneyAddr
-} from "../constants";
-import { mkDatum } from "../types";
-import { addrToWallet, validatorParams } from "../utils";
-import logger from "../logger";
+import { Data, fromText, toUnit, Lucid, UTxO } from "lucid-cardano";
+import { MIN_ADA, creationFee, githoneyAddr } from "../../constants";
+import { mkDatum } from "../../types";
+import { addrToWallet } from "../../utils";
+import logger from "../../logger";
 
 async function createBounty(
+  settingsUtxo: UTxO,
   maintainerAddr: string,
   adminAddr: string,
   reward: { unit: string; amount: bigint },
@@ -19,16 +14,17 @@ async function createBounty(
   lucid: Lucid
 ): Promise<string> {
   logger.info("START createBounty");
-  const scriptParams = validatorParams(lucid);
 
-  const gitHoneyValidator = buildGithoneyValidator(scriptParams);
-  const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
-  const mintingScript = buildGithoneyMintingPolicy(scriptParams);
+  const githoneyScript = settingsUtxo.scriptRef;
+  if (!githoneyScript) {
+    throw new Error("Githoney validator not found");
+  }
+  const validatorAddress = lucid.utils.validatorToAddress(githoneyScript);
 
-  const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
-  const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
+  const mintingPolicyid = lucid.utils.mintingPolicyToId(githoneyScript);
+  const bountyIdTokenUnit = toUnit(mintingPolicyid, fromText(bounty_id));
   const mintAssets = {
-    [controlTokenUnit]: 1n
+    [bountyIdTokenUnit]: 1n
   };
 
   const now = new Date();
@@ -65,7 +61,6 @@ async function createBounty(
     admin: adminWallet,
     maintainer: maintainerWallet,
     contributor: null,
-    bounty_id: fromText(bounty_id),
     deadline,
     merged: false
   });
@@ -75,11 +70,11 @@ async function createBounty(
 
   const tx = await lucid
     .newTx()
+    .readFrom([settingsUtxo])
     .validTo(sixHoursFromNow.getTime())
     .payToContract(validatorAddress, { inline: bountyDatum }, utxoAssets)
     .payToAddress(githoneyAddr, { lovelace: creationFee })
     .mintAssets(mintAssets, Data.void())
-    .attachMintingPolicy(mintingScript)
     .complete();
 
   const cbor = tx.toString();

@@ -1,25 +1,26 @@
-import { buildGithoneyValidator } from "../scripts";
-import { Data, Lucid, OutRef, fromText, toUnit } from "lucid-cardano";
+import { Data, Lucid, OutRef, UTxO, fromText, toUnit } from "lucid-cardano";
 import {
   GithoneyDatum,
   GithoneyDatumT,
   GithoneyValidatorRedeemer
-} from "../types";
-import { addrToWallet, clearZeroAssets, validatorParams } from "../utils";
-import { controlTokenName } from "../constants";
-import logger from "../logger";
+} from "../../types";
+import { addrToWallet, clearZeroAssets } from "../../utils";
+import { controlTokenName } from "../../constants";
+import logger from "../../logger";
 
 async function claimBounty(
+  settingsUtxo: UTxO,
   utxoRef: OutRef,
   lucid: Lucid,
   contributorAddr: string
 ): Promise<string> {
   logger.info("START claim");
-  const scriptParams = validatorParams(lucid);
+  const githoneyScript = settingsUtxo.scriptRef;
+  if (!githoneyScript) {
+    throw new Error("Githoney validator not found");
+  }
 
-  const gitHoneyValidator = buildGithoneyValidator(scriptParams);
-  const mintingPolicy = buildGithoneyValidator(scriptParams);
-  const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingPolicy);
+  const mintingPolicyid = lucid.utils.mintingPolicyToId(githoneyScript);
   const [utxo] = await lucid.utxosByOutRef([utxoRef]);
   const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
 
@@ -36,7 +37,7 @@ async function claimBounty(
   ) {
     throw new Error("Invalid contributor");
   }
-  const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
+  const bountyIdTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
 
   lucid.selectWalletFrom({
     address: contributorAddr
@@ -44,16 +45,15 @@ async function claimBounty(
 
   const contributorPayment = clearZeroAssets({
     ...utxo.assets,
-    [controlTokenUnit]: 0n
+    [bountyIdTokenUnit]: 0n
   });
 
   const tx = await lucid
     .newTx()
+    .readFrom([settingsUtxo])
     .collectFrom([utxo], GithoneyValidatorRedeemer.Claim())
     .payToAddress(contributorAddr, contributorPayment)
-    .mintAssets({ [controlTokenUnit]: BigInt(-1) }, Data.void())
-    .attachSpendingValidator(gitHoneyValidator)
-    .attachMintingPolicy(mintingPolicy)
+    .mintAssets({ [bountyIdTokenUnit]: BigInt(-1) }, Data.void())
     .complete();
 
   const cbor = tx.toString();

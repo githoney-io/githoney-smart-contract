@@ -1,10 +1,10 @@
-import { buildGithoneyValidator } from "../scripts";
 import {
   Assets,
   Data,
   Lucid,
   OutRef,
   Tx,
+  UTxO,
   fromText,
   toUnit
 } from "lucid-cardano";
@@ -12,18 +12,23 @@ import {
   GithoneyDatum,
   GithoneyDatumT,
   GithoneyValidatorRedeemer
-} from "../types";
-import { clearZeroAssets, keyPairsToAddress, validatorParams } from "../utils";
-import { MIN_ADA, controlTokenName } from "../constants";
-import logger from "../logger";
+} from "../../types";
+import { clearZeroAssets, keyPairsToAddress } from "../../utils";
+import { MIN_ADA, controlTokenName } from "../../constants";
+import logger from "../../logger";
 
-async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
+async function closeBounty(
+  settingsUtxo: UTxO,
+  utxoRef: OutRef,
+  lucid: Lucid
+): Promise<string> {
   logger.info("START close");
-  const scriptParams = validatorParams(lucid);
 
-  const gitHoneyValidator = buildGithoneyValidator(scriptParams);
-  const mintingPolicy = buildGithoneyValidator(scriptParams);
-  const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingPolicy);
+  const githoneyScript = settingsUtxo.scriptRef;
+  if (!githoneyScript) {
+    throw new Error("Githoney validator not found");
+  }
+  const mintingPolicyid = lucid.utils.mintingPolicyToId(githoneyScript);
   const [utxo] = await lucid.utxosByOutRef([utxoRef]);
   const bountyDatum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
 
@@ -31,7 +36,7 @@ async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
     throw new Error("Bounty already merged");
   }
   const adminAddr = await keyPairsToAddress(lucid, bountyDatum.admin);
-  const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
+  const bountyIdTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
 
   lucid.selectWalletFrom({ address: adminAddr });
   const adminPkh =
@@ -41,15 +46,14 @@ async function closeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
 
   const tx = lucid
     .newTx()
+    .readFrom([settingsUtxo])
     .validTo(sixHoursFromNow.getTime())
     .collectFrom([utxo], GithoneyValidatorRedeemer.Close())
-    .mintAssets({ [controlTokenUnit]: BigInt(-1) }, Data.void())
-    .attachSpendingValidator(gitHoneyValidator)
-    .addSignerKey(adminPkh)
-    .attachMintingPolicy(mintingPolicy);
+    .mintAssets({ [bountyIdTokenUnit]: BigInt(-1) }, Data.void())
+    .addSignerKey(adminPkh);
 
   const txWithPayments = await (
-    await addPayments(tx, bountyDatum, utxo.assets, controlTokenUnit, lucid)
+    await addPayments(tx, bountyDatum, utxo.assets, bountyIdTokenUnit, lucid)
   ).complete();
 
   const cbor = txWithPayments.toString();
@@ -62,7 +66,7 @@ const addPayments = async (
   tx: Tx,
   datum: GithoneyDatumT,
   assets: Assets,
-  controlTokenUnit: string,
+  bountyIdTokenUnit: string,
   lucid: Lucid
 ): Promise<Tx> => {
   if (datum.contributor) {
@@ -74,7 +78,7 @@ const addPayments = async (
     };
   }
   const maintainerAddr = await keyPairsToAddress(lucid, datum.maintainer);
-  assets = clearZeroAssets({ ...assets, [controlTokenUnit]: 0n });
+  assets = clearZeroAssets({ ...assets, [bountyIdTokenUnit]: 0n });
   tx = tx.payToAddress(maintainerAddr, assets);
   return tx;
 };

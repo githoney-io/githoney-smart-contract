@@ -1,25 +1,27 @@
-import { buildGithoneyValidator } from "../scripts";
-import { Data, Lucid, OutRef } from "lucid-cardano";
-import { MIN_ADA } from "../constants";
+import { Lucid, OutRef, UTxO } from "lucid-cardano";
+import { MIN_ADA } from "../../constants";
 import {
   GithoneyDatum,
   GithoneyDatumT,
   GithoneyValidatorRedeemer,
   mkDatum
-} from "../types";
-import { addrToWallet, validatorParams } from "../utils";
-import logger from "../logger";
+} from "../../types";
+import { addrToWallet } from "../../utils";
+import logger from "../../logger";
 
 async function assignContributor(
+  settingsUtxo: UTxO,
   utxoRef: OutRef,
   contributorAddr: string,
   lucid: Lucid
 ): Promise<string> {
   logger.info("START assignContributor");
-  const scriptParams = validatorParams(lucid);
+  const githoneyScript = settingsUtxo.scriptRef;
+  if (!githoneyScript) {
+    throw new Error("Githoney validator not found");
+  }
 
-  const gitHoneyValidator = buildGithoneyValidator(scriptParams);
-  const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
+  const validatorAddress = lucid.utils.validatorToAddress(githoneyScript);
   const [utxo] = await lucid.utxosByOutRef([utxoRef]);
   const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
   if (oldDatum.merged) {
@@ -45,10 +47,10 @@ async function assignContributor(
 
   const tx = await lucid
     .newTx()
+    .readFrom([settingsUtxo])
     .validTo(sixHoursFromNow.getTime())
     .collectFrom([utxo], GithoneyValidatorRedeemer.Assign())
     .payToContract(validatorAddress, { inline: newDatum }, newAssets)
-    .attachSpendingValidator(gitHoneyValidator)
     .complete();
 
   const cbor = tx.toString();
