@@ -1,6 +1,6 @@
 use aiken/list
 use aiken/option.{is_none, is_some}
-use aiken/transaction.{Output, ScriptContext}
+use aiken/transaction.{Output, ScriptContext, Transaction}
 use aiken/transaction/credential.{ScriptCredential, from_script}
 use aiken/transaction/value.{
   PolicyId, ada_asset_name, ada_policy_id, from_lovelace, quantity_of,
@@ -9,11 +9,21 @@ use checks.{
   is_assign_datum_valid, is_merge_datum_valid, is_signed_by,
   is_tx_before_deadline, is_utxo_datum_valid, is_utxo_value_valid,
 }
-use types.{GithoneyDatum, GithoneyFee}
+use types.{GithoneyDatum, SettingsDatum}
 use utils.{
-  control_token_name, get_first_output, get_minting_info, get_script_input,
+  get_first_output, get_minting_info, get_script_input, to_settings_datum
   is_output_script_utxo, merge_payments_parts, min_ada, to_githoney_datum,
-  value_grater_than, value_grater_than_or_equal, value_paid_to,
+  value_grater_than, value_grater_than_or_equal, value_paid_to, settings_token_name
+}
+
+pub fn reference_input_settings_with_NFT(tx: Transaction, settings_policy_id: PolicyId) -> SettingsDatum {
+  expect [ref_input] = tx.reference_inputs
+  let has_settings_nft = quantity_of(ref_input.output.value, settings_policy_id, settings_token_name) == 1
+  if !has_settings_nft {
+    fail @"There should be exactly one settings NFT in the reference input"
+  }else{
+  to_settings_datum(ref_input.output.datum)
+  }
 }
 
 pub fn control_token_input_and_policy(ctx: ScriptContext) -> (Output, PolicyId) {
@@ -61,7 +71,7 @@ pub fn assign(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
 }
 
 pub fn merge(
-  githoney_fee: GithoneyFee,
+  settings_policy_id: PolicyId,
   datum: GithoneyDatum,
   ctx: ScriptContext,
 ) -> Bool {
@@ -77,14 +87,14 @@ pub fn merge(
   let is_utxo_address_the_same = script_input.address == script_output.address
   let (script_value, githoney_value) =
     merge_payments_parts(
-      githoney_fee.bounty_reward_fee,
+      settings_datum.bounty_reward_fee,
       script_input.value,
       control_token_policy,
     )
   let is_utxo_value_valid = script_output.value == script_value
-  let is_githoney_fee_payed =
+  let is_settings_datum_payed =
     value_grater_than_or_equal(
-      value_paid_to(githoney_fee.githoney_wallet, ctx.transaction),
+      value_paid_to(settings_datum.githoney_wallet, ctx.transaction),
       githoney_value,
     )
   let is_signed_by_admin =
@@ -93,7 +103,7 @@ pub fn merge(
     value_paid_to(datum.maintainer_wallet, ctx.transaction) == min_ada_value
   let is_datum_not_merged = !datum.merged
 
-  is_datum_not_merged? && is_signed_by_admin? && is_new_datum_valid? && is_utxo_value_valid? && is_tx_before_deadline? && contributor_is_assigned? && is_utxo_address_the_same? && is_maintainer_minada_payed? && is_githoney_fee_payed?
+  is_datum_not_merged? && is_signed_by_admin? && is_new_datum_valid? && is_utxo_value_valid? && is_tx_before_deadline? && contributor_is_assigned? && is_utxo_address_the_same? && is_maintainer_minada_payed? && is_settings_datum_payed?
 }
 
 pub fn close(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
@@ -153,7 +163,8 @@ pub fn claim(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
 }
 
 // Main validation of the githoney token minting policy
-pub fn minting_policy(githoney_fee: GithoneyFee, ctx: ScriptContext) -> Bool {
+pub fn minting_policy(settings_policy_id: PolicyId, ctx: ScriptContext) -> Bool {
+  let settings_datum = reference_input_settings_with_NFT(ctx.transaction, settings_policy_id)
   let (own_policy, minted_name, minted_quantity) =
     get_minting_info(ctx.transaction)
 
@@ -164,19 +175,18 @@ pub fn minting_policy(githoney_fee: GithoneyFee, ctx: ScriptContext) -> Bool {
     let script_output = get_first_output(ctx)
     let datum = to_githoney_datum(script_output.datum)
 
-    let is_minting_only_one_control_token =
-      minted_quantity == 1 && minted_name == control_token_name
+    let is_minting_only_one_bounty_id_token = minted_quantity == 1
 
     let is_script_output_address_valid =
       script_output.address == from_script(own_policy)
     let is_creation_fee_paid =
-      value_paid_to(githoney_fee.githoney_wallet, ctx.transaction) == from_lovelace(
-        githoney_fee.bounty_creation_fee,
+      value_paid_to(settings_datum.githoney_wallet, ctx.transaction) == from_lovelace(
+        settings_datum.bounty_creation_fee,
       )
 
-    let valid_datum = is_utxo_datum_valid(ctx.transaction, datum)
+    let valid_datum = is_utxo_datum_valid(settings_datum.bounty_reward_fee, ctx.transaction, datum)
     let valid_value = is_utxo_value_valid(own_policy, script_output.value)
 
-    is_creation_fee_paid? && is_minting_only_one_control_token? && is_script_output_address_valid? && valid_datum? && valid_value?
+    is_creation_fee_paid? && is_minting_only_one_bounty_id_token? && is_script_output_address_valid? && valid_datum? && valid_value?
   }
 }

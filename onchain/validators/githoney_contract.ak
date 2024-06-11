@@ -5,7 +5,7 @@ use types.{
 }
 use validations.{add_rewards, assign, claim, close, merge, minting_policy}
 
-validator(githoney_fee: GithoneyFee) {
+validator(settings_policy_id: PolicyId) {
   fn githoney_contract(
     datum: GithoneyDatum,
     redeemer: GithoneyContractRedeemers,
@@ -14,13 +14,13 @@ validator(githoney_fee: GithoneyFee) {
     when redeemer is {
       AddRewards -> add_rewards(datum, ctx)
       Assign -> assign(datum, ctx)
-      Merge -> merge(githoney_fee, datum, ctx)
+      Merge -> merge(settings_policy_id, datum, ctx)
       Close -> close(datum, ctx)
       Claim -> claim(datum, ctx)
     }
   }
 
   fn githoney_policy(_redeemer: Redeemer, ctx: ScriptContext) {
-    minting_policy(githoney_fee, ctx)
+    minting_policy(settings_policy_id, ctx)
   }
 }

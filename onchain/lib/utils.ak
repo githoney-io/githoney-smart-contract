@@ -11,7 +11,7 @@ use aiken/transaction/value.{
 }
 use types.{GithoneyDatum, Wallet}
 
-pub const control_token_name: ByteArray = "controlToken"
+pub const settings_token_name: ByteArray = "settingsNFT"
 
 pub const min_ada: Int = 3_000_000
 
@@ -26,6 +26,12 @@ pub fn to_githoney_datum(data: Data) -> GithoneyDatum {
   expect InlineDatum(datum): Datum = data
   expect githoney_datum: GithoneyDatum = datum
   githoney_datum
+}
+
+pub fn to_settings_datum(data: Data) -> SettingsDatum {
+  expect InlineDatum(datum): Datum = data
+  expect settings_datum: SettingsDatum = datum
+  settings_datum
 }
 
 pub fn get_first_output(ctx: ScriptContext) -> Output {
