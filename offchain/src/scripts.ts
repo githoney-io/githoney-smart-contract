@@ -1,75 +1,116 @@
 import {
   SpendingValidator,
-  PaymentKeyHash,
   Data,
   applyParamsToScript,
   ScriptHash,
   OutRef,
-  Wallet
+  PolicyId
 } from "lucid-cardano";
 import plutusBlueprint from "../../onchain/plutus.json" assert { type: "json" };
-import { WalletSchema, WalletT } from "./types";
 
-const githoneyValidator = plutusBlueprint.validators.find(
+const GITHONEY_VALIDATOR = plutusBlueprint.validators.find(
   ({ title }) => title === "githoney_contract.githoney_contract"
 );
 
-const mintingPolicy = plutusBlueprint.validators.find(
+const GITHONEY_MINTING = plutusBlueprint.validators.find(
   ({ title }) => title === "githoney_contract.githoney_policy"
 );
 
-if (!githoneyValidator) {
+const SETTINGS_VALIDATOR = plutusBlueprint.validators.find(
+  ({ title }) => title === "githoney_contract.settings_contract"
+);
+
+const SETTINGS_MINTING = plutusBlueprint.validators.find(
+  ({ title }) => title === "githoney_contract.settings_policy"
+);
+
+if (!GITHONEY_VALIDATOR) {
   throw new Error(
     "githoney validator indexed with 'main.githoney_validator' in plutus.json failed!"
   );
 }
 
-if (!mintingPolicy) {
+if (!GITHONEY_MINTING) {
   throw new Error(
     "Minting validator indexed with 'main.githoney_token_minting_policy' in plutus.json failed!"
   );
 }
 
-const GITHONEY_SCRIPT: SpendingValidator["script"] =
-  githoneyValidator.compiledCode;
-const MINTING_SCRIPT: SpendingValidator["script"] = mintingPolicy.compiledCode;
+if (!SETTINGS_VALIDATOR) {
+  throw new Error(
+    "Settings validator indexed with 'main.githoney_settings_validator' in plutus.json failed!"
+  );
+}
 
-const ParamsSchema = Data.Tuple([
-  Data.Object({
-    githoneyWallet: WalletSchema,
-    creationFee: Data.Integer(),
-    rewardFee: Data.Integer()
-  })
-]);
+if (!SETTINGS_MINTING) {
+  throw new Error(
+    "Settings policy indexed with 'main.githoney_settings_policy' in plutus.json failed!"
+  );
+}
+
+const GITHONEY_SCRIPT: SpendingValidator["script"] =
+  GITHONEY_VALIDATOR.compiledCode;
+const MINTING_SCRIPT: SpendingValidator["script"] =
+  GITHONEY_MINTING.compiledCode;
+const SETTINGS_SCRIPT: SpendingValidator["script"] =
+  SETTINGS_VALIDATOR.compiledCode;
+const SETTINGS_POLICY: SpendingValidator["script"] =
+  SETTINGS_MINTING.compiledCode;
+
+const ParamsSchema = Data.Tuple([Data.Bytes()]);
 type ParamsT = Data.Static<typeof ParamsSchema>;
 const Params = ParamsSchema as unknown as ParamsT;
 
-function buildGithoneyValidator(params: {
-  githoneyWallet: WalletT;
-  creationFee: bigint;
-  rewardFee: bigint;
-}): SpendingValidator {
+const SettingsParamsSchema = Data.Tuple([Data.Bytes(), Data.Integer()]);
+type SettingsParamsT = Data.Static<typeof SettingsParamsSchema>;
+const SettingsParams = SettingsParamsSchema as unknown as SettingsParamsT;
+
+function githoneyValidator(settingsPolicyId: PolicyId): SpendingValidator {
   return {
     type: "PlutusV2",
-    script: applyParamsToScript<ParamsT>(GITHONEY_SCRIPT, [params], Params)
+    script: applyParamsToScript<ParamsT>(
+      GITHONEY_SCRIPT,
+      [settingsPolicyId],
+      Params
+    )
   };
 }
 
-const GITHONEY_SCRIPT_HASH: ScriptHash = githoneyValidator.hash;
+const GITHONEY_SCRIPT_HASH: ScriptHash = GITHONEY_VALIDATOR.hash;
 
-function buildGithoneyMintingPolicy(param: {
-  githoneyWallet: WalletT;
-  creationFee: bigint;
-  rewardFee: bigint;
-}): SpendingValidator {
+function githoneyMintingPolicy(settingsPolicyId: PolicyId): SpendingValidator {
   return {
     type: "PlutusV2",
-    script: applyParamsToScript<ParamsT>(MINTING_SCRIPT, [param], Params)
+    script: applyParamsToScript<ParamsT>(
+      MINTING_SCRIPT,
+      [settingsPolicyId],
+      Params
+    )
+  };
+}
+
+function settingsPolicy(outRef: OutRef): SpendingValidator {
+  return {
+    type: "PlutusV2",
+    script: applyParamsToScript<SettingsParamsT>(
+      SETTINGS_POLICY,
+      [outRef.txHash, BigInt(outRef.outputIndex)],
+      SettingsParams
+    )
+  };
+}
+
+function settingsValidator(): SpendingValidator {
+  return {
+    type: "PlutusV2",
+    script: SETTINGS_SCRIPT
   };
 }
 
 export {
-  buildGithoneyMintingPolicy,
+  githoneyMintingPolicy,
   GITHONEY_SCRIPT_HASH,
-  buildGithoneyValidator
+  githoneyValidator,
+  settingsPolicy,
+  settingsValidator
 };

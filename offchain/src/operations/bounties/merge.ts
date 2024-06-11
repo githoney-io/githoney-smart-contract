@@ -1,25 +1,29 @@
-import { buildGithoneyMintingPolicy, buildGithoneyValidator } from "../scripts";
-import {
-  controlTokenName,
-  MIN_ADA,
-  rewardFee,
-  githoneyAddr
-} from "../constants";
+import { MIN_ADA, rewardFee, githoneyAddr } from "../../constants";
 import {
   GithoneyDatum,
   GithoneyDatumT,
   GithoneyValidatorRedeemer,
   mkDatum
-} from "../types";
-import { fromText, toUnit, OutRef, Lucid, Assets } from "lucid-cardano";
-import { keyPairsToAddress, validatorParams, clearZeroAssets } from "../utils";
-import logger from "../logger";
+} from "../../types";
+import { OutRef, Lucid, Assets, UTxO } from "lucid-cardano";
+import {
+  keyPairsToAddress,
+  clearZeroAssets,
+  extractBountyIdTokenUnit
+} from "../../utils";
+import logger from "../../logger";
 
-async function mergeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
+async function mergeBounty(
+  settingsUtxo: UTxO,
+  utxoRef: OutRef,
+  lucid: Lucid
+): Promise<string> {
   console.debug("START mergeBounty");
-  const scriptParams = validatorParams(lucid);
-  const gitHoneyValidator = buildGithoneyValidator(scriptParams);
-  const validatorAddress = lucid.utils.validatorToAddress(gitHoneyValidator);
+  const githoneyScript = settingsUtxo.scriptRef;
+  if (!githoneyScript) {
+    throw new Error("Githoney validator not found");
+  }
+  const validatorAddress = lucid.utils.validatorToAddress(githoneyScript);
 
   const [contractUtxo] = await lucid.utxosByOutRef([utxoRef]);
   const bountyDatum: GithoneyDatumT = await lucid.datumOf(
@@ -44,14 +48,16 @@ async function mergeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
   const maintainerAddr = await keyPairsToAddress(lucid, bountyDatum.maintainer);
   const adminAddr = await keyPairsToAddress(lucid, bountyDatum.admin);
 
-  const mintingScript = buildGithoneyMintingPolicy(scriptParams);
-  const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
-  const controlTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
+  const mintingPolicyid = lucid.utils.mintingPolicyToId(githoneyScript);
+  const bountyIdTokenUnit = extractBountyIdTokenUnit(
+    contractUtxo.assets,
+    mintingPolicyid
+  );
 
   const { githoneyFee, scriptValue } = calculateRewardsFeeAndScriptValue(
     contractUtxo.assets,
     rewardfee,
-    controlTokenUnit
+    bountyIdTokenUnit
   );
 
   lucid.selectWalletFrom({ address: adminAddr });
@@ -62,13 +68,13 @@ async function mergeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
 
   const tx = await lucid
     .newTx()
+    .readFrom([settingsUtxo])
     .validTo(sixHoursFromNow.getTime())
     .collectFrom([contractUtxo], GithoneyValidatorRedeemer.Merge())
     .payToContract(validatorAddress, { inline: newBountyDatum }, scriptValue)
     .payToAddress(maintainerAddr, { lovelace: MIN_ADA })
     .payToAddress(githoneyAddr, githoneyFee)
     .addSignerKey(adminPkh)
-    .attachSpendingValidator(gitHoneyValidator)
     .complete();
   const cbor = tx.toString();
   logger.info("END mergeBounty");
@@ -79,7 +85,7 @@ async function mergeBounty(utxoRef: OutRef, lucid: Lucid): Promise<string> {
 function calculateRewardsFeeAndScriptValue(
   assets: Assets,
   rewardFee: bigint,
-  controlTokenUnit: string
+  bountyIdTokenUnit: string
 ) {
   let githoneyFee: Assets = {};
   let scriptValue: Assets = {};
@@ -87,12 +93,12 @@ function calculateRewardsFeeAndScriptValue(
     ...assets,
     lovelace: assets.lovelace - 2n * MIN_ADA
   };
-  delete assets[controlTokenUnit];
+  delete assets[bountyIdTokenUnit];
   for (const [asset, amount] of Object.entries(assets)) {
     githoneyFee[asset] = (amount * rewardFee) / 10_000n;
     scriptValue[asset] = amount - githoneyFee[asset];
   }
-  scriptValue[controlTokenUnit] = 1n;
+  scriptValue[bountyIdTokenUnit] = 1n;
   scriptValue["lovelace"] = scriptValue["lovelace"] + MIN_ADA;
   scriptValue = clearZeroAssets(scriptValue);
   return { githoneyFee, scriptValue };

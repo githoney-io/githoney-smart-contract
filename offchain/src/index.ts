@@ -1,9 +1,10 @@
-import { createBounty } from "./operations/create";
-import { closeBounty } from "./operations/close";
-import { mergeBounty } from "./operations/merge";
-import { claimBounty } from "./operations/claim";
-import { addRewards } from "./operations/addRewards";
-import { assignContributor } from "./operations/assignContributor";
+import { createBounty } from "./operations/bounties/create";
+import { closeBounty } from "./operations/bounties/close";
+import { mergeBounty } from "./operations/bounties/merge";
+import { claimBounty } from "./operations/bounties/claim";
+import { addRewards } from "./operations/bounties/addRewards";
+import { assignContributor } from "./operations/bounties/assignContributor";
+import { deploy } from "./operations/settings/deploy";
 
 export {
   createBounty,
@@ -11,5 +12,6 @@ export {
   mergeBounty,
   assignContributor,
   claimBounty,
-  addRewards
+  addRewards,
+  deploy
 };

@@ -11,7 +11,6 @@ const DatumSchema = Data.Object({
   admin: WalletSchema,
   maintainer: WalletSchema,
   contributor: Data.Nullable(WalletSchema),
-  bounty_id: Data.Bytes(),
   deadline: Data.Integer(),
   merged: Data.Boolean()
 });
@@ -23,7 +22,6 @@ function mkDatum(params: {
   admin: WalletT;
   maintainer: WalletT;
   contributor: WalletT | null;
-  bounty_id: string;
   deadline: bigint;
   merged: boolean;
 }): string {
@@ -31,7 +29,6 @@ function mkDatum(params: {
     admin: params.admin,
     maintainer: params.maintainer,
     contributor: params.contributor,
-    bounty_id: params.bounty_id,
     deadline: params.deadline,
     merged: params.merged
   };
@@ -65,10 +62,36 @@ namespace GithoneyValidatorRedeemer {
   export const Claim = () => multiValWrapper(1, 4, []);
 }
 
+const SettingsDatumSchema = Data.Object({
+  githoney: WalletSchema,
+  creation_fee: Data.Integer(),
+  reward_fee: Data.Integer()
+});
+
+type SettingsDatumT = Data.Static<typeof SettingsDatumSchema>;
+const SettingsDatum = SettingsDatumSchema as unknown as SettingsDatumT;
+
+function mkSettingsDatum(params: {
+  githoneyWallet: WalletT;
+  creationFee: bigint;
+  rewardFee: bigint;
+}): string {
+  const d: SettingsDatumT = {
+    githoney: params.githoneyWallet,
+    creation_fee: params.creationFee,
+    reward_fee: params.rewardFee
+  };
+  const datum = Data.to<SettingsDatumT>(d, SettingsDatum);
+  return datum;
+}
+
 export {
   mkDatum,
-  GithoneyDatum,
+  mkSettingsDatum,
+  SettingsDatumT,
   GithoneyDatumT,
+  SettingsDatum,
+  GithoneyDatum,
   GithoneyValidatorRedeemer,
   WalletSchema,
   WalletT

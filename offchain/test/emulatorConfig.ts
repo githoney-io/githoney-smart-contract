@@ -7,7 +7,7 @@ import {
   toUnit
 } from "lucid-cardano";
 import { controlTokenName, githoneyAddr } from "../src/constants";
-import { buildGithoneyMintingPolicy } from "../src/scripts";
+import { githoneyMintingPolicy } from "../src/scripts";
 import { validatorParams } from "../src/utils";
 
 const tokenA = {
@@ -17,7 +17,7 @@ const tokenA = {
 
 const lucid = await Lucid.new();
 const scriptParams = validatorParams(lucid);
-const mintingScript = buildGithoneyMintingPolicy(scriptParams);
+const mintingScript = githoneyMintingPolicy(scriptParams);
 const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
 
 const controlToken = {
@@ -29,7 +29,7 @@ const bounty_id = "Bounty Name Test";
 
 const tokenAUnit = toUnit(tokenA.policy_id, fromText(tokenA.asset_name));
 
-const controlTokenUnit = toUnit(
+const bountyIdTokenUnit = toUnit(
   controlToken.policy_id,
   fromText(controlToken.asset_name)
 );
@@ -90,6 +90,6 @@ export {
   ACCOUNT_0,
   emulator,
   tokenAUnit,
-  controlTokenUnit,
+  bountyIdTokenUnit,
   bounty_id
 };
