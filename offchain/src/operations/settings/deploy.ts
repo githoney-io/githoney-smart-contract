@@ -46,4 +46,4 @@ async function deploy(lucid: Lucid, address: string) {
   return cbor;
 }
 
-export default deploy;
+export { deploy };
