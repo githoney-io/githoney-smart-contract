@@ -1,20 +1,15 @@
-import {
-  Assets,
-  Data,
-  Lucid,
-  OutRef,
-  Tx,
-  UTxO,
-  fromText,
-  toUnit
-} from "lucid-cardano";
+import { Assets, Data, Lucid, OutRef, Tx, UTxO } from "lucid-cardano";
 import {
   GithoneyDatum,
   GithoneyDatumT,
   GithoneyValidatorRedeemer
 } from "../../types";
-import { clearZeroAssets, keyPairsToAddress } from "../../utils";
-import { MIN_ADA, controlTokenName } from "../../constants";
+import {
+  clearZeroAssets,
+  extractBountyIdTokenUnit,
+  keyPairsToAddress
+} from "../../utils";
+import { MIN_ADA } from "../../constants";
 import logger from "../../logger";
 
 async function closeBounty(
@@ -36,7 +31,10 @@ async function closeBounty(
     throw new Error("Bounty already merged");
   }
   const adminAddr = await keyPairsToAddress(lucid, bountyDatum.admin);
-  const bountyIdTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
+  const bountyIdTokenUnit = extractBountyIdTokenUnit(
+    utxo.assets,
+    mintingPolicyid
+  );
 
   lucid.selectWalletFrom({ address: adminAddr });
   const adminPkh =

@@ -1,11 +1,14 @@
-import { Data, Lucid, OutRef, UTxO, fromText, toUnit } from "lucid-cardano";
+import { Data, Lucid, OutRef, UTxO } from "lucid-cardano";
 import {
   GithoneyDatum,
   GithoneyDatumT,
   GithoneyValidatorRedeemer
 } from "../../types";
-import { addrToWallet, clearZeroAssets } from "../../utils";
-import { controlTokenName } from "../../constants";
+import {
+  addrToWallet,
+  clearZeroAssets,
+  extractBountyIdTokenUnit
+} from "../../utils";
 import logger from "../../logger";
 
 async function claimBounty(
@@ -37,12 +40,15 @@ async function claimBounty(
   ) {
     throw new Error("Invalid contributor");
   }
-  const bountyIdTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
 
   lucid.selectWalletFrom({
     address: contributorAddr
   });
 
+  const bountyIdTokenUnit = extractBountyIdTokenUnit(
+    utxo.assets,
+    mintingPolicyid
+  );
   const contributorPayment = clearZeroAssets({
     ...utxo.assets,
     [bountyIdTokenUnit]: 0n

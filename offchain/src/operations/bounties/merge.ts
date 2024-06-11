@@ -1,18 +1,16 @@
-import { githoneyMintingPolicy, githoneyValidator } from "../../scripts";
-import {
-  controlTokenName,
-  MIN_ADA,
-  rewardFee,
-  githoneyAddr
-} from "../../constants";
+import { MIN_ADA, rewardFee, githoneyAddr } from "../../constants";
 import {
   GithoneyDatum,
   GithoneyDatumT,
   GithoneyValidatorRedeemer,
   mkDatum
 } from "../../types";
-import { fromText, toUnit, OutRef, Lucid, Assets, UTxO } from "lucid-cardano";
-import { keyPairsToAddress, clearZeroAssets } from "../../utils";
+import { OutRef, Lucid, Assets, UTxO } from "lucid-cardano";
+import {
+  keyPairsToAddress,
+  clearZeroAssets,
+  extractBountyIdTokenUnit
+} from "../../utils";
 import logger from "../../logger";
 
 async function mergeBounty(
@@ -51,7 +49,10 @@ async function mergeBounty(
   const adminAddr = await keyPairsToAddress(lucid, bountyDatum.admin);
 
   const mintingPolicyid = lucid.utils.mintingPolicyToId(githoneyScript);
-  const bountyIdTokenUnit = toUnit(mintingPolicyid, fromText(controlTokenName));
+  const bountyIdTokenUnit = extractBountyIdTokenUnit(
+    contractUtxo.assets,
+    mintingPolicyid
+  );
 
   const { githoneyFee, scriptValue } = calculateRewardsFeeAndScriptValue(
     contractUtxo.assets,

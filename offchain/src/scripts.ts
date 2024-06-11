@@ -100,7 +100,7 @@ function settingsPolicy(outRef: OutRef): SpendingValidator {
   };
 }
 
-function settingsValidator() {
+function settingsValidator(): SpendingValidator {
   return {
     type: "PlutusV2",
     script: SETTINGS_SCRIPT

@@ -1,7 +1,7 @@
 import { creationFee, githoneyAddr, rewardFee } from "./constants";
 import { WalletT } from "./types";
 import dotenv from "dotenv";
-import { Address, Assets, Lucid, Utils } from "lucid-cardano";
+import { Address, Assets, Lucid, Utils, fromUnit } from "lucid-cardano";
 
 dotenv.config();
 
@@ -54,4 +54,23 @@ function clearZeroAssets(assets: Assets): Assets {
   return assets;
 }
 
-export { validatorParams, addrToWallet, keyPairsToAddress, clearZeroAssets };
+function extractBountyIdTokenUnit(
+  assets: Assets,
+  mintingPolicyid: string
+): string {
+  let bountyIdTokenUnit = "";
+  Object.keys(assets).forEach((unit) => {
+    if (mintingPolicyid === fromUnit(unit).policyId) {
+      bountyIdTokenUnit = unit;
+    }
+  });
+  return bountyIdTokenUnit;
+}
+
+export {
+  validatorParams,
+  addrToWallet,
+  keyPairsToAddress,
+  clearZeroAssets,
+  extractBountyIdTokenUnit
+};

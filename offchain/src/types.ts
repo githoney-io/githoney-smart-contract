@@ -62,10 +62,36 @@ namespace GithoneyValidatorRedeemer {
   export const Claim = () => multiValWrapper(1, 4, []);
 }
 
+const SettingsDatumSchema = Data.Object({
+  githoney: WalletSchema,
+  creation_fee: Data.Integer(),
+  reward_fee: Data.Integer()
+});
+
+type SettingsDatumT = Data.Static<typeof SettingsDatumSchema>;
+const SettingsDatum = SettingsDatumSchema as unknown as SettingsDatumT;
+
+function mkSettingsDatum(params: {
+  githoneyWallet: WalletT;
+  creationFee: bigint;
+  rewardFee: bigint;
+}): string {
+  const d: SettingsDatumT = {
+    githoney: params.githoneyWallet,
+    creation_fee: params.creationFee,
+    reward_fee: params.rewardFee
+  };
+  const datum = Data.to<SettingsDatumT>(d, SettingsDatum);
+  return datum;
+}
+
 export {
   mkDatum,
-  GithoneyDatum,
+  mkSettingsDatum,
+  SettingsDatumT,
   GithoneyDatumT,
+  SettingsDatum,
+  GithoneyDatum,
   GithoneyValidatorRedeemer,
   WalletSchema,
   WalletT
