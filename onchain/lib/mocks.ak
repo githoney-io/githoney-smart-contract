@@ -114,6 +114,7 @@ pub fn mk_settings_address() {
     stake_credential: None,
   }
 }
+
 // ========================================
 // WALLETS
 // ========================================
@@ -182,7 +183,8 @@ pub fn mk_settings_input() {
   Input {
     output: Output {
       address: mk_settings_address(),
-      value: value.from_lovelace(min_ada) |> value.add(settings_nft_policy, settings_token_name, 1),
+      value: value.from_lovelace(min_ada)
+        |> value.add(settings_nft_policy, settings_token_name, 1),
       datum: InlineDatum(mk_settings_datum()),
       reference_script: None,
     },
@@ -192,7 +194,6 @@ pub fn mk_settings_input() {
     },
   }
 }
-
 // ========================================
 // DATUMS
 // ========================================
