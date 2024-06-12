@@ -127,7 +127,6 @@ pub fn merge(
 
 pub fn close(
   settings_policy_id: PolicyId,
-  settings_policy_id: PolicyId,
   datum: GithoneyDatum,
   ctx: ScriptContext,
 ) -> Bool {

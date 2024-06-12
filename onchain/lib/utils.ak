@@ -9,7 +9,7 @@ use aiken/transaction/value.{
   AssetName, PolicyId, Value, from_asset, from_lovelace, merge, quantity_of,
   reduce, tokens, zero,
 }
-use types.{GithoneyDatum, Wallet}
+use types.{GithoneyDatum, SettingsDatum, Wallet}
 
 pub const settings_token_name: ByteArray = "settingsNFT"
 
