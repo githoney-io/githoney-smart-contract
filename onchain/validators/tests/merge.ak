@@ -7,7 +7,7 @@ use mocks
 use test_utils.{
   add_extra_signature, add_output, change_input_value, change_output_address,
   change_output_value, change_script_output_datum, change_script_upper_bound,
-  mk_transition_script_context, script_input_without_control_token,
+  mk_transition_script_context, script_input_without_bounty_id_token,
 }
 use types.{GithoneyDatum, Merge}
 use utils.{min_ada, to_githoney_datum}
@@ -27,7 +27,7 @@ test success() {
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
   let githoney_fee_amount =
-    mocks.reward_amount * mocks.mk_githoney_fee().bounty_reward_fee / 10000
+    mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -63,7 +63,7 @@ test success() {
       |> add_output(maintainer_pay_output)
       |> add_output(githoney_pay_output)
 
-  validations.merge(mocks.mk_githoney_fee(), input_datum, script_ctx)
+  validations.merge(mocks.settings_nft_policy, input_datum, script_ctx)
 }
 
 test bad_new_datum() {
@@ -79,7 +79,7 @@ test bad_new_datum() {
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
   let githoney_fee_amount =
-    mocks.reward_amount * mocks.mk_githoney_fee().bounty_reward_fee / 10000
+    mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -115,7 +115,7 @@ test bad_new_datum() {
       |> add_output(maintainer_pay_output)
       |> add_output(githoney_pay_output)
 
-  !validations.merge(mocks.mk_githoney_fee(), input_datum, script_ctx)
+  !validations.merge(mocks.settings_nft_policy, input_datum, script_ctx)
 }
 
 test bad_actual_datum() {
@@ -133,7 +133,7 @@ test bad_actual_datum() {
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
   let githoney_fee_amount =
-    mocks.reward_amount * mocks.mk_githoney_fee().bounty_reward_fee / 10000
+    mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -169,7 +169,7 @@ test bad_actual_datum() {
       |> add_output(maintainer_pay_output)
       |> add_output(githoney_pay_output)
 
-  !validations.merge(mocks.mk_githoney_fee(), input_datum, script_ctx)
+  !validations.merge(mocks.settings_nft_policy, input_datum, script_ctx)
 }
 
 test bad_input_value() {
@@ -184,7 +184,7 @@ test bad_input_value() {
   let new_datum = GithoneyDatum { ..input_datum, merged: True }
   expect Some(script_output) = head(script_ctx.transaction.outputs)
   let githoney_fee_amount =
-    mocks.reward_amount * mocks.mk_githoney_fee().bounty_reward_fee / 10000
+    mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -219,7 +219,7 @@ test bad_input_value() {
       |> add_output(maintainer_pay_output)
       |> add_output(githoney_pay_output)
 
-  !validations.merge(mocks.mk_githoney_fee(), input_datum, script_ctx)
+  !validations.merge(mocks.settings_nft_policy, input_datum, script_ctx)
 }
 
 test without_maintainer_pay() {
@@ -236,7 +236,7 @@ test without_maintainer_pay() {
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
   let githoney_fee_amount =
-    mocks.reward_amount * mocks.mk_githoney_fee().bounty_reward_fee / 10000
+    mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -263,7 +263,7 @@ test without_maintainer_pay() {
       |> add_extra_signature(mocks.admin_addr)
       |> add_output(githoney_pay_output)
 
-  !validations.merge(mocks.mk_githoney_fee(), input_datum, script_ctx)
+  !validations.merge(mocks.settings_nft_policy, input_datum, script_ctx)
 }
 
 test without_admin_signature() {
@@ -280,7 +280,7 @@ test without_admin_signature() {
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
   let githoney_fee_amount =
-    mocks.reward_amount * mocks.mk_githoney_fee().bounty_reward_fee / 10000
+    mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -315,7 +315,7 @@ test without_admin_signature() {
       |> add_output(maintainer_pay_output)
       |> add_output(githoney_pay_output)
 
-  !validations.merge(mocks.mk_githoney_fee(), input_datum, script_ctx)
+  !validations.merge(mocks.settings_nft_policy, input_datum, script_ctx)
 }
 
 test without_githoney_pay() {
@@ -332,7 +332,7 @@ test without_githoney_pay() {
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
   let githoney_fee_amount =
-    mocks.reward_amount * mocks.mk_githoney_fee().bounty_reward_fee / 10000
+    mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -355,7 +355,7 @@ test without_githoney_pay() {
       |> add_extra_signature(mocks.admin_addr)
       |> add_output(maintainer_pay_output)
 
-  !validations.merge(mocks.mk_githoney_fee(), input_datum, script_ctx)
+  !validations.merge(mocks.settings_nft_policy, input_datum, script_ctx)
 }
 
 test bad_address() {
@@ -372,7 +372,7 @@ test bad_address() {
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
   let githoney_fee_amount =
-    mocks.reward_amount * mocks.mk_githoney_fee().bounty_reward_fee / 10000
+    mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -409,7 +409,7 @@ test bad_address() {
       |> add_output(githoney_pay_output)
       |> change_output_address(0, mocks.mk_contributor_address())
 
-  !validations.merge(mocks.mk_githoney_fee(), input_datum, script_ctx)
+  !validations.merge(mocks.settings_nft_policy, input_datum, script_ctx)
 }
 
 test after_deadline() {
@@ -426,7 +426,7 @@ test after_deadline() {
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
   let githoney_fee_amount =
-    mocks.reward_amount * mocks.mk_githoney_fee().bounty_reward_fee / 10000
+    mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -463,10 +463,10 @@ test after_deadline() {
       |> add_output(githoney_pay_output)
       |> change_script_upper_bound(datum.deadline + 1)
 
-  !validations.merge(mocks.mk_githoney_fee(), input_datum, script_ctx)
+  !validations.merge(mocks.settings_nft_policy, input_datum, script_ctx)
 }
 
-test without_control_token() fail {
+test without_bounty_id_token() fail {
   let script_ctx = mk_transition_script_context(Merge)
   expect Some(script_input) = head(script_ctx.transaction.inputs)
   let datum: GithoneyDatum = to_githoney_datum(script_input.output.datum)
@@ -480,7 +480,7 @@ test without_control_token() fail {
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
   let githoney_fee_amount =
-    mocks.reward_amount * mocks.mk_githoney_fee().bounty_reward_fee / 10000
+    mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -515,7 +515,7 @@ test without_control_token() fail {
       |> add_extra_signature(mocks.admin_addr)
       |> add_output(maintainer_pay_output)
       |> add_output(githoney_pay_output)
-      |> script_input_without_control_token()
+      |> script_input_without_bounty_id_token()
 
-  validations.merge(mocks.mk_githoney_fee(), input_datum, script_ctx)
+  validations.merge(mocks.settings_nft_policy, input_datum, script_ctx)
 }

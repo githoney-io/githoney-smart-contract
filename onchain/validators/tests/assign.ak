@@ -4,7 +4,7 @@ use aiken/transaction/value.{ada_asset_name, ada_policy_id, add}
 use mocks
 use test_utils.{
   change_output_value, change_script_output_datum, change_script_upper_bound,
-  mk_transition_script_context, script_input_without_control_token,
+  mk_transition_script_context, script_input_without_bounty_id_token,
 }
 use types.{Assign, GithoneyDatum}
 use utils.{min_ada, to_githoney_datum}
@@ -76,7 +76,7 @@ test after_deadline() {
   !validations.assign(datum, script_ctx)
 }
 
-test without_control_token() fail {
+test without_bounty_id_token() fail {
   let script_ctx = mk_transition_script_context(Assign)
   expect Some(script_input) = head(script_ctx.transaction.inputs)
   let datum: GithoneyDatum = to_githoney_datum(script_input.output.datum)
@@ -93,7 +93,7 @@ test without_control_token() fail {
     script_ctx
       |> change_script_output_datum(new_datum)
       |> change_output_value(0, script_output_value)
-      |> script_input_without_control_token()
+      |> script_input_without_bounty_id_token()
 
   validations.assign(datum, script_ctx)
 }

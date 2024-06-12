@@ -10,7 +10,7 @@ use validations.{minting_policy}
 test general_test() {
   let ctx = test_utils.mk_mp_script_context()
 
-  minting_policy(mocks.mk_githoney_fee(), ctx)
+  minting_policy(mocks.settings_nft_policy, ctx)
 }
 
 test wrong_datum() fail {
@@ -25,7 +25,7 @@ test wrong_datum() fail {
       transaction: Transaction { ..ctx.transaction, outputs: [wrong_output] },
     }
 
-  minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+  minting_policy(mocks.settings_nft_policy, wrong_ctx)
 }
 
 test no_reward_assets() {
@@ -37,7 +37,7 @@ test no_reward_assets() {
     Output {
       ..bounty_utxo,
       value: value.from_lovelace(min_ada)
-        |> value.add(mocks.control_token_policy, mocks.control_token_name, 1),
+        |> value.add(mocks.bounty_id_policy, mocks.bounty_id_name, 1),
     }
   }
   let wrong_ctx =
@@ -48,7 +48,7 @@ test no_reward_assets() {
         outputs: list.push(outputs, wrong_bounty),
       },
     }
-  !minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+  !minting_policy(mocks.settings_nft_policy, wrong_ctx)
 }
 
 test fee_not_paid() {
@@ -71,10 +71,10 @@ test fee_not_paid() {
         outputs: [bounty_utxo, out_githoney_wallet],
       },
     }
-  !minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+  !minting_policy(mocks.settings_nft_policy, wrong_ctx)
 }
 
-test wrong_value() {
+test wrong_value() fail {
   let ctx = test_utils.mk_mp_script_context()
 
   expect Some(outputs) = list.tail(ctx.transaction.outputs)
@@ -91,7 +91,7 @@ test wrong_value() {
       },
     }
 
-  !minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+  minting_policy(mocks.settings_nft_policy, wrong_ctx)
 }
 
 test wrong_minted_amount() fail {
@@ -104,15 +104,15 @@ test wrong_minted_amount() fail {
         ..ctx.transaction,
         mint: value.to_minted_value(
           value.from_asset(
-            mocks.control_token_policy,
-            mocks.control_token_name,
+            mocks.bounty_id_policy,
+            mocks.bounty_id_name,
             1,
           )
             |> value.add("123456789", "other_token", 1),
         ),
       },
     }
-  minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+  minting_policy(mocks.settings_nft_policy, wrong_ctx)
 }
 
 test wrong_burned_amount() {
@@ -125,14 +125,14 @@ test wrong_burned_amount() {
         ..ctx.transaction,
         mint: value.to_minted_value(
           value.from_asset(
-            mocks.control_token_policy,
-            mocks.control_token_name,
+            mocks.bounty_id_policy,
+            mocks.bounty_id_name,
             -1234,
           ),
         ),
       },
     }
-  !minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+  !minting_policy(mocks.settings_nft_policy, wrong_ctx)
 }
 
 test invalid_script_output_address() {
@@ -157,5 +157,5 @@ test invalid_script_output_address() {
         outputs: list.push(outputs, wrong_bounty),
       },
     }
-  !minting_policy(mocks.mk_githoney_fee(), wrong_ctx)
+  !minting_policy(mocks.settings_nft_policy, wrong_ctx)
 }
