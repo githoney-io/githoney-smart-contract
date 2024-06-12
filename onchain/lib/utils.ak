@@ -136,12 +136,13 @@ pub fn value_grater_than_or_equal(v1: Value, v2: Value) {
 pub fn merge_payments_parts(
   reward_fee: Int,
   script_value: Value,
-  control_token_policy: PolicyId,
+  bounty_id_policy: PolicyId,
+  bounty_id_name: AssetName,
 ) -> (Value, Value) {
   let reward_value = merge(script_value, from_lovelace(-(2 * min_ada)))
   let managment_assets =
     merge(
-      from_asset(control_token_policy, control_token_name, 1),
+      from_asset(bounty_id_policy, bounty_id_name, 1),
       from_lovelace(min_ada),
     )
   let (script_part, fee_part) =
@@ -149,7 +150,7 @@ pub fn merge_payments_parts(
       |> reduce(
           (managment_assets, zero()),
           fn(policy_id, token_name, quantity, acc) {
-            if policy_id == control_token_policy {
+            if policy_id == bounty_id_policy {
               acc
             } else {
               let (reward, fee) = acc
