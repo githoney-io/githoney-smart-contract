@@ -14,7 +14,7 @@ pub type Wallet {
   stake_key: Option<VerificationKeyHash>,
 }
 
-pub type GithoneyFee {
+pub type SettingsDatum {
   githoney_wallet: Wallet,
   bounty_creation_fee: Int,
   bounty_reward_fee: Int,
@@ -24,7 +24,7 @@ pub type GithoneyDatum {
   admin_wallet: Wallet,
   maintainer_wallet: Wallet,
   contributor_wallet: Option<Wallet>,
-  bounty_id: ByteArray,
+  bounty_reward_fee: Int,
   deadline: Int,
   merged: Bool,
 }

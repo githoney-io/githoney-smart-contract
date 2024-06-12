@@ -183,11 +183,11 @@ pub fn change_script_input_datum(
   let inputs =
     inputs
       |> push(
-          Input {
-            ..input,
-            output: Output { ..input.output, datum: InlineDatum(datum) },
-          },
-        )
+           Input {
+             ..input,
+             output: Output { ..input.output, datum: InlineDatum(datum) },
+           },
+         )
   ScriptContext {
     ..ctx,
     transaction: Transaction { ..ctx.transaction, inputs: inputs },
