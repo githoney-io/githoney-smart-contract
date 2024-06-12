@@ -4,7 +4,7 @@ use aiken/transaction/value.{add}
 use mocks
 use test_utils.{
   change_output_value, change_script_upper_bound, mk_transition_script_context,
-  script_input_without_control_token,
+  script_input_without_bounty_id_token,
 }
 use types.{AddRewards, GithoneyDatum}
 use utils.{to_githoney_datum}
@@ -49,7 +49,7 @@ test after_deadline() {
   !validations.add_rewards(datum, script_ctx)
 }
 
-test without_control_token() fail {
+test without_bounty_id_token() fail {
   let script_ctx = mk_transition_script_context(AddRewards)
   expect Some(script_output) = head(script_ctx.transaction.outputs)
   let script_output_value =
@@ -57,7 +57,7 @@ test without_control_token() fail {
   let script_ctx =
     script_ctx
       |> change_output_value(0, script_output_value)
-      |> script_input_without_control_token()
+      |> script_input_without_bounty_id_token()
   expect Some(script_input) = head(script_ctx.transaction.inputs)
   let datum: GithoneyDatum = to_githoney_datum(script_input.output.datum)
   validations.add_rewards(datum, script_ctx)

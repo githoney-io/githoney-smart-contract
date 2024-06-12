@@ -4,7 +4,7 @@ use aiken/transaction/value.{from_lovelace}
 use mocks
 use test_utils.{
   add_output, mk_burn_script_context, remove_mint_from_context,
-  script_input_without_control_token,
+  script_input_without_bounty_id_token,
 }
 use types.{Claim, GithoneyDatum}
 use utils.{to_githoney_datum}
@@ -92,7 +92,7 @@ test contributor_bad_pay() {
   !validations.claim(input_datum, script_ctx)
 }
 
-test without_control_token() fail {
+test without_bounty_id_token() fail {
   let script_ctx = mk_burn_script_context(Claim)
   expect Some(script_input) = head(script_ctx.transaction.inputs)
   let datum: GithoneyDatum = to_githoney_datum(script_input.output.datum)
@@ -112,12 +112,12 @@ test without_control_token() fail {
   let script_ctx =
     script_ctx
       |> add_output(output)
-      |> script_input_without_control_token()
+      |> script_input_without_bounty_id_token()
 
   validations.claim(input_datum, script_ctx)
 }
 
-test without_control_token_burn() fail {
+test without_bounty_id_token_burn() fail {
   let script_ctx = mk_burn_script_context(Claim)
   expect Some(script_input) = head(script_ctx.transaction.inputs)
   let datum: GithoneyDatum = to_githoney_datum(script_input.output.datum)

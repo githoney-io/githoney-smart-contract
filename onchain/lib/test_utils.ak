@@ -141,12 +141,12 @@ pub fn change_input_value(
   }
 }
 
-pub fn script_input_without_control_token(ctx: ScriptContext) -> ScriptContext {
+pub fn script_input_without_bounty_id_token(ctx: ScriptContext) -> ScriptContext {
   expect Some(script_input) = head(ctx.transaction.inputs)
   let new_value =
     value.merge(
       script_input.output.value,
-      value.from_asset(mocks.control_token_policy, mocks.control_token_name, -1),
+      value.from_asset(mocks.bounty_id_policy, mocks.bounty_id_name, -1),
     )
   change_input_value(ctx, 0, new_value)
 }
@@ -223,7 +223,7 @@ pub fn tx_builder(
 ) -> Transaction {
   Transaction {
     inputs,
-    reference_inputs: [],
+    reference_inputs: [mocks.mk_settings_input()],
     outputs,
     fee: value.from_lovelace(2_000_000),
     mint: value.to_minted_value(value_to_mint),
@@ -256,17 +256,17 @@ pub fn mk_mp_script_context() -> ScriptContext {
   let out_githoney_wallet =
     Output {
       address: mocks.mk_githoney_address(),
-      value: value.from_lovelace(mocks.mk_githoney_fee().bounty_creation_fee),
+      value: value.from_lovelace(mocks.mk_settings_datum().bounty_creation_fee),
       datum: NoDatum,
       reference_script: None,
     }
 
   ScriptContext {
-    purpose: Mint(mocks.control_token_policy),
+    purpose: Mint(mocks.bounty_id_policy),
     transaction: tx_builder(
       [maintainer_input_utxo],
       [mocks.mk_output_bounty_utxo(), out_githoney_wallet],
-      value.from_asset(mocks.control_token_policy, mocks.control_token_name, 1),
+      value.from_asset(mocks.bounty_id_policy, mocks.bounty_id_name, 1),
       dict.new(),
       dict.new(),
       mocks.transaction_id_3,
@@ -313,7 +313,7 @@ pub fn mk_burn_script_context(redeemer: Redeemer) -> ScriptContext {
     transaction: tx_builder(
       [mocks.mk_input_bounty_utxo(), rewards_input],
       [],
-      value.from_asset(mocks.control_token_policy, mocks.control_token_name, -1),
+      value.from_asset(mocks.bounty_id_policy, mocks.bounty_id_name, -1),
       dict.new()
         |> dict.insert(purpose, redeemer, script_purpose_compare),
       dict.new(),

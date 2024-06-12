@@ -5,8 +5,8 @@ use aiken/transaction/credential.{
   Address, ScriptCredential, VerificationKeyCredential,
 }
 use aiken/transaction/value
-use types.{GithoneyDatum, GithoneyFee, Wallet}
-use utils.{min_ada}
+use types.{GithoneyDatum, SettingsDatum, Wallet}
+use utils.{min_ada, settings_token_name}
 
 // This module includes mock values for testing the main validator and minting policy.
 
@@ -25,10 +25,16 @@ pub const githoney_addr =
 pub const contributor_addr =
   #"70f5542fa9d9c61b4dbccd71654cc5a72a9fddc9d563f503682e772ec9"
 
-pub const control_token_policy =
+pub const settings_addr =
+  #"70f5542fa9d9c61b4dbccd71654cc5a72a9fddc9d545f503682e772ec9"
+
+pub const bounty_id_policy =
   #"551c576b4d0e330fcc94feda17a910d7338cb0687ed20b59e5c68a12"
 
-pub const control_token_name = "controlToken"
+pub const settings_nft_policy =
+  #"551c576b4d0e330fcc94feda17a910d7338cb0687ed20b59e5c68a32"
+
+pub const bounty_id_name = "bounty Id"
 
 pub const token_a_policy =
   #"bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb"
@@ -56,15 +62,15 @@ pub const transaction_id_3 =
 
 pub const reward_amount = 1000
 
-pub fn mk_githoney_fee() {
-  GithoneyFee {
+pub const reward_fee = 1000
+
+pub fn mk_settings_datum() {
+  SettingsDatum {
     githoney_wallet: Wallet { payment_key: githoney_addr, stake_key: None },
     bounty_creation_fee: 20000,
-    bounty_reward_fee: 1000,
+    bounty_reward_fee: reward_fee,
   }
 }
-
-pub const bounty_id = "abc123"
 
 // ====================
 // MOCK DATA GENERATION
@@ -102,6 +108,12 @@ pub fn mk_contributor_address() {
   }
 }
 
+pub fn mk_settings_address() {
+  Address {
+    payment_credential: VerificationKeyCredential(settings_addr),
+    stake_credential: None,
+  }
+}
 // ========================================
 // WALLETS
 // ========================================
@@ -142,18 +154,18 @@ pub fn mk_input_bounty_utxo() {
 pub fn mk_output_bounty_utxo() {
   Output {
     address: Address {
-      payment_credential: ScriptCredential(control_token_policy),
+      payment_credential: ScriptCredential(bounty_id_policy),
       stake_credential: None,
     },
     value: value.from_lovelace(min_ada)
       |> value.add(token_a_policy, token_a_name, reward_amount) // Reward token
-      |> value.add(control_token_policy, control_token_name, 1),
+      |> value.add(bounty_id_policy, bounty_id_name, 1),
     datum: InlineDatum(
       GithoneyDatum {
         admin_wallet: mk_admin_wallet(),
         maintainer_wallet: mk_maintainer_wallet(),
         contributor_wallet: None,
-        bounty_id,
+        bounty_reward_fee: reward_fee,
         deadline: 1718938800,
         merged: False,
       },
@@ -161,6 +173,26 @@ pub fn mk_output_bounty_utxo() {
     reference_script: None,
   }
 }
+
+// ========================================
+// INPUTS
+// ========================================
+
+pub fn mk_settings_input() {
+  Input {
+    output: Output {
+      address: mk_settings_address(),
+      value: value.from_lovelace(min_ada) |> value.add(settings_nft_policy, settings_token_name, 1),
+      datum: InlineDatum(mk_settings_datum()),
+      reference_script: None,
+    },
+    output_reference: OutputReference {
+      transaction_id: TransactionId { hash: transaction_id_2 },
+      output_index: 0,
+    },
+  }
+}
+
 // ========================================
 // DATUMS
 // ========================================
