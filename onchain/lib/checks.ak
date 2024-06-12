@@ -1,13 +1,13 @@
+use aiken/dict
 use aiken/interval.{Finite}
 use aiken/list
-use aiken/dict
 use aiken/option.{is_none, is_some}
 use aiken/transaction.{Transaction}
 use aiken/transaction/value.{
-  Value, from_asset, from_lovelace, is_zero, merge, negate, quantity_of, tokens
+  Value, from_asset, from_lovelace, is_zero, merge, negate, quantity_of, tokens,
 }
 use types.{GithoneyDatum, VerificationKeyHash}
-use utils.{control_token_name, min_ada}
+use utils.{min_ada}
 
 pub fn is_signed_by(transaction: Transaction, vk: VerificationKeyHash) {
   list.has(transaction.extra_signatories, vk)
@@ -26,12 +26,17 @@ pub fn is_utxo_value_valid(policy_id: ByteArray, value: Value) {
       |> is_zero
       |> not
 
-  is_control_token_in_output? && there_are_some_reward?
+  is_bounty_id_token_in_output? && there_are_some_reward?
 }
 
-pub fn is_utxo_datum_valid(reward_fee: Int, tx: Transaction, datum: GithoneyDatum) {
+pub fn is_utxo_datum_valid(
+  reward_fee: Int,
+  tx: Transaction,
+  datum: GithoneyDatum,
+) {
   (datum.merged == False)? && is_tx_before_deadline(tx, datum.deadline)? && is_none(
-    datum.contributor_wallet)? && (datum.bounty_reward_fee == reward_fee)?
+    datum.contributor_wallet,
+  )? && (datum.bounty_reward_fee == reward_fee)?
 }
 
 pub fn is_tx_before_deadline(tx: Transaction, deadline: Int) {
