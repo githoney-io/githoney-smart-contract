@@ -1,16 +1,16 @@
 import dotenv from "dotenv";
 import { describe, it } from "mocha";
-import { Blockfrost, Lucid, fromText, toUnit } from "lucid-cardano";
+import { Blockfrost, Lucid, fromText, fromUnit, toUnit } from "lucid-cardano";
 import {
   assignContributor,
   claimBounty,
   createBounty,
   mergeBounty,
-  addRewards
+  addRewards,
+  deploy
 } from "../../src";
 import {
   MIN_ADA,
-  controlTokenName,
   creationFee,
   githoneyAddr,
   rewardFee
@@ -27,7 +27,8 @@ const {
   BLOCKFROST_PROJECT_ID,
   CONTRIBUTOR_SEED,
   MAINTAINER_SEED,
-  GITHONEY_SEED
+  GITHONEY_SEED,
+  GITHONEY_ADDRESS
 } = process.env;
 
 const blockfrost = new Blockfrost(
@@ -50,17 +51,28 @@ const lucidMaintainer = await Lucid.new(blockfrost, "Preprod");
 lucidMaintainer.selectWalletFromSeed(MAINTAINER_SEED!);
 const maintainerAddress = await lucidMaintainer.wallet.address();
 logger.info(`MAINTAINER address: ${maintainerAddress}\n`);
+const bounty_id = "Bounty DEMO";
 
 describe("Integration tests", async () => {
   it("Demo Normal flow", async () => {
-    const scriptParams = validatorParams(lucid);
-    const mintingScript = githoneyMintingPolicy(scriptParams);
+    const deployCbor = await deploy(lucid, GITHONEY_ADDRESS!);
+    logger.info(`Deploying Githoney`);
+    const deployTxId = await signSubmitAndWaitConfirmation(
+      lucidGithoney,
+      deployCbor
+    );
+    const deployOutRef = { txHash: deployTxId, outputIndex: 0 };
+    const [settingsUtxo] = await lucid.utxosByOutRef([deployOutRef]);
+    let settingsNFTPolicy = "";
+    Object.keys(settingsUtxo.assets).forEach((unit) => {
+      if (fromUnit(unit).policyId !== "") {
+        settingsNFTPolicy = fromUnit(unit).policyId;
+      }
+    });
+    const mintingScript = githoneyMintingPolicy(settingsNFTPolicy);
 
     const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
-    const bountyIdTokenUnit = toUnit(
-      mintingPolicyid,
-      fromText(controlTokenName)
-    );
+    const bountyIdTokenUnit = toUnit(mintingPolicyid, fromText(bounty_id));
 
     // CREATE BOUNTY
     const tokenAPolicy =
@@ -71,9 +83,9 @@ describe("Integration tests", async () => {
     const deadline = BigInt(
       new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).getTime()
     );
-    const bounty_id = "Bounty DEMO";
 
     const createCbor = await createBounty(
+      settingsUtxo,
       maintainerAddress,
       githoneyAddr,
       reward,
@@ -99,7 +111,6 @@ describe("Integration tests", async () => {
       [tokenAUnit]: 100n
     };
 
-    assert(createDatum.bounty_id === fromText(bounty_id), "Bounty id mismatch");
     assert(createDatum.deadline === deadline, "Deadline mismatch");
     assert(
       githoneyUtxo.assets["lovelace"] === creationFee,
@@ -114,6 +125,7 @@ describe("Integration tests", async () => {
 
     // ADD REWARDS
     const addRewardCbor = await addRewards(
+      settingsUtxo,
       createOutRef,
       maintainerAddress,
       { unit: "lovelace", amount: 20_000_000n },
@@ -135,6 +147,7 @@ describe("Integration tests", async () => {
     // ASSIGN CONTRIBUTOR
     logger.info(`Assigning contributor with addr ${contributorAddr}`);
     const assignCbor = await assignContributor(
+      settingsUtxo,
       { txHash: addRewardTxId, outputIndex: 0 },
       contributorAddr,
       lucid
@@ -162,6 +175,7 @@ describe("Integration tests", async () => {
     // MERGE BOUNTY
     logger.info(`Merging bounty`);
     const mergeCbor = await mergeBounty(
+      settingsUtxo,
       { txHash: assignTxId, outputIndex: 0 },
       lucid
     );
@@ -189,6 +203,7 @@ describe("Integration tests", async () => {
     // CLAIM BOUNTY
     logger.info(`Claiming bounty`);
     const claimCbor = await claimBounty(
+      settingsUtxo,
       { txHash: mergeTxId, outputIndex: 0 },
       lucid,
       contributorAddr

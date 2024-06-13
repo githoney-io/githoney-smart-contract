@@ -1,16 +1,23 @@
 import { describe, it } from "mocha";
 import { Lucid, OutRef } from "lucid-cardano";
-import { newAssign, newBounty, newMerge, signAndSubmit } from "./utils";
+import {
+  deployUtxo,
+  newAssign,
+  newBounty,
+  newMerge,
+  signAndSubmit
+} from "./utils";
 import { ACCOUNT_0, emulator, tokenAUnit } from "./emulatorConfig";
-import { addRewards } from "../src/operations/addRewards";
+import { addRewards } from "../src/operations/bounties/addRewards";
 import { expect } from "chai";
 import logger from "../src/logger";
 
 const lucid = await Lucid.new(emulator, "Custom");
 
 describe("Add Rewards tests", async () => {
+  const settingsUtxo = await deployUtxo(lucid);
   it("Add Rewards with same token", async () => {
-    const createTxIdId = await newBounty(lucid);
+    const createTxIdId = await newBounty(lucid, settingsUtxo);
 
     const bountyOutRef: OutRef = { txHash: createTxIdId, outputIndex: 0 };
     const reward = {
@@ -18,6 +25,7 @@ describe("Add Rewards tests", async () => {
       amount: 50n
     };
     const addRewardsTx = await addRewards(
+      settingsUtxo,
       bountyOutRef,
       ACCOUNT_0.address,
       reward,
@@ -30,7 +38,7 @@ describe("Add Rewards tests", async () => {
   });
 
   it("Add Rewards with different token", async () => {
-    const createTxIdId = await newBounty(lucid);
+    const createTxIdId = await newBounty(lucid, settingsUtxo);
 
     const bountyOutRef: OutRef = { txHash: createTxIdId, outputIndex: 0 };
     const reward = {
@@ -38,6 +46,7 @@ describe("Add Rewards tests", async () => {
       amount: 75n
     };
     const addRewardsTx = await addRewards(
+      settingsUtxo,
       bountyOutRef,
       ACCOUNT_0.address,
       reward,
@@ -51,20 +60,26 @@ describe("Add Rewards tests", async () => {
 
   it("Add Rewards with already merged bounty", async () => {
     try {
-      const createTxId = await newBounty(lucid);
+      const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
-      const assignTxId = await newAssign(lucid, createOutRef);
+      const assignTxId = await newAssign(lucid, createOutRef, settingsUtxo);
       const assignOutRef: OutRef = { txHash: assignTxId, outputIndex: 0 };
 
-      const mergeTxId = await newMerge(lucid, assignOutRef);
+      const mergeTxId = await newMerge(lucid, assignOutRef, settingsUtxo);
       const mergeOutRef: OutRef = { txHash: mergeTxId, outputIndex: 0 };
 
       const reward = {
         unit: tokenAUnit,
         amount: 100n
       };
-      await addRewards(mergeOutRef, ACCOUNT_0.address, reward, lucid);
+      await addRewards(
+        settingsUtxo,
+        mergeOutRef,
+        ACCOUNT_0.address,
+        reward,
+        lucid
+      );
     } catch (e) {
       const error = e as Error;
       logger.error(error.message);
