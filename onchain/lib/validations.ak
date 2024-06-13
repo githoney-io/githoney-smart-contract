@@ -219,7 +219,6 @@ pub fn update_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
   let is_signed =
     is_signed_by(ctx.transaction, datum.githoney_wallet.payment_key)
 
-  // There is only one token besides ADA in the input Settings Utxo.
   let is_only_one_token_input =
     length(script_input.value |> value.policies) == 2 && quantity_of(
       script_input.value,

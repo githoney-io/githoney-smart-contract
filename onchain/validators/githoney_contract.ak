@@ -1,7 +1,8 @@
 use aiken/transaction.{Redeemer, ScriptContext}
-use aiken/transaction/value.{ PolicyId }
+use aiken/transaction/value.{PolicyId}
 use types.{
-  AddRewards, Assign, Claim, Close, GithoneyContractRedeemers, GithoneyDatum, Merge,
+  AddRewards, Assign, Claim, Close, GithoneyContractRedeemers, GithoneyDatum,
+  Merge,
 }
 use validations.{add_rewards, assign, claim, close, merge, minting_policy}
 

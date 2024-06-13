@@ -103,11 +103,7 @@ test wrong_minted_amount() fail {
       transaction: Transaction {
         ..ctx.transaction,
         mint: value.to_minted_value(
-          value.from_asset(
-            mocks.bounty_id_policy,
-            mocks.bounty_id_name,
-            1,
-          )
+          value.from_asset(mocks.bounty_id_policy, mocks.bounty_id_name, 1)
             |> value.add("123456789", "other_token", 1),
         ),
       },
@@ -124,11 +120,7 @@ test wrong_burned_amount() {
       transaction: Transaction {
         ..ctx.transaction,
         mint: value.to_minted_value(
-          value.from_asset(
-            mocks.bounty_id_policy,
-            mocks.bounty_id_name,
-            -1234,
-          ),
+          value.from_asset(mocks.bounty_id_policy, mocks.bounty_id_name, -1234),
         ),
       },
     }
