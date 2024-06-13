@@ -260,7 +260,7 @@ pub fn minting_policy_settings(
   utxo_ref: OutputReference,
   ctx: ScriptContext,
 ) -> Bool {
-  let (own_policy, minted_name, minted_quantity) =
+  let (settings_nft, minted_name, minted_quantity) =
     get_minting_info(ctx.transaction)
 
   let is_token_burned = minted_quantity == -1
@@ -275,8 +275,12 @@ pub fn minting_policy_settings(
         ctx.transaction.inputs,
         fn(o) { o.output_reference == utxo_ref },
       )
+
     let datum = to_settings_datum(script_input.output.datum)
 
-    is_minting_only_one_control_token?
+    let script_output = get_first_output(ctx)
+    let valid_value = is_utxo_value_valid(settings_nft, script_output.value)
+
+    is_minting_only_one_control_token? && valid_value?
   }
 }
