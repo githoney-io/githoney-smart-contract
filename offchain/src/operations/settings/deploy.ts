@@ -6,16 +6,16 @@ import {
 import { Lucid, toUnit } from "lucid-cardano";
 import { addrToWallet, validatorParams } from "../../utils";
 import logger from "../../logger";
-import { settingsTokenName } from "../../constants";
+import { githoneyAddr, settingsTokenName } from "../../constants";
 import { mkSettingsDatum } from "../../types";
 
-async function deploy(lucid: Lucid, address: string) {
+async function deploy(lucid: Lucid) {
   logger.info("START deploy");
   const settingsValidatorScript = settingsValidator();
   const settingsValidatorAddress = lucid.utils.validatorToAddress(
     settingsValidatorScript
   );
-  const utxo = (await lucid.utxosAt(address))[0];
+  const utxo = (await lucid.utxosAt(githoneyAddr))[0];
   const settingsMintingPolicy = settingsPolicy(
     {
       txHash: utxo.txHash,
@@ -30,7 +30,7 @@ async function deploy(lucid: Lucid, address: string) {
   const settingsDatum = mkSettingsDatum(validatorParams(lucid));
   const gitHoneyValidator = githoneyValidator(settingsPolicyId);
 
-  lucid.selectWalletFrom({ address });
+  lucid.selectWalletFrom({ address: githoneyAddr });
 
   const tx = await lucid
     .newTx()
