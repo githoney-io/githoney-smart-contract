@@ -7,19 +7,21 @@ import {
   emulator
 } from "./emulatorConfig";
 import { Lucid } from "lucid-cardano";
-import { createBounty } from "../src/operations/create";
-import { signAndSubmit } from "./utils";
+import { createBounty } from "../src/operations/bounties/create";
+import { deployUtxo, signAndSubmit } from "./utils";
 import logger from "../src/logger";
 
 const lucid = await Lucid.new(emulator, "Custom");
 
-describe("Create tests", () => {
+describe("Create tests", async () => {
   const now = new Date();
+  const settingsUtxo = await deployUtxo(lucid);
   it("Create a New Bounty", async () => {
     const deadline = new Date(
       now.getTime() + 1000 * 60 * 60 * 24 * 2
     ).getTime(); // 2 days from now
     const tx = await createBounty(
+      settingsUtxo,
       ACCOUNT_MANTAINER.address,
       ACCOUNT_ADMIN.address,
       {
@@ -41,6 +43,7 @@ describe("Create tests", () => {
         now.getTime() - 1000 * 60 * 60 * 24 * 1
       ).getTime(); // Yesterday
       await createBounty(
+        settingsUtxo,
         ACCOUNT_MANTAINER.address,
         ACCOUNT_ADMIN.address,
         {
@@ -66,6 +69,7 @@ describe("Create tests", () => {
         now.getTime() + 1000 * 60 * 60 * 24 * 2
       ).getTime();
       await createBounty(
+        settingsUtxo,
         ACCOUNT_MANTAINER.address,
         ACCOUNT_ADMIN.address,
         {

@@ -5,17 +5,20 @@ import {
   Lucid,
   OutRef,
   PrivateKey,
+  UTxO,
   fromHex
 } from "lucid-cardano";
 import {
   assignContributor,
   closeBounty,
   createBounty,
+  deploy,
   mergeBounty
 } from "../src";
 import {
   ACCOUNT_ADMIN,
   ACCOUNT_CONTRIBUTOR,
+  ACCOUNT_GITHONEY,
   ACCOUNT_MANTAINER,
   bounty_id,
   emulator,
@@ -91,11 +94,12 @@ const signAndSubmit = async (lucid: Lucid, tx: any) => {
   return txId;
 };
 
-const newBounty = async (lucid: Lucid) => {
+const newBounty = async (lucid: Lucid, settingsUtxo: UTxO) => {
   const now = new Date();
   const deadline = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2).getTime(); // 2 days from now
 
   const createTxId = await createBounty(
+    settingsUtxo,
     ACCOUNT_MANTAINER.address,
     ACCOUNT_ADMIN.address,
     {
@@ -113,8 +117,9 @@ const newBounty = async (lucid: Lucid) => {
   return txId;
 };
 
-const newAssign = async (lucid: Lucid, outRef: OutRef) => {
+const newAssign = async (lucid: Lucid, outRef: OutRef, settingsUtxo: UTxO) => {
   const assignTx = await assignContributor(
+    settingsUtxo,
     outRef,
     ACCOUNT_CONTRIBUTOR.address,
     lucid
@@ -126,20 +131,30 @@ const newAssign = async (lucid: Lucid, outRef: OutRef) => {
   return txId;
 };
 
-const newMerge = async (lucid: Lucid, outRef: OutRef) => {
-  const mergeTx = await mergeBounty(outRef, lucid);
+const newMerge = async (lucid: Lucid, outRef: OutRef, settingsUtxo: UTxO) => {
+  const mergeTx = await mergeBounty(settingsUtxo, outRef, lucid);
   emulator.awaitBlock(3);
   lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
   const txId = await signAndSubmit(lucid, mergeTx);
   return txId;
 };
 
-const newClose = async (lucid: Lucid, outRef: OutRef) => {
-  const closeTx = await closeBounty(outRef, lucid);
+const newClose = async (lucid: Lucid, outRef: OutRef, settingsUtxo: UTxO) => {
+  const closeTx = await closeBounty(settingsUtxo, outRef, lucid);
   emulator.awaitBlock(3);
   lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
   const txId = await signAndSubmit(lucid, closeTx);
   return txId;
+};
+
+const deployUtxo = async (lucid: Lucid) => {
+  const tx = await deploy(lucid, ACCOUNT_GITHONEY.address);
+  lucid.selectWalletFromSeed(ACCOUNT_GITHONEY.seedPhrase);
+  const deployTxId = await signAndSubmit(lucid, tx);
+  const [settingsUtxo] = await lucid.utxosByOutRef([
+    { txHash: deployTxId, outputIndex: 0 }
+  ]);
+  return settingsUtxo;
 };
 
 export {
@@ -147,6 +162,7 @@ export {
   newBounty,
   newMerge,
   newClose,
+  deployUtxo,
   signAndSubmit,
   waitForUtxosUpdate,
   privateKeyToAddress,

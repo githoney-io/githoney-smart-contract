@@ -6,33 +6,15 @@ import {
   Lucid,
   toUnit
 } from "lucid-cardano";
-import { controlTokenName, githoneyAddr } from "../src/constants";
-import { githoneyMintingPolicy } from "../src/scripts";
-import { validatorParams } from "../src/utils";
 
 const tokenA = {
   policy_id: "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb",
   asset_name: "tokenA"
 };
 
-const lucid = await Lucid.new();
-const scriptParams = validatorParams(lucid);
-const mintingScript = githoneyMintingPolicy(scriptParams);
-const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
-
-const controlToken = {
-  policy_id: mintingPolicyid,
-  asset_name: controlTokenName
-};
-
 const bounty_id = "Bounty Name Test";
 
 const tokenAUnit = toUnit(tokenA.policy_id, fromText(tokenA.asset_name));
-
-const bountyIdTokenUnit = toUnit(
-  controlToken.policy_id,
-  fromText(controlToken.asset_name)
-);
 
 const generateAccount = async (assets: Assets) => {
   const seedPhrase = generateSeedPhrase();
@@ -56,8 +38,9 @@ const ACCOUNT_MANTAINER = await generateAccount({
 });
 
 const ACCOUNT_GITHONEY = {
+  seedPhrase: process.env.GITHONEY_SEED!,
   address: await (await Lucid.new(undefined, "Custom"))
-    .selectWalletFrom({ address: githoneyAddr })
+    .selectWalletFromSeed(process.env.GITHONEY_SEED!)
     .wallet.address(),
   assets: {
     lovelace: 1_000_000_000n,
@@ -90,6 +73,5 @@ export {
   ACCOUNT_0,
   emulator,
   tokenAUnit,
-  bountyIdTokenUnit,
   bounty_id
 };
