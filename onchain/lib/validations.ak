@@ -224,7 +224,7 @@ pub fn update_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
       script_input.value,
       settings_nft_policy,
       settings_token_name,
-    ) == 1 && quantity_of(script_input.value, ada_policy_id, ada_asset_name) > 0
+    ) == 1
 
   let script_output = get_first_output(ctx)
   let is_settings_nft_in_output =
@@ -259,15 +259,13 @@ pub fn minting_policy_settings(
   utxo_ref: OutputReference,
   ctx: ScriptContext,
 ) -> Bool {
-  let (settings_nft, minted_name, minted_quantity) =
-    get_minting_info(ctx.transaction)
+  let (settings_nft, _, minted_quantity) = get_minting_info(ctx.transaction)
 
   let is_token_burned = minted_quantity == -1
   if is_token_burned {
     True
   } else {
-    let is_minting_only_one_control_token =
-      minted_quantity == 1 && minted_name == settings_token_name
+    let is_minting_only_one_setting_token = minted_quantity == 1
 
     expect Some(script_input) =
       list.find(
@@ -278,8 +276,11 @@ pub fn minting_policy_settings(
     let datum = to_settings_datum(script_input.output.datum)
 
     let script_output = get_first_output(ctx)
-    let valid_value = is_utxo_value_valid(settings_nft, script_output.value)
+    expect [setting_token_name] =
+      script_output.value |> tokens(settings_nft) |> dict.keys
+    let is_setting_token_in_output =
+      quantity_of(script_output.value, settings_nft, setting_token_name) == 1
 
-    is_minting_only_one_control_token? && valid_value?
+    is_minting_only_one_setting_token? && is_setting_token_in_output?
   }
 }
