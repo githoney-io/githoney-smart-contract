@@ -4,9 +4,12 @@ import {
   applyParamsToScript,
   ScriptHash,
   OutRef,
-  PolicyId
+  PolicyId,
+  AddressDetails
 } from "lucid-cardano";
 import plutusBlueprint from "../../onchain/plutus.json" assert { type: "json" };
+import { KeyPairKeyObjectResult } from "crypto";
+import { WalletSchema, WalletT } from "./types";
 
 const GITHONEY_VALIDATOR = plutusBlueprint.validators.find(
   ({ title }) => title === "githoney_contract.githoney_contract"
@@ -61,7 +64,11 @@ const ParamsSchema = Data.Tuple([Data.Bytes()]);
 type ParamsT = Data.Static<typeof ParamsSchema>;
 const Params = ParamsSchema as unknown as ParamsT;
 
-const SettingsParamsSchema = Data.Tuple([Data.Bytes(), Data.Integer()]);
+const SettingsParamsSchema = Data.Tuple([
+  Data.Bytes(),
+  Data.Integer(),
+  WalletSchema
+]);
 type SettingsParamsT = Data.Static<typeof SettingsParamsSchema>;
 const SettingsParams = SettingsParamsSchema as unknown as SettingsParamsT;
 
@@ -89,12 +96,15 @@ function githoneyMintingPolicy(settingsPolicyId: PolicyId): SpendingValidator {
   };
 }
 
-function settingsPolicy(outRef: OutRef): SpendingValidator {
+function settingsPolicy(
+  outRef: OutRef,
+  settingsScriptAddress: WalletT
+): SpendingValidator {
   return {
     type: "PlutusV2",
     script: applyParamsToScript<SettingsParamsT>(
       SETTINGS_POLICY,
-      [outRef.txHash, BigInt(outRef.outputIndex)],
+      [outRef.txHash, BigInt(outRef.outputIndex), settingsScriptAddress],
       SettingsParams
     )
   };

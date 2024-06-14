@@ -223,7 +223,6 @@ Closes the `GlobalSettings` UTxO, burning the NFT and refunding the ADA locked t
 #### General Checks for all _Redeemers_
 
 - `BountyUtxo` input with a `bountyIdToken`.
-- Only one reference input holding a token with the `NFT policy ID`.
 
 #### _AddReward Redeemer_
 
@@ -248,6 +247,7 @@ Closes the `GlobalSettings` UTxO, burning the NFT and refunding the ADA locked t
 
 #### _MergeBounty Redeemer_
 
+- Only one reference input holding a token with the `NFT policy ID`.
 - The merged field is False.
 - The `deadline` has not passed.
 - There is a contributor assigned.
@@ -267,6 +267,7 @@ Closes the `GlobalSettings` UTxO, burning the NFT and refunding the ADA locked t
 
 #### MINT
 
+- Only one reference input holding a token with the `NFT policy ID`.
 - A single `BountyIdToken` is minted.
 - The minted token and the min ADAs are paid to the `BountyValidatorAddress`.
 - There are some reward assets paid to the `BountyUtxo`.
@@ -299,13 +300,13 @@ Closes the `GlobalSettings` UTxO, burning the NFT and refunding the ADA locked t
 
 ### SettingsMintingPolicy
 
-- Params: `OutRef`
+- Params: `OutRef`, `SettingsValidator Address`
 
 #### MINT
 
 - Only one token is minted.
 - The `OutRef` is in the inputs.
-- The token is paid to the first output that has a script address and a datum
+- The token is paid to the `SettingsValidator Address` with a datum
   with the correct format.
 
 #### BURN
