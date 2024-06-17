@@ -100,14 +100,6 @@ namespace SettingsRedeemer {
     );
 }
 
-const OutputReference = Data.Object({
-  transaction_id: Data.Object({
-    hash: Data.Bytes()
-  }),
-  output_index: Data.Integer()
-});
-type OutputReferenceT = Data.Static<typeof OutputReference>;
-
 export {
   mkDatum,
   mkSettingsDatum,
@@ -118,7 +110,5 @@ export {
   GithoneyValidatorRedeemer,
   SettingsRedeemer,
   WalletSchema,
-  WalletT,
-  OutputReference,
-  OutputReferenceT
+  WalletT
 };
