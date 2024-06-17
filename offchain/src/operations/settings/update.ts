@@ -8,12 +8,12 @@ import { SettingsRedeemer, mkSettingsDatum } from "../../types";
 async function update(settingsUtxo: UTxO, lucid: Lucid) {
   logger.info("START update");
   const settingsValidatorScript = settingsValidator();
-  let settingsPolicyId = "";
-  Object.keys(settingsUtxo.assets).forEach((unit) => {
-    if (unit !== "lovelace") {
-      settingsPolicyId = fromUnit(unit).policyId;
-    }
-  });
+
+  const settingsPolicyId = fromUnit(
+    Object.keys(settingsUtxo.assets).find((unit) => {
+      return unit !== "lovelace";
+    })!
+  ).policyId;
 
   const settingsDatum = mkSettingsDatum(validatorParams(lucid));
   const gitHoneyValidator = githoneyValidator(settingsPolicyId);

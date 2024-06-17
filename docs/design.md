@@ -300,13 +300,13 @@ Closes the `GlobalSettings` UTxO, burning the NFT and refunding the ADA locked t
 
 ### SettingsMintingPolicy
 
-- Params: `OutRef`, `SettingsValidator Address`
+- Params: `OutRef`
 
 #### MINT
 
 - Only one token is minted.
 - The `OutRef` is in the inputs.
-- The token is paid to the `SettingsValidator Address` with a datum
+- The token is paid to the first output with a datum
   with the correct format.
 
 #### BURN
