@@ -85,6 +85,22 @@ function mkSettingsDatum(params: {
   return datum;
 }
 
+const SettingsRedeemerSchema = Data.Enum([
+  Data.Literal("Update"),
+  Data.Literal("Close")
+]);
+
+type SettingsRedeemerT = Data.Static<typeof SettingsRedeemerSchema>;
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+namespace SettingsRedeemer {
+  export const Update = () =>
+    Data.to("Update", SettingsRedeemerSchema as unknown as SettingsRedeemerT);
+
+  export const Close = () =>
+    Data.to("Close", SettingsRedeemerSchema as unknown as SettingsRedeemerT);
+}
+
 export {
   mkDatum,
   mkSettingsDatum,
@@ -93,6 +109,7 @@ export {
   SettingsDatum,
   GithoneyDatum,
   GithoneyValidatorRedeemer,
+  SettingsRedeemer,
   WalletSchema,
   WalletT
 };
