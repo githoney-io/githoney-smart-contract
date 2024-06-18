@@ -26,8 +26,7 @@ test success() {
   expect Some(script_output) = head(script_ctx.transaction.outputs)
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
-  let githoney_fee_amount =
-    mocks.reward_amount * mocks.reward_fee / 10000
+  let githoney_fee_amount = mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -78,8 +77,7 @@ test bad_new_datum() {
   expect Some(script_output) = head(script_ctx.transaction.outputs)
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
-  let githoney_fee_amount =
-    mocks.reward_amount * mocks.reward_fee / 10000
+  let githoney_fee_amount = mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -132,8 +130,7 @@ test bad_actual_datum() {
   expect Some(script_output) = head(script_ctx.transaction.outputs)
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
-  let githoney_fee_amount =
-    mocks.reward_amount * mocks.reward_fee / 10000
+  let githoney_fee_amount = mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -183,8 +180,7 @@ test bad_input_value() {
     }
   let new_datum = GithoneyDatum { ..input_datum, merged: True }
   expect Some(script_output) = head(script_ctx.transaction.outputs)
-  let githoney_fee_amount =
-    mocks.reward_amount * mocks.reward_fee / 10000
+  let githoney_fee_amount = mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -235,8 +231,7 @@ test without_maintainer_pay() {
   expect Some(script_output) = head(script_ctx.transaction.outputs)
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
-  let githoney_fee_amount =
-    mocks.reward_amount * mocks.reward_fee / 10000
+  let githoney_fee_amount = mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -279,8 +274,7 @@ test without_admin_signature() {
   expect Some(script_output) = head(script_ctx.transaction.outputs)
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
-  let githoney_fee_amount =
-    mocks.reward_amount * mocks.reward_fee / 10000
+  let githoney_fee_amount = mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -331,8 +325,7 @@ test without_githoney_pay() {
   expect Some(script_output) = head(script_ctx.transaction.outputs)
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
-  let githoney_fee_amount =
-    mocks.reward_amount * mocks.reward_fee / 10000
+  let githoney_fee_amount = mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -371,8 +364,7 @@ test bad_address() {
   expect Some(script_output) = head(script_ctx.transaction.outputs)
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
-  let githoney_fee_amount =
-    mocks.reward_amount * mocks.reward_fee / 10000
+  let githoney_fee_amount = mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -425,8 +417,7 @@ test after_deadline() {
   expect Some(script_output) = head(script_ctx.transaction.outputs)
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
-  let githoney_fee_amount =
-    mocks.reward_amount * mocks.reward_fee / 10000
+  let githoney_fee_amount = mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
@@ -479,8 +470,7 @@ test without_bounty_id_token() fail {
   expect Some(script_output) = head(script_ctx.transaction.outputs)
   let script_input_value =
     script_output.value |> add(ada_policy_id, ada_asset_name, min_ada)
-  let githoney_fee_amount =
-    mocks.reward_amount * mocks.reward_fee / 10000
+  let githoney_fee_amount = mocks.reward_amount * mocks.reward_fee / 10000
   let script_output_value =
     merge(
       script_output.value,
