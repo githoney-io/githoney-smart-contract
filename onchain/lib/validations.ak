@@ -215,7 +215,7 @@ pub fn minting_policy(settings_policy_id: PolicyId, ctx: ScriptContext) -> Bool 
 // Settings Validation
 pub fn update_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
   let script_input = get_script_input(ctx).output
-  expect [(settings_nft_policy, settings_token_name, _)] =
+  expect [(settings_nft_policy, _, settings_amount)] =
     script_input.value
       |> value.without_lovelace()
       |> value.flatten()
@@ -224,11 +224,7 @@ pub fn update_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
     is_signed_by(ctx.transaction, datum.githoney_wallet.payment_key)
 
   let is_only_one_token_input =
-    length(script_input.value |> value.policies) == 2 && quantity_of(
-      script_input.value,
-      settings_nft_policy,
-      settings_token_name,
-    ) == 1
+    length(script_input.value |> value.policies) == 2 && settings_amount == 1
 
   let script_output = get_first_output(ctx)
   let is_settings_nft_in_output =
@@ -241,7 +237,7 @@ pub fn update_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
 
 pub fn close_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
   let script_input = get_script_input(ctx).output
-  expect [(settings_nft_policy, settings_token_name, _)] =
+  expect [(settings_nft_policy, _, _)] =
     script_input.value
       |> value.without_lovelace()
       |> value.flatten()
