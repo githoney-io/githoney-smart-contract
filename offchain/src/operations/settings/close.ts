@@ -3,7 +3,7 @@ import { SettingsRedeemer } from "../../types";
 import { addrToWallet, clearZeroAssets } from "../../utils";
 import { githoneyAddr } from "../../constants";
 import logger from "../../logger";
-import { settingsValidator } from "../../scripts";
+import { settingsPolicy, settingsValidator } from "../../scripts";
 
 async function closeSettings(
   settingsUtxo: UTxO,
@@ -12,6 +12,10 @@ async function closeSettings(
   logger.info("START closeSettings");
 
   const settingsValidatorScript = settingsValidator();
+  const settingsValidatorAddress = lucid.utils.validatorToAddress(
+    settingsValidatorScript
+  );
+
   const settingsTokenUnit = Object.keys(settingsUtxo.assets).find((unit) => {
     return unit !== "lovelace";
   })!;
@@ -33,6 +37,7 @@ async function closeSettings(
     .mintAssets({ [settingsTokenUnit]: BigInt(-1) }, Data.void())
     .addSignerKey(githoneyPkh)
     .attachSpendingValidator(settingsValidatorScript)
+    .attachMintingPolicy(settingsMintingPolicy)
     .complete();
 
   const cbor = tx.toString();
