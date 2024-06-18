@@ -18,7 +18,7 @@ import {
 import { signSubmitAndWaitConfirmation } from "../utils";
 import { GithoneyDatum } from "../../src/types";
 import { assert } from "console";
-import { keyPairsToAddress, validatorParams } from "../../src/utils";
+import { keyPairsToAddress } from "../../src/utils";
 import { githoneyMintingPolicy } from "../../src/scripts";
 import logger from "../../src/logger";
 
@@ -27,8 +27,7 @@ const {
   BLOCKFROST_PROJECT_ID,
   CONTRIBUTOR_SEED,
   MAINTAINER_SEED,
-  GITHONEY_SEED,
-  GITHONEY_ADDRESS
+  GITHONEY_SEED
 } = process.env;
 
 const blockfrost = new Blockfrost(
