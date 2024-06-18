@@ -6,11 +6,11 @@ import {
   newBounty,
   newMerge,
   signAndSubmit
-} from "./utils";
-import { ACCOUNT_0, emulator, tokenAUnit } from "./emulatorConfig";
-import { addRewards } from "../src/operations/bounties/addRewards";
+} from "../utils";
+import { ACCOUNT_0, emulator, tokenAUnit } from "../emulatorConfig";
+import { addRewards } from "../../src/operations/bounties/addRewards";
 import { expect } from "chai";
-import logger from "../src/logger";
+import logger from "../../src/logger";
 
 const lucid = await Lucid.new(emulator, "Custom");
 

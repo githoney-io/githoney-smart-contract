@@ -9,7 +9,7 @@ function validatorParams(lucid: Lucid) {
   const gitHoneyCredentials = lucid.utils.getAddressDetails(githoneyAddr);
   const gitHoneyWallet: WalletT = {
     paymentKey: gitHoneyCredentials.paymentCredential!.hash,
-    stakeKey: gitHoneyCredentials.stakeCredential!.hash
+    stakeKey: gitHoneyCredentials.stakeCredential?.hash || null
   };
 
   return {
@@ -23,7 +23,7 @@ function addrToWallet(address: string, lucid: Lucid): WalletT {
   const details = lucid.utils.getAddressDetails(address);
   return {
     paymentKey: details.paymentCredential!.hash,
-    stakeKey: details.stakeCredential!.hash
+    stakeKey: details.stakeCredential?.hash || null
   };
 }
 

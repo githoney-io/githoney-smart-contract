@@ -64,11 +64,11 @@ const ParamsSchema = Data.Tuple([Data.Bytes()]);
 type ParamsT = Data.Static<typeof ParamsSchema>;
 const Params = ParamsSchema as unknown as ParamsT;
 
-const SettingsParamsSchema = Data.Tuple([
-  Data.Bytes(),
-  Data.Integer(),
-  WalletSchema
-]);
+const OutRefSchema = Data.Object({
+  txHash: Data.Object({ hash: Data.Bytes() }),
+  outputIndex: Data.Integer()
+});
+const SettingsParamsSchema = Data.Tuple([OutRefSchema]);
 type SettingsParamsT = Data.Static<typeof SettingsParamsSchema>;
 const SettingsParams = SettingsParamsSchema as unknown as SettingsParamsT;
 
@@ -96,15 +96,17 @@ function githoneyMintingPolicy(settingsPolicyId: PolicyId): SpendingValidator {
   };
 }
 
-function settingsPolicy(
-  outRef: OutRef,
-  settingsScriptAddress: WalletT
-): SpendingValidator {
+function settingsPolicy(outRef: OutRef): SpendingValidator {
   return {
     type: "PlutusV2",
     script: applyParamsToScript<SettingsParamsT>(
       SETTINGS_POLICY,
-      [outRef.txHash, BigInt(outRef.outputIndex), settingsScriptAddress],
+      [
+        {
+          txHash: { hash: outRef.txHash },
+          outputIndex: BigInt(outRef.outputIndex)
+        }
+      ],
       SettingsParams
     )
   };

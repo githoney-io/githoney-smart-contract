@@ -5,11 +5,11 @@ import {
   ACCOUNT_MANTAINER,
   bounty_id,
   emulator
-} from "./emulatorConfig";
+} from "../emulatorConfig";
 import { Lucid } from "lucid-cardano";
-import { createBounty } from "../src/operations/bounties/create";
-import { deployUtxo, signAndSubmit } from "./utils";
-import logger from "../src/logger";
+import { createBounty } from "../../src/operations/bounties/create";
+import { deployUtxo, signAndSubmit } from "../utils";
+import logger from "../../src/logger";
 
 const lucid = await Lucid.new(emulator, "Custom");
 

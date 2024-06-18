@@ -1,10 +1,10 @@
 import { describe, it } from "mocha";
-import { ACCOUNT_ADMIN, emulator } from "./emulatorConfig";
+import { ACCOUNT_ADMIN, emulator } from "../emulatorConfig";
 import { Lucid, OutRef } from "lucid-cardano";
-import { mergeBounty } from "../src/operations/bounties/merge";
-import { deployUtxo, newAssign, newBounty, signAndSubmit } from "./utils";
+import { mergeBounty } from "../../src/operations/bounties/merge";
+import { deployUtxo, newAssign, newBounty, signAndSubmit } from "../utils";
 import { expect } from "chai";
-import logger from "../src/logger";
+import logger from "../../src/logger";
 
 const lucid = await Lucid.new(emulator, "Custom");
 
