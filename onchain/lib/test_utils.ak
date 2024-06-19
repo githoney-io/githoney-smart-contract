@@ -321,3 +321,25 @@ pub fn mk_burn_script_context(redeemer: Redeemer) -> ScriptContext {
     ),
   }
 }
+
+pub fn mk_mp_settings_script_context() -> ScriptContext {
+  let githoney_input_utxo =
+    input_with_assets(
+      mocks.transaction_id_2,
+      0,
+      mocks.mk_githoney_address(),
+      value.from_lovelace(40_000_000),
+    )
+
+  ScriptContext {
+    purpose: Mint(mocks.settings_nft_policy),
+    transaction: tx_builder(
+      [githoney_input_utxo],
+      [mocks.mk_settings_output()],
+      value.from_asset(mocks.settings_nft_policy, mocks.settings_token_name, 1),
+      dict.new(),
+      dict.new(),
+      mocks.transaction_id_3,
+    ),
+  }
+}
