@@ -258,7 +258,6 @@ pub fn close_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
   is_settings_nft_burnt? && is_signed? && is_githoney_pay_valid?
 }
 
-use aiken/cbor
 pub fn minting_policy_settings(
   utxo_ref: OutputReference,
   ctx: ScriptContext,
@@ -270,10 +269,6 @@ pub fn minting_policy_settings(
     True
   } else {
     let is_minting_only_one_setting_token = minted_quantity == 1
-    trace cbor.diagnostic(utxo_ref)
-    expect Some(input) = list.head(ctx.transaction.inputs)
-    trace cbor.diagnostic(input.output_reference)
-    trace cbor.diagnostic(utxo_ref == input.output_reference)
     let is_outref_in_inputs =
       list.any(
         ctx.transaction.inputs,

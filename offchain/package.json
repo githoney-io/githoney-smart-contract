@@ -20,8 +20,7 @@
     "test-assign": "mocha --timeout 0 --grep 'Assign'",
     "test-merge": "mocha --timeout 0 --grep 'Merge'",
     "test-close": "mocha --timeout 0 --grep 'Close'",
-    "test-claim": "mocha --timeout 0 --grep 'Claim'",
-    "test-deploy": "mocha --timeout 0 --grep 'Deploy'"
+    "test-claim": "mocha --timeout 0 --grep 'Claim'"
   },
   "author": "Filabs",
   "license": "ISC",

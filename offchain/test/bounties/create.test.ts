@@ -4,19 +4,19 @@ import {
   ACCOUNT_ADMIN,
   ACCOUNT_MANTAINER,
   bounty_id,
-  emulator
+  emulator,
+  lucid
 } from "../emulatorConfig";
 import { Lucid } from "lucid-cardano";
 import { createBounty } from "../../src/operations/bounties/create";
 import { deployUtxo, signAndSubmit } from "../utils";
 import logger from "../../src/logger";
 
-const lucid = await Lucid.new(emulator, "Custom");
-
 describe("Create tests", async () => {
   const now = new Date();
-  const settingsUtxo = await deployUtxo(lucid);
   it("Create a New Bounty", async () => {
+    const settingsUtxo = await deployUtxo(lucid);
+
     const deadline = new Date(
       now.getTime() + 1000 * 60 * 60 * 24 * 2
     ).getTime(); // 2 days from now
@@ -38,6 +38,8 @@ describe("Create tests", async () => {
   });
 
   it("Bounty with deadline in the past", async () => {
+    const settingsUtxo = await deployUtxo(lucid);
+
     try {
       const deadline = new Date(
         now.getTime() - 1000 * 60 * 60 * 24 * 1
@@ -64,6 +66,8 @@ describe("Create tests", async () => {
   });
 
   it("Bounty with negative fees", async () => {
+    const settingsUtxo = await deployUtxo(lucid);
+
     try {
       const deadline = new Date(
         now.getTime() + 1000 * 60 * 60 * 24 * 2

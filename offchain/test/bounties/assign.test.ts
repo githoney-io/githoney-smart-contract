@@ -7,16 +7,19 @@ import {
   signAndSubmit
 } from "../utils";
 import { assignContributor } from "../../src";
-import { emulator, ACCOUNT_CONTRIBUTOR, ACCOUNT_0 } from "../emulatorConfig";
+import {
+  emulator,
+  ACCOUNT_CONTRIBUTOR,
+  ACCOUNT_0,
+  lucid
+} from "../emulatorConfig";
 import { Lucid, OutRef } from "lucid-cardano";
 import { expect } from "chai";
 import logger from "../../src/logger";
 
-const lucid = await Lucid.new(emulator, "Custom");
-
 describe("Assign Contributor tests", async () => {
-  const settingsUtxo = await deployUtxo(lucid);
   it("Assign Contributor", async () => {
+    const settingsUtxo = await deployUtxo(lucid);
     const createTxIdId = await newBounty(lucid, settingsUtxo);
     const bountyOutRef: OutRef = { txHash: createTxIdId, outputIndex: 0 };
 
@@ -33,6 +36,7 @@ describe("Assign Contributor tests", async () => {
   });
 
   it("Assign Contributor with already merged bounty", async () => {
+    const settingsUtxo = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
@@ -57,6 +61,7 @@ describe("Assign Contributor tests", async () => {
   });
 
   it("Assign Contributor with contributor already assigned", async () => {
+    const settingsUtxo = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const bountyOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
