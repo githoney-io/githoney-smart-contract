@@ -3,7 +3,7 @@ import {
   settingsValidator,
   settingsPolicy
 } from "../../scripts";
-import { Lucid, toUnit } from "lucid-cardano";
+import { Data, Lucid, fromText, toHex, toUnit } from "lucid-cardano";
 import { addrToWallet, validatorParams } from "../../utils";
 import logger from "../../logger";
 import { githoneyAddr, settingsTokenName } from "../../constants";
@@ -16,16 +16,14 @@ async function deploy(lucid: Lucid) {
     settingsValidatorScript
   );
   const utxo = (await lucid.utxosAt(githoneyAddr))[0];
-  const settingsMintingPolicy = settingsPolicy(
-    {
-      txHash: utxo.txHash,
-      outputIndex: utxo.outputIndex
-    },
-    addrToWallet(settingsValidatorAddress, lucid)
-  );
+  const settingsMintingPolicy = settingsPolicy({
+    txHash: utxo.txHash,
+    outputIndex: utxo.outputIndex
+  });
 
   const settingsPolicyId = lucid.utils.mintingPolicyToId(settingsMintingPolicy);
-  const settingsNFTUnit = toUnit(settingsPolicyId, settingsTokenName);
+  logger.info(`settingsPolicyId: ${settingsPolicyId}`);
+  const settingsNFTUnit = toUnit(settingsPolicyId, fromText(settingsTokenName));
 
   const settingsDatum = mkSettingsDatum(validatorParams(lucid));
   const gitHoneyValidator = githoneyValidator(settingsPolicyId);
@@ -40,7 +38,7 @@ async function deploy(lucid: Lucid) {
       { scriptRef: gitHoneyValidator, inline: settingsDatum },
       { [settingsNFTUnit]: 1n }
     )
-    .mintAssets({ [settingsNFTUnit]: 1n })
+    .mintAssets({ [settingsNFTUnit]: 1n }, Data.void())
     .attachMintingPolicy(settingsMintingPolicy)
     .complete();
 

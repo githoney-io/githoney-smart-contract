@@ -6,6 +6,7 @@ import {
   Lucid,
   toUnit
 } from "lucid-cardano";
+import { deployUtxo } from "./utils";
 
 const tokenA = {
   policy_id: "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb",
@@ -65,6 +66,8 @@ const emulator = new Emulator([
   ACCOUNT_0
 ]);
 
+const lucid = await Lucid.new(emulator, "Custom");
+
 export {
   ACCOUNT_ADMIN,
   ACCOUNT_MANTAINER,
@@ -73,5 +76,6 @@ export {
   ACCOUNT_0,
   emulator,
   tokenAUnit,
-  bounty_id
+  bounty_id,
+  lucid
 };

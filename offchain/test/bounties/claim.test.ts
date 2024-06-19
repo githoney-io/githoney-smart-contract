@@ -1,8 +1,13 @@
 import { describe, it } from "mocha";
-import { emulator, ACCOUNT_CONTRIBUTOR, ACCOUNT_0 } from "./emulatorConfig";
+import {
+  emulator,
+  ACCOUNT_CONTRIBUTOR,
+  ACCOUNT_0,
+  lucid
+} from "../emulatorConfig";
 import { Lucid, OutRef } from "lucid-cardano";
 import { expect } from "chai";
-import { claimBounty } from "../src/operations/bounties/claim";
+import { claimBounty } from "../../src/operations/bounties/claim";
 import {
   deployUtxo,
   newAssign,
@@ -10,14 +15,12 @@ import {
   newClose,
   newMerge,
   signAndSubmit
-} from "./utils";
-import logger from "../src/logger";
-
-const lucid = await Lucid.new(emulator, "Custom");
+} from "../utils";
+import logger from "../../src/logger";
 
 describe("Claim tests", async () => {
-  const settingsUtxo = await deployUtxo(lucid);
   it("Claim bounty", async () => {
+    const settingsUtxo = await deployUtxo(lucid);
     const createTxId = await newBounty(lucid, settingsUtxo);
     const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
@@ -39,6 +42,7 @@ describe("Claim tests", async () => {
   });
 
   it("Claim bounty after close", async () => {
+    const settingsUtxo = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
@@ -66,6 +70,7 @@ describe("Claim tests", async () => {
   });
 
   it("Claim bounty not merged", async () => {
+    const settingsUtxo = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
@@ -87,6 +92,7 @@ describe("Claim tests", async () => {
   });
 
   it("Claim bounty with no contributor", async () => {
+    const settingsUtxo = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
@@ -105,6 +111,7 @@ describe("Claim tests", async () => {
   });
 
   it("Claim bounty with wrong contributor", async () => {
+    const settingsUtxo = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };

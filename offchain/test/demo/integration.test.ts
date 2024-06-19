@@ -55,7 +55,7 @@ const bounty_id = "Bounty DEMO";
 
 describe("Integration tests", async () => {
   it("Demo Normal flow", async () => {
-    const deployCbor = await deploy(lucid, GITHONEY_ADDRESS!);
+    const deployCbor = await deploy(lucid);
     logger.info(`Deploying Githoney`);
     const deployTxId = await signSubmitAndWaitConfirmation(
       lucidGithoney,
@@ -63,6 +63,7 @@ describe("Integration tests", async () => {
     );
     const deployOutRef = { txHash: deployTxId, outputIndex: 0 };
     const [settingsUtxo] = await lucid.utxosByOutRef([deployOutRef]);
+    logger.info(`Githoney deployed`);
     let settingsNFTPolicy = "";
     Object.keys(settingsUtxo.assets).forEach((unit) => {
       if (fromUnit(unit).policyId !== "") {

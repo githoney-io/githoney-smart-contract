@@ -148,7 +148,7 @@ const newClose = async (lucid: Lucid, outRef: OutRef, settingsUtxo: UTxO) => {
 };
 
 const deployUtxo = async (lucid: Lucid) => {
-  const tx = await deploy(lucid, ACCOUNT_GITHONEY.address);
+  const tx = await deploy(lucid);
   lucid.selectWalletFromSeed(ACCOUNT_GITHONEY.seedPhrase);
   const deployTxId = await signAndSubmit(lucid, tx);
   const [settingsUtxo] = await lucid.utxosByOutRef([

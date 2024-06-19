@@ -6,17 +6,15 @@ import {
   newBounty,
   newMerge,
   signAndSubmit
-} from "./utils";
-import { ACCOUNT_0, emulator, tokenAUnit } from "./emulatorConfig";
-import { addRewards } from "../src/operations/bounties/addRewards";
+} from "../utils";
+import { ACCOUNT_0, emulator, tokenAUnit, lucid } from "../emulatorConfig";
+import { addRewards } from "../../src/operations/bounties/addRewards";
 import { expect } from "chai";
-import logger from "../src/logger";
-
-const lucid = await Lucid.new(emulator, "Custom");
+import logger from "../../src/logger";
 
 describe("Add Rewards tests", async () => {
-  const settingsUtxo = await deployUtxo(lucid);
   it("Add Rewards with same token", async () => {
+    const settingsUtxo = await deployUtxo(lucid);
     const createTxIdId = await newBounty(lucid, settingsUtxo);
 
     const bountyOutRef: OutRef = { txHash: createTxIdId, outputIndex: 0 };
@@ -38,6 +36,7 @@ describe("Add Rewards tests", async () => {
   });
 
   it("Add Rewards with different token", async () => {
+    const settingsUtxo = await deployUtxo(lucid);
     const createTxIdId = await newBounty(lucid, settingsUtxo);
 
     const bountyOutRef: OutRef = { txHash: createTxIdId, outputIndex: 0 };
@@ -59,6 +58,7 @@ describe("Add Rewards tests", async () => {
   });
 
   it("Add Rewards with already merged bounty", async () => {
+    const settingsUtxo = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };

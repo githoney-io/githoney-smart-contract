@@ -269,8 +269,7 @@ pub fn minting_policy_settings(
     True
   } else {
     let is_minting_only_one_setting_token = minted_quantity == 1
-
-    let is_utxo_in_script_input =
+    let is_outref_in_inputs =
       list.any(
         ctx.transaction.inputs,
         fn(input) { input.output_reference == utxo_ref },
@@ -283,6 +282,6 @@ pub fn minting_policy_settings(
     let is_setting_token_in_output =
       quantity_of(script_output.value, settings_nft, setting_token_name) == 1
 
-    is_minting_only_one_setting_token? && is_utxo_in_script_input? && is_setting_token_in_output?
+    is_minting_only_one_setting_token? && is_outref_in_inputs? && is_setting_token_in_output?
   }
 }

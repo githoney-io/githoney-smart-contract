@@ -2,12 +2,13 @@ use aiken/transaction.{OutputReference, Redeemer, ScriptContext}
 use aiken/transaction/value.{PolicyId}
 use types.{
   AddRewards, Assign, Claim, Close, CloseSettings, GithoneyContractRedeemers,
-  GithoneyDatum, Merge, SettingsDatum, SettingsRedeemers, UpdateSettings,
+  GithoneyDatum, Merge, SettingsDatum, SettingsRedeemers, UpdateSettings
 }
 use validations.{
   add_rewards, assign, claim, close, close_settings, merge, minting_policy,
   minting_policy_settings, update_settings,
 }
+use aiken/cbor
 
 validator(settings_policy_id: PolicyId) {
   fn githoney_contract(

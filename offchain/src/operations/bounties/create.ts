@@ -1,8 +1,9 @@
-import { Data, fromText, toUnit, Lucid, UTxO } from "lucid-cardano";
+import { Data, fromText, toUnit, Lucid, UTxO, Constr } from "lucid-cardano";
 import { MIN_ADA, creationFee, githoneyAddr } from "../../constants";
-import { mkDatum } from "../../types";
+import { GithoneyValidatorRedeemer, SettingsDatum, mkDatum } from "../../types";
 import { addrToWallet } from "../../utils";
 import logger from "../../logger";
+import { log } from "console";
 
 async function createBounty(
   settingsUtxo: UTxO,
@@ -50,6 +51,7 @@ async function createBounty(
   };
   const maintainerWallet = addrToWallet(maintainerAddr, lucid);
   const adminWallet = addrToWallet(adminAddr, lucid);
+  const settings = await lucid.datumOf(settingsUtxo, SettingsDatum);
 
   logger.info("Maintainer Address", maintainerAddr);
   logger.info("Githoney Address", githoneyAddr);
@@ -61,6 +63,7 @@ async function createBounty(
     admin: adminWallet,
     maintainer: maintainerWallet,
     contributor: null,
+    bounty_reward_fee: settings.reward_fee,
     deadline,
     merged: false
   });
