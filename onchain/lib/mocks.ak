@@ -36,7 +36,7 @@ pub const bounty_id_name = "bounty Id"
 pub const settings_nft_policy =
   #"551c576b4d0e330fcc94feda17a910d7338cb0687ed20b59e5c68a32"
 
-pub const settings_token_name = "settings NFT"
+pub const settings_token_name = "settingsNFT"
 
 pub const token_a_policy =
   #"bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb"

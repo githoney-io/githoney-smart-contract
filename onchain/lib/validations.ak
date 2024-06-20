@@ -1,7 +1,9 @@
 use aiken/dict
 use aiken/list.{length}
 use aiken/option.{is_none, is_some}
-use aiken/transaction.{Output, OutputReference, ScriptContext, Transaction}
+use aiken/transaction.{
+  InlineDatum, Output, OutputReference, ScriptContext, Transaction,
+}
 use aiken/transaction/credential.{ScriptCredential, from_script}
 use aiken/transaction/value.{
   AssetName, PolicyId, ada_asset_name, ada_policy_id, from_lovelace, quantity_of,
@@ -276,11 +278,12 @@ pub fn minting_policy_settings(
       )
 
     let script_output = get_first_output(ctx)
-    let datum = to_settings_datum(script_output.datum)
-    expect [setting_token_name] =
-      script_output.value |> tokens(settings_nft) |> dict.keys
+
+    expect InlineDatum(datum) = script_output.datum
+    expect settings_datum: SettingsDatum = datum
+
     let is_setting_token_in_output =
-      quantity_of(script_output.value, settings_nft, setting_token_name) == 1
+      quantity_of(script_output.value, settings_nft, settings_token_name) == 1
 
     is_minting_only_one_setting_token? && is_outref_in_inputs? && is_setting_token_in_output?
   }
