@@ -151,6 +151,16 @@ pub fn script_input_without_bounty_id_token(ctx: ScriptContext) -> ScriptContext
   change_input_value(ctx, 0, new_value)
 }
 
+pub fn script_input_without_settings_nft(ctx: ScriptContext) -> ScriptContext {
+  expect Some(script_input) = head(ctx.transaction.inputs)
+  let new_value =
+    value.merge(
+      script_input.output.value,
+      value.from_asset(mocks.settings_nft_policy, mocks.settings_token_name, -1),
+    )
+  change_input_value(ctx, 0, new_value)
+}
+
 pub fn remove_mint_from_context(ctx: ScriptContext) -> ScriptContext {
   ScriptContext {
     ..ctx,
@@ -314,6 +324,23 @@ pub fn mk_burn_script_context(redeemer: Redeemer) -> ScriptContext {
       [mocks.mk_input_bounty_utxo(), rewards_input],
       [],
       value.from_asset(mocks.bounty_id_policy, mocks.bounty_id_name, -1),
+      dict.new()
+        |> dict.insert(purpose, redeemer, script_purpose_compare),
+      dict.new(),
+      mocks.transaction_id_3,
+    ),
+  }
+}
+
+pub fn mk_settings_script_context(redeemer: Redeemer) -> ScriptContext {
+  let purpose = Spend(mocks.mk_settings_out_ref())
+  ScriptContext {
+    purpose,
+    transaction: tx_builder(
+      [mocks.mk_settings_input()],
+      [],
+      //  value.from_asset(mocks.settings_nft_policy, mocks.settings_token_name, -1)
+      value.zero(),
       dict.new()
         |> dict.insert(purpose, redeemer, script_purpose_compare),
       dict.new(),

@@ -230,9 +230,10 @@ pub fn update_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
 
   let script_output = get_first_output(ctx)
   let is_settings_nft_in_output =
-    quantity_of(script_input.value, settings_nft_policy, settings_token_name) == 1
+    quantity_of(script_output.value, settings_nft_policy, settings_token_name) == 1
 
-  let new_datum = to_settings_datum(script_output.datum)
+  expect InlineDatum(new_datum) = script_output.datum
+  expect _settings_datum: SettingsDatum = new_datum
 
   is_signed? && is_only_one_token_input? && is_settings_nft_in_output?
 }
@@ -280,7 +281,7 @@ pub fn minting_policy_settings(
     let script_output = get_first_output(ctx)
 
     expect InlineDatum(datum) = script_output.datum
-    expect settings_datum: SettingsDatum = datum
+    expect _settings_datum: SettingsDatum = datum
 
     let is_setting_token_in_output =
       quantity_of(script_output.value, settings_nft, settings_token_name) == 1
