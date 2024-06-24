@@ -31,10 +31,12 @@ pub const settings_addr =
 pub const bounty_id_policy =
   #"551c576b4d0e330fcc94feda17a910d7338cb0687ed20b59e5c68a12"
 
+pub const bounty_id_name = "bounty Id"
+
 pub const settings_nft_policy =
   #"551c576b4d0e330fcc94feda17a910d7338cb0687ed20b59e5c68a32"
 
-pub const bounty_id_name = "bounty Id"
+pub const settings_token_name = "settingsNFT"
 
 pub const token_a_policy =
   #"bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb"
@@ -149,6 +151,20 @@ pub fn mk_input_bounty_utxo() {
   Input { output: mk_output_bounty_utxo(), output_reference: script_out_ref() }
 }
 
+pub fn mk_settings_out_ref() {
+  OutputReference {
+    transaction_id: TransactionId { hash: transaction_id_2 },
+    output_index: 0,
+  }
+}
+
+pub fn mk_settings_input() {
+  Input {
+    output: mk_settings_output(),
+    output_reference: mk_settings_out_ref(),
+  }
+}
+
 // ========================================
 // OUTPUTS
 // ========================================
@@ -175,38 +191,19 @@ pub fn mk_output_bounty_utxo() {
   }
 }
 
-// ========================================
-// INPUTS
-// ========================================
-
-pub fn mk_settings_input() {
-  Input {
-    output: Output {
-      address: mk_settings_address(),
-      value: value.from_lovelace(min_ada)
-        |> value.add(settings_nft_policy, settings_token_name, 1),
-      datum: InlineDatum(mk_settings_datum()),
-      reference_script: None,
-    },
-    output_reference: OutputReference {
-      transaction_id: TransactionId { hash: transaction_id_2 },
-      output_index: 0,
-    },
+pub fn mk_settings_output() {
+  Output {
+    address: mk_settings_address(),
+    value: value.from_lovelace(min_ada)
+      |> value.add(settings_nft_policy, settings_token_name, 1),
+    datum: InlineDatum(mk_settings_datum()),
+    reference_script: None,
   }
 }
 // ========================================
 // DATUMS
 // ========================================
-// pub fn mk_bounty_datum() -> GithoneyDatum {
-//   GithoneyDatum {
-//     admin_wallet,
-//     maintainer_wallet,
-//     contributor_wallet: Some(contributor_wallet),
-//     bounty_id: mocks.bounty_id,
-//     deadline: 1715888789 + 604800,
-//     merged: False,
-//   }
-// }
+
 // ========================================
 // EXTRA
 // ========================================
