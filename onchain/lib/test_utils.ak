@@ -339,7 +339,6 @@ pub fn mk_settings_script_context(redeemer: Redeemer) -> ScriptContext {
     transaction: tx_builder(
       [mocks.mk_settings_input()],
       [],
-      //  value.from_asset(mocks.settings_nft_policy, mocks.settings_token_name, -1)
       value.zero(),
       dict.new()
         |> dict.insert(purpose, redeemer, script_purpose_compare),
