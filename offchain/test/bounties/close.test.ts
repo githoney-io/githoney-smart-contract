@@ -1,6 +1,6 @@
 import { describe, it } from "mocha";
 import { ACCOUNT_ADMIN, emulator, lucid } from "../emulatorConfig";
-import { Lucid, OutRef } from "lucid-cardano";
+import { OutRef } from "lucid-cardano";
 import { mergeBounty } from "../../src/operations/bounties/merge";
 import { closeBounty } from "../../src/operations/bounties/close";
 import { deployUtxo, newAssign, newBounty, signAndSubmit } from "../utils";

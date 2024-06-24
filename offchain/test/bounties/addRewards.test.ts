@@ -1,5 +1,5 @@
 import { describe, it } from "mocha";
-import { Lucid, OutRef } from "lucid-cardano";
+import { OutRef } from "lucid-cardano";
 import {
   deployUtxo,
   newAssign,

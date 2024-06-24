@@ -13,7 +13,7 @@ import {
   ACCOUNT_0,
   lucid
 } from "../emulatorConfig";
-import { Lucid, OutRef } from "lucid-cardano";
+import { OutRef } from "lucid-cardano";
 import { expect } from "chai";
 import logger from "../../src/logger";
 

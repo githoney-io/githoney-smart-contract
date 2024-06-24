@@ -7,7 +7,6 @@ import {
   emulator,
   lucid
 } from "../emulatorConfig";
-import { Lucid } from "lucid-cardano";
 import { createBounty } from "../../src/operations/bounties/create";
 import { deployUtxo, signAndSubmit } from "../utils";
 import logger from "../../src/logger";
