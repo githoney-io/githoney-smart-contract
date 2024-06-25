@@ -35,17 +35,41 @@ async function waitForUtxosUpdate(lucid: Lucid, txId: string): Promise<void> {
   let userUtxosUpdated = false;
   let scriptUtxoUpdated = false;
   while (!userUtxosUpdated || !scriptUtxoUpdated) {
-    logger.info("Waiting for utxos update...");
-    await new Promise((r) => setTimeout(r, 10000));
-    const utxos = await lucid.wallet.getUtxos();
-    const scriptUtxos = await lucid.utxosByOutRef([
-      { txHash: txId, outputIndex: 0 }
-    ]);
-    userUtxosUpdated = utxos.some((utxo) => utxo.txHash === txId);
-    scriptUtxoUpdated = scriptUtxos.length !== 0;
+    try {
+      logger.info("Waiting for utxos update...");
+      await new Promise((r) => setTimeout(r, 10000));
+      const utxos = await lucid.wallet.getUtxos();
+      const scriptUtxos = await lucid.utxosByOutRef([
+        { txHash: txId, outputIndex: 0 }
+      ]);
+      userUtxosUpdated = utxos.some((utxo) => utxo.txHash === txId);
+      scriptUtxoUpdated = scriptUtxos.length !== 0;
+    } catch (e) {
+      logger.error(e);
+    }
   }
   // wait for 20 more seconds because sometimes it is insufficient
   await new Promise((r) => setTimeout(r, 20000));
+}
+
+async function outRefWithErrorCatching(
+  outRef: OutRef,
+  lucid: Lucid
+): Promise<UTxO> {
+  let i = 0;
+  let outRefUtxo;
+  while (!outRefUtxo) {
+    try {
+      [outRefUtxo] = await lucid.utxosByOutRef([outRef]);
+    } catch (e: any) {
+      i++;
+      logger.error(e.message);
+      if (i > 15) {
+        throw new Error("OutRef not found");
+      }
+    }
+  }
+  return outRefUtxo;
 }
 
 function privateKeyToAddress(privateKey: PrivateKey): Address {
@@ -167,5 +191,6 @@ export {
   waitForUtxosUpdate,
   privateKeyToAddress,
   parseTxCBOR,
+  outRefWithErrorCatching,
   signSubmitAndWaitConfirmation
 };

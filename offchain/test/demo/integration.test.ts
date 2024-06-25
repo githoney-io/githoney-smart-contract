@@ -15,7 +15,10 @@ import {
   githoneyAddr,
   rewardFee
 } from "../../src/constants";
-import { signSubmitAndWaitConfirmation } from "../utils";
+import {
+  outRefWithErrorCatching,
+  signSubmitAndWaitConfirmation
+} from "../utils";
 import { GithoneyDatum } from "../../src/types";
 import { assert } from "console";
 import { keyPairsToAddress } from "../../src/utils";
@@ -61,7 +64,8 @@ describe("Integration tests", async () => {
       deployCbor
     );
     const deployOutRef = { txHash: deployTxId, outputIndex: 0 };
-    const [settingsUtxo] = await lucid.utxosByOutRef([deployOutRef]);
+    const settingsUtxo = await outRefWithErrorCatching(deployOutRef, lucid);
+
     logger.info(`Githoney deployed`);
     let settingsNFTPolicy = "";
     Object.keys(settingsUtxo.assets).forEach((unit) => {
@@ -102,7 +106,7 @@ describe("Integration tests", async () => {
     const createOutRef = { txHash: createTxId, outputIndex: 0 };
     const githoneyOutRef = { txHash: createTxId, outputIndex: 1 };
     const [githoneyUtxo] = await lucid.utxosByOutRef([githoneyOutRef]);
-    const [createUtxo] = await lucid.utxosByOutRef([createOutRef]);
+    const createUtxo = await outRefWithErrorCatching(createOutRef, lucid);
     const createDatum = await lucid.datumOf(createUtxo, GithoneyDatum);
 
     const utxoAssets = {
@@ -138,7 +142,7 @@ describe("Integration tests", async () => {
       addRewardCbor
     );
     const addRewatdOutRef = { txHash: addRewardTxId, outputIndex: 0 };
-    const [addRewardUtxo] = await lucid.utxosByOutRef([addRewatdOutRef]);
+    const addRewardUtxo = await outRefWithErrorCatching(addRewatdOutRef, lucid);
     assert(
       addRewardUtxo.assets["lovelace"] === 23_000_000n,
       `Reward mismatch ${addRewardUtxo.assets["lovelace"]} !== 23_000_000n`
@@ -158,7 +162,7 @@ describe("Integration tests", async () => {
     );
 
     const assignOutRef = { txHash: assignTxId, outputIndex: 0 };
-    const [assignUtxo] = await lucid.utxosByOutRef([assignOutRef]);
+    const assignUtxo = await outRefWithErrorCatching(assignOutRef, lucid);
     const assignDatum = await lucid.datumOf(assignUtxo, GithoneyDatum);
 
     assert(assignDatum.merged === false, "Merged mismatch");
@@ -185,7 +189,7 @@ describe("Integration tests", async () => {
     );
 
     const mergeOutRef = { txHash: mergeTxId, outputIndex: 0 };
-    const [mergeUtxo] = await lucid.utxosByOutRef([mergeOutRef]);
+    const mergeUtxo = await outRefWithErrorCatching(mergeOutRef, lucid);
     const mergeDatum = await lucid.datumOf(mergeUtxo, GithoneyDatum);
 
     const lovelaceReward = (20_000_000n * (10_000n - rewardFee)) / 10_000n;
@@ -214,7 +218,7 @@ describe("Integration tests", async () => {
     );
 
     const claimOutRef = { txHash: claimTxId, outputIndex: 0 };
-    const [claimUtxo] = await lucid.utxosByOutRef([claimOutRef]);
+    const claimUtxo = await outRefWithErrorCatching(claimOutRef, lucid);
     assert(
       claimUtxo.assets["lovelace"] === lovelaceReward + MIN_ADA,
       `Lovelace mismatch ${claimUtxo.assets["lovelace"]} !== ${lovelaceReward}`

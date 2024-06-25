@@ -29,13 +29,13 @@ const generateAccount = async (assets: Assets) => {
 };
 
 const ACCOUNT_ADMIN = await generateAccount({
-  lovelace: 1_000_000_000n,
-  [tokenAUnit]: 1_000_000_000n
+  lovelace: 10_000_000_000n,
+  [tokenAUnit]: 10_000_000_000n
 });
 
 const ACCOUNT_MANTAINER = await generateAccount({
-  lovelace: 1_000_000_000n,
-  [tokenAUnit]: 1_000_000_000n
+  lovelace: 10_000_000_000n,
+  [tokenAUnit]: 10_000_000_000n
 });
 
 const ACCOUNT_GITHONEY = {
@@ -44,18 +44,18 @@ const ACCOUNT_GITHONEY = {
     .selectWalletFromSeed(process.env.GITHONEY_SEED!)
     .wallet.address(),
   assets: {
-    lovelace: 1_000_000_000n,
-    [tokenAUnit]: 1_000_000_000n
+    lovelace: 10_000_000_000n,
+    [tokenAUnit]: 10_000_000_000n
   }
 };
 
 const ACCOUNT_0 = await generateAccount({
-  lovelace: 1_000_000_000n,
-  [tokenAUnit]: 1_000_000_000n
+  lovelace: 10_000_000_000n,
+  [tokenAUnit]: 10_000_000_000n
 });
 
 const ACCOUNT_CONTRIBUTOR = await generateAccount({
-  lovelace: 50_000_000n
+  lovelace: 500_000_000n
 });
 
 const emulator = new Emulator([

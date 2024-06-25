@@ -53,7 +53,7 @@ describe("Merge tests", async () => {
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const bountyOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
-
+      logger.info(`Bounty created with txId: ${createTxId}`);
       await mergeBounty(settingsUtxo, bountyOutRef, lucid);
     } catch (e) {
       const error = e as Error;
