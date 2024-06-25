@@ -1,8 +1,9 @@
-import { MIN_ADA, githoneyAddr } from "../../constants";
+import { MIN_ADA } from "../../constants";
 import {
   GithoneyDatum,
   GithoneyDatumT,
   GithoneyValidatorRedeemer,
+  SettingsDatum,
   mkDatum
 } from "../../types";
 import { OutRef, Lucid, Assets, UTxO } from "lucid-cardano";
@@ -50,6 +51,8 @@ async function mergeBounty(
   const newBountyDatum: string = mkDatum({ ...bountyDatum, merged: true });
   const maintainerAddr = await keyPairsToAddress(lucid, bountyDatum.maintainer);
   const adminAddr = await keyPairsToAddress(lucid, bountyDatum.admin);
+  const settings = await lucid.datumOf(settingsUtxo, SettingsDatum);
+  const githoneyAddr = await keyPairsToAddress(lucid, settings.githoney_wallet);
 
   const mintingPolicyid = lucid.utils.mintingPolicyToId(githoneyScript);
   const bountyIdTokenUnit = extractBountyIdTokenUnit(

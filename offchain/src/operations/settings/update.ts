@@ -1,9 +1,8 @@
 import { githoneyValidator, settingsValidator } from "../../scripts";
 import { Lucid, UTxO, fromUnit } from "lucid-cardano";
-import { addrToWallet, validatorParams } from "../../utils";
+import { keyPairsToAddress, validatorParams } from "../../utils";
 import logger from "../../logger";
-import { githoneyAddr } from "../../constants";
-import { SettingsRedeemer, mkSettingsDatum } from "../../types";
+import { SettingsDatum, SettingsRedeemer, mkSettingsDatum } from "../../types";
 
 async function update(settingsUtxo: UTxO, lucid: Lucid) {
   logger.info("START update");
@@ -14,10 +13,15 @@ async function update(settingsUtxo: UTxO, lucid: Lucid) {
       return unit !== "lovelace";
     })!
   ).policyId;
+  const oldSettings = await lucid.datumOf(settingsUtxo, SettingsDatum);
 
-  const settingsDatum = mkSettingsDatum(validatorParams(lucid));
+  const newSettingsDatum = mkSettingsDatum(validatorParams(lucid));
   const gitHoneyValidator = githoneyValidator(settingsPolicyId);
-  const githoneyPkh = addrToWallet(githoneyAddr, lucid).paymentKey;
+  const githoneyAddr = await keyPairsToAddress(
+    lucid,
+    oldSettings.githoney_wallet
+  );
+  const githoneyPkh = oldSettings.githoney_wallet.paymentKey;
 
   lucid.selectWalletFrom({ address: githoneyAddr });
 
@@ -26,7 +30,7 @@ async function update(settingsUtxo: UTxO, lucid: Lucid) {
     .collectFrom([settingsUtxo], SettingsRedeemer.Update())
     .payToContract(
       settingsUtxo.address,
-      { scriptRef: gitHoneyValidator, inline: settingsDatum },
+      { scriptRef: gitHoneyValidator, inline: newSettingsDatum },
       settingsUtxo.assets
     )
     .addSignerKey(githoneyPkh)

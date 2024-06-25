@@ -1,9 +1,8 @@
-import { Data, fromText, toUnit, Lucid, UTxO, Constr } from "lucid-cardano";
-import { MIN_ADA, creationFee, githoneyAddr } from "../../constants";
-import { GithoneyValidatorRedeemer, SettingsDatum, mkDatum } from "../../types";
-import { addrToWallet } from "../../utils";
+import { Data, fromText, toUnit, Lucid, UTxO } from "lucid-cardano";
+import { MIN_ADA } from "../../constants";
+import { SettingsDatum, mkDatum } from "../../types";
+import { addrToWallet, keyPairsToAddress } from "../../utils";
 import logger from "../../logger";
-import { log } from "console";
 
 async function createBounty(
   settingsUtxo: UTxO,
@@ -27,11 +26,12 @@ async function createBounty(
   const mintAssets = {
     [bountyIdTokenUnit]: 1n
   };
+  const settings = await lucid.datumOf(settingsUtxo, SettingsDatum);
 
   const now = new Date();
   const tomorrow = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).getTime();
 
-  if (BigInt(creationFee) < 2_000_000n) {
+  if (BigInt(settings.creation_fee) < 2_000_000n) {
     throw new Error("Creation fee must be at least 2 ADA");
   }
   if (deadline < tomorrow) {
@@ -51,10 +51,10 @@ async function createBounty(
   };
   const maintainerWallet = addrToWallet(maintainerAddr, lucid);
   const adminWallet = addrToWallet(adminAddr, lucid);
-  const settings = await lucid.datumOf(settingsUtxo, SettingsDatum);
+  const githoneyAddr = await keyPairsToAddress(lucid, settings.githoney_wallet);
 
   logger.info("Maintainer Address", maintainerAddr);
-  logger.info("Githoney Address", githoneyAddr);
+  logger.info("Githoney Address", JSON.stringify(settings.githoney_wallet));
   // New tx to pay to the contract the minAda and mint the admin, githoney, developer and mantainer tokens
   logger.info("Rewards", rewardAssets);
   lucid.selectWalletFrom({ address: maintainerAddr });
@@ -76,7 +76,7 @@ async function createBounty(
     .readFrom([settingsUtxo])
     .validTo(sixHoursFromNow.getTime())
     .payToContract(validatorAddress, { inline: bountyDatum }, utxoAssets)
-    .payToAddress(githoneyAddr, { lovelace: creationFee })
+    .payToAddress(githoneyAddr, { lovelace: settings.creation_fee })
     .mintAssets(mintAssets, Data.void())
     .complete();
 
