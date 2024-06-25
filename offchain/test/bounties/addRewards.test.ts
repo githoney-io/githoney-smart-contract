@@ -19,8 +19,7 @@ describe("Add Rewards tests", async () => {
 
     const bountyOutRef: OutRef = { txHash: createTxIdId, outputIndex: 0 };
     const reward = {
-      unit: "lovelace",
-      amount: 50n
+      lovelace: 50n
     };
     const addRewardsTx = await addRewards(
       settingsUtxo,
@@ -41,8 +40,7 @@ describe("Add Rewards tests", async () => {
 
     const bountyOutRef: OutRef = { txHash: createTxIdId, outputIndex: 0 };
     const reward = {
-      unit: tokenAUnit,
-      amount: 75n
+      [tokenAUnit]: 75n
     };
     const addRewardsTx = await addRewards(
       settingsUtxo,
@@ -70,8 +68,7 @@ describe("Add Rewards tests", async () => {
       const mergeOutRef: OutRef = { txHash: mergeTxId, outputIndex: 0 };
 
       const reward = {
-        unit: tokenAUnit,
-        amount: 100n
+        [tokenAUnit]: 75n
       };
       await addRewards(
         settingsUtxo,

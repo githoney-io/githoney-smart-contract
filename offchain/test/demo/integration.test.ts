@@ -19,7 +19,7 @@ import {
   outRefWithErrorCatching,
   signSubmitAndWaitConfirmation
 } from "../utils";
-import { GithoneyDatum } from "../../src/types";
+import { GithoneyDatum, SettingsDatum } from "../../src/types";
 import { assert } from "console";
 import { keyPairsToAddress } from "../../src/utils";
 import { githoneyMintingPolicy } from "../../src/scripts";
@@ -53,6 +53,10 @@ const lucidMaintainer = await Lucid.new(blockfrost, "Preprod");
 lucidMaintainer.selectWalletFromSeed(MAINTAINER_SEED!);
 const maintainerAddress = await lucidMaintainer.wallet.address();
 logger.info(`MAINTAINER address: ${maintainerAddress}\n`);
+
+const tokenAPolicy = "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb";
+const tokenAName = fromText("tokenA");
+const tokenAUnit = toUnit(tokenAPolicy, tokenAName);
 const bounty_id = "Bounty DEMO";
 
 describe("Integration tests", async () => {
@@ -79,11 +83,8 @@ describe("Integration tests", async () => {
     const bountyIdTokenUnit = toUnit(mintingPolicyid, fromText(bounty_id));
 
     // CREATE BOUNTY
-    const tokenAPolicy =
-      "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb";
-    const tokenAName = fromText("tokenA");
-    const tokenAUnit = toUnit(tokenAPolicy, tokenAName);
-    const reward = { unit: tokenAUnit, amount: 100n };
+
+    const reward = { [tokenAUnit]: 100n };
     const deadline = BigInt(
       new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).getTime()
     );
@@ -132,7 +133,7 @@ describe("Integration tests", async () => {
       settingsUtxo,
       createOutRef,
       maintainerAddress,
-      { unit: "lovelace", amount: 20_000_000n },
+      { lovelace: 20_000_000n },
       lucid
     );
 
@@ -226,6 +227,68 @@ describe("Integration tests", async () => {
     assert(
       claimUtxo.assets[tokenAUnit] === tokenAReward,
       `Token A mismatch ${claimUtxo.assets[tokenAUnit]} !== ${tokenAReward}`
+    );
+  });
+  it("Demo with settings change", async () => {
+    const deployCbor = await deploy(lucid);
+    logger.info(`Deploying Githoney`);
+    const deployTxId = await signSubmitAndWaitConfirmation(
+      lucidGithoney,
+      deployCbor
+    );
+    const deployOutRef = { txHash: deployTxId, outputIndex: 0 };
+    const settingsUtxo = await outRefWithErrorCatching(deployOutRef, lucid);
+    const settingsDatum = await lucid.datumOf(settingsUtxo, SettingsDatum);
+
+    logger.info(`Githoney deployed`);
+    let settingsNFTPolicy = "";
+    Object.keys(settingsUtxo.assets).forEach((unit) => {
+      if (fromUnit(unit).policyId !== "") {
+        settingsNFTPolicy = fromUnit(unit).policyId;
+      }
+    });
+    assert(settingsDatum.creation_fee === creationFee);
+    assert(settingsDatum.reward_fee === rewardFee);
+    assert(
+      (await keyPairsToAddress(lucid, settingsDatum.githoney_wallet)) ===
+        githoneyAddr
+    );
+    const mintingScript = githoneyMintingPolicy(settingsNFTPolicy);
+
+    const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
+    const bountyIdTokenUnit = toUnit(mintingPolicyid, fromText(bounty_id));
+
+    // CREATE BOUNTY
+    const reward = { [tokenAUnit]: 100n };
+    const deadline = BigInt(
+      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).getTime()
+    );
+
+    const createCbor = await createBounty(
+      settingsUtxo,
+      maintainerAddress,
+      githoneyAddr,
+      reward,
+      deadline,
+      bounty_id,
+      lucid
+    );
+
+    logger.info(`Creating bounty ${bounty_id}`);
+    const createTxId = await signSubmitAndWaitConfirmation(
+      lucidMaintainer,
+      createCbor
+    );
+    const createOutRef = { txHash: createTxId, outputIndex: 0 };
+    const githoneyOutRef = { txHash: createTxId, outputIndex: 1 };
+    const [githoneyUtxo] = await lucid.utxosByOutRef([githoneyOutRef]);
+    const createUtxo = await outRefWithErrorCatching(createOutRef, lucid);
+    const createDatum = await lucid.datumOf(createUtxo, GithoneyDatum);
+
+    assert(createDatum.bounty_reward_fee === rewardFee);
+    assert(
+      githoneyUtxo.assets["lovelace"] === creationFee,
+      "Githoney payment wrong"
     );
   });
 });

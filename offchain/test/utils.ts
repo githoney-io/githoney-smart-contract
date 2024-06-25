@@ -134,10 +134,7 @@ const newBounty = async (lucid: Lucid, settingsUtxo: UTxO) => {
     settingsUtxo,
     ACCOUNT_MANTAINER.address,
     ACCOUNT_ADMIN.address,
-    {
-      unit: tokenAUnit,
-      amount: 1_000n
-    },
+    { [tokenAUnit]: 1_000n },
     BigInt(deadline),
     bounty_id,
     lucid

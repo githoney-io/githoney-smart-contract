@@ -1,4 +1,4 @@
-import { Data, fromText, toUnit, Lucid, UTxO } from "lucid-cardano";
+import { Data, fromText, toUnit, Lucid, UTxO, Assets } from "lucid-cardano";
 import { MIN_ADA } from "../../constants";
 import { SettingsDatum, mkDatum } from "../../types";
 import { addrToWallet, keyPairsToAddress } from "../../utils";
@@ -8,7 +8,7 @@ async function createBounty(
   settingsUtxo: UTxO,
   maintainerAddr: string,
   adminAddr: string,
-  reward: { unit: string; amount: bigint },
+  rewards: Assets,
   deadline: bigint,
   bounty_id: string,
   lucid: Lucid
@@ -38,15 +38,11 @@ async function createBounty(
     throw new Error("Deadline must be at least 24 hours from now");
   }
 
-  if (reward.amount < 1n) {
-    throw new Error("Negative fees are not allowed");
-  }
-  const rewardAssets =
-    reward.unit === "lovelace"
-      ? { lovelace: reward.amount + MIN_ADA }
-      : { [reward.unit]: reward.amount, lovelace: MIN_ADA };
-  const utxoAssets = {
-    ...rewardAssets,
+  const utxoAssets: Assets = {
+    ...{
+      ...rewards,
+      lovelace: rewards.lovelace ? rewards.lovelace + MIN_ADA : MIN_ADA
+    },
     ...mintAssets
   };
   const maintainerWallet = addrToWallet(maintainerAddr, lucid);
@@ -56,7 +52,6 @@ async function createBounty(
   logger.info("Maintainer Address", maintainerAddr);
   logger.info("Githoney Address", JSON.stringify(settings.githoney_wallet));
   // New tx to pay to the contract the minAda and mint the admin, githoney, developer and mantainer tokens
-  logger.info("Rewards", rewardAssets);
   lucid.selectWalletFrom({ address: maintainerAddr });
 
   const bountyDatum = mkDatum({

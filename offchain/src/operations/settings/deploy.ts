@@ -4,7 +4,7 @@ import {
   settingsPolicy
 } from "../../scripts";
 import { Data, Lucid, fromText, toHex, toUnit } from "lucid-cardano";
-import { addrToWallet, validatorParams } from "../../utils";
+import { addrToWallet, validatorSettings } from "../../utils";
 import logger from "../../logger";
 import { githoneyAddr, settingsTokenName } from "../../constants";
 import { mkSettingsDatum } from "../../types";
@@ -25,7 +25,7 @@ async function deploy(lucid: Lucid) {
   logger.info(`settingsPolicyId: ${settingsPolicyId}`);
   const settingsNFTUnit = toUnit(settingsPolicyId, fromText(settingsTokenName));
 
-  const settingsDatum = mkSettingsDatum(validatorParams(lucid));
+  const settingsDatum = mkSettingsDatum(validatorSettings(lucid));
   const gitHoneyValidator = githoneyValidator(settingsPolicyId);
 
   lucid.selectWalletFrom({ address: githoneyAddr });
