@@ -1,7 +1,6 @@
 import { Data, Lucid, OutRef, UTxO } from "lucid-cardano";
-import { SettingsRedeemer } from "../../types";
-import { addrToWallet, clearZeroAssets } from "../../utils";
-import { githoneyAddr } from "../../constants";
+import { SettingsDatum, SettingsRedeemer } from "../../types";
+import { keyPairsToAddress } from "../../utils";
 import logger from "../../logger";
 import { settingsPolicy, settingsValidator } from "../../scripts";
 
@@ -14,30 +13,25 @@ async function closeSettings(
 
   const settingsValidatorScript = settingsValidator();
 
-  const [utxo] = await lucid.utxosByOutRef([utxoRef]);
-  const settingsMintingPolicy = settingsPolicy({
-    txHash: utxo.txHash,
-    outputIndex: utxo.outputIndex
-  });
+  const settingsMintingPolicy = settingsPolicy(utxoRef);
 
   const settingsTokenUnit = Object.keys(settingsUtxo.assets).find((unit) => {
     return unit !== "lovelace";
   })!;
-  const githoneyPkh = addrToWallet(githoneyAddr, lucid).paymentKey;
+  const settingsDatum = await lucid.datumOf(settingsUtxo, SettingsDatum);
+  const githoneyAddr = await keyPairsToAddress(
+    lucid,
+    settingsDatum.githoney_wallet
+  );
+  const githoneyPkh = settingsDatum.githoney_wallet.paymentKey;
 
   lucid.selectWalletFrom({
     address: githoneyAddr
   });
 
-  const githoneyPayment = clearZeroAssets({
-    ...settingsUtxo.assets,
-    [settingsTokenUnit]: 0n
-  });
-
   const tx = await lucid
     .newTx()
     .collectFrom([settingsUtxo], SettingsRedeemer.Close())
-    .payToAddress(githoneyAddr, githoneyPayment)
     .mintAssets({ [settingsTokenUnit]: BigInt(-1) }, Data.void())
     .addSignerKey(githoneyPkh)
     .attachSpendingValidator(settingsValidatorScript)
