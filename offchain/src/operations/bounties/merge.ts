@@ -1,4 +1,4 @@
-import { MIN_ADA, rewardFee, githoneyAddr } from "../../constants";
+import { MIN_ADA, githoneyAddr } from "../../constants";
 import {
   GithoneyDatum,
   GithoneyDatumT,
@@ -30,8 +30,11 @@ async function mergeBounty(
     contractUtxo,
     GithoneyDatum
   );
-  const rewardfee = BigInt(rewardFee);
-  if (rewardfee < 0n || rewardfee > 10_000n) {
+
+  if (
+    bountyDatum.bounty_reward_fee < 0n ||
+    bountyDatum.bounty_reward_fee > 10_000n
+  ) {
     throw new Error("Reward fee must be between 0 and 10000");
   }
   if (bountyDatum.merged) {
@@ -56,7 +59,7 @@ async function mergeBounty(
 
   const { githoneyFee, scriptValue } = calculateRewardsFeeAndScriptValue(
     contractUtxo.assets,
-    rewardfee,
+    bountyDatum.bounty_reward_fee,
     bountyIdTokenUnit
   );
 
