@@ -1,4 +1,4 @@
-import { Data, Lucid, UTxO } from "lucid-cardano";
+import { Data, Lucid, OutRef, UTxO } from "lucid-cardano";
 import { SettingsRedeemer } from "../../types";
 import { addrToWallet, clearZeroAssets } from "../../utils";
 import { githoneyAddr } from "../../constants";
@@ -6,15 +6,19 @@ import logger from "../../logger";
 import { settingsPolicy, settingsValidator } from "../../scripts";
 
 async function closeSettings(
+  utxoRef: OutRef,
   settingsUtxo: UTxO,
   lucid: Lucid
 ): Promise<string> {
   logger.info("START closeSettings");
 
   const settingsValidatorScript = settingsValidator();
-  const settingsValidatorAddress = lucid.utils.validatorToAddress(
-    settingsValidatorScript
-  );
+
+  const [utxo] = await lucid.utxosByOutRef([utxoRef]);
+  const settingsMintingPolicy = settingsPolicy({
+    txHash: utxo.txHash,
+    outputIndex: utxo.outputIndex
+  });
 
   const settingsTokenUnit = Object.keys(settingsUtxo.assets).find((unit) => {
     return unit !== "lovelace";
