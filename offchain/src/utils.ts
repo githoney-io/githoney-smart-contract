@@ -5,7 +5,7 @@ import { Address, Assets, Lucid, Utils, fromUnit } from "lucid-cardano";
 
 dotenv.config();
 
-function validatorParams(lucid: Lucid) {
+function validatorSettings(lucid: Lucid) {
   const gitHoneyCredentials = lucid.utils.getAddressDetails(githoneyAddr);
   const gitHoneyWallet: WalletT = {
     paymentKey: gitHoneyCredentials.paymentCredential!.hash,
@@ -68,7 +68,7 @@ function extractBountyIdTokenUnit(
 }
 
 export {
-  validatorParams,
+  validatorSettings,
   addrToWallet,
   keyPairsToAddress,
   clearZeroAssets,

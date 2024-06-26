@@ -7,7 +7,9 @@ import {
   createBounty,
   mergeBounty,
   addRewards,
-  deploy
+  deploy,
+  update,
+  closeSettings
 } from "../../src";
 import {
   MIN_ADA,
@@ -19,9 +21,9 @@ import {
   outRefWithErrorCatching,
   signSubmitAndWaitConfirmation
 } from "../utils";
-import { GithoneyDatum } from "../../src/types";
+import { GithoneyDatum, SettingsDatum } from "../../src/types";
 import { assert } from "console";
-import { keyPairsToAddress } from "../../src/utils";
+import { addrToWallet, keyPairsToAddress } from "../../src/utils";
 import { githoneyMintingPolicy } from "../../src/scripts";
 import logger from "../../src/logger";
 
@@ -53,11 +55,15 @@ const lucidMaintainer = await Lucid.new(blockfrost, "Preprod");
 lucidMaintainer.selectWalletFromSeed(MAINTAINER_SEED!);
 const maintainerAddress = await lucidMaintainer.wallet.address();
 logger.info(`MAINTAINER address: ${maintainerAddress}\n`);
+
+const tokenAPolicy = "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb";
+const tokenAName = fromText("tokenA");
+const tokenAUnit = toUnit(tokenAPolicy, tokenAName);
 const bounty_id = "Bounty DEMO";
 
 describe("Integration tests", async () => {
   it("Demo Normal flow", async () => {
-    const deployCbor = await deploy(lucid);
+    const { cbor: deployCbor } = await deploy(lucid);
     logger.info(`Deploying Githoney`);
     const deployTxId = await signSubmitAndWaitConfirmation(
       lucidGithoney,
@@ -79,11 +85,8 @@ describe("Integration tests", async () => {
     const bountyIdTokenUnit = toUnit(mintingPolicyid, fromText(bounty_id));
 
     // CREATE BOUNTY
-    const tokenAPolicy =
-      "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb";
-    const tokenAName = fromText("tokenA");
-    const tokenAUnit = toUnit(tokenAPolicy, tokenAName);
-    const reward = { unit: tokenAUnit, amount: 100n };
+
+    const reward = { [tokenAUnit]: 100n };
     const deadline = BigInt(
       new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).getTime()
     );
@@ -132,7 +135,7 @@ describe("Integration tests", async () => {
       settingsUtxo,
       createOutRef,
       maintainerAddress,
-      { unit: "lovelace", amount: 20_000_000n },
+      { lovelace: 20_000_000n },
       lucid
     );
 
@@ -226,6 +229,148 @@ describe("Integration tests", async () => {
     assert(
       claimUtxo.assets[tokenAUnit] === tokenAReward,
       `Token A mismatch ${claimUtxo.assets[tokenAUnit]} !== ${tokenAReward}`
+    );
+  });
+
+  it("Demo with settings change", async () => {
+    const { cbor: deployCbor, outRef: nftOutRef } = await deploy(lucid);
+    logger.info(`Deploying Githoney`);
+    const deployTxId = await signSubmitAndWaitConfirmation(
+      lucidGithoney,
+      deployCbor
+    );
+    const deployOutRef = { txHash: deployTxId, outputIndex: 0 };
+    const settingsUtxo = await outRefWithErrorCatching(deployOutRef, lucid);
+    const settingsDatum = await lucid.datumOf(settingsUtxo, SettingsDatum);
+
+    logger.info(`Githoney deployed`);
+    let settingsNFTPolicy = "";
+    Object.keys(settingsUtxo.assets).forEach((unit) => {
+      if (fromUnit(unit).policyId !== "") {
+        settingsNFTPolicy = fromUnit(unit).policyId;
+      }
+    });
+    assert(settingsDatum.creation_fee === creationFee);
+    assert(settingsDatum.reward_fee === rewardFee);
+    assert(
+      (await keyPairsToAddress(lucid, settingsDatum.githoney_wallet)) ===
+        githoneyAddr
+    );
+    const mintingScript = githoneyMintingPolicy(settingsNFTPolicy);
+
+    const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
+    const bountyIdTokenUnit = toUnit(mintingPolicyid, fromText(bounty_id));
+
+    // CREATE BOUNTY
+    const reward = { [tokenAUnit]: 100n };
+    const deadline = BigInt(
+      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).getTime()
+    );
+
+    const createCbor = await createBounty(
+      settingsUtxo,
+      maintainerAddress,
+      githoneyAddr,
+      reward,
+      deadline,
+      bounty_id,
+      lucid
+    );
+
+    logger.info(`Creating bounty ${bounty_id}`);
+    const createTxId = await signSubmitAndWaitConfirmation(
+      lucidMaintainer,
+      createCbor
+    );
+    const createOutRef = { txHash: createTxId, outputIndex: 0 };
+    const githoneyOutRef = { txHash: createTxId, outputIndex: 1 };
+    const [githoneyUtxo] = await lucid.utxosByOutRef([githoneyOutRef]);
+    const createUtxo = await outRefWithErrorCatching(createOutRef, lucid);
+    const createDatum = await lucid.datumOf(createUtxo, GithoneyDatum);
+
+    assert(createDatum.bounty_reward_fee === rewardFee);
+    assert(
+      githoneyUtxo.assets["lovelace"] === creationFee,
+      "Githoney payment wrong"
+    );
+
+    const updateSettingsCbor = await update(settingsUtxo, lucid, {
+      githoneyWallet: await addrToWallet(githoneyAddr, lucid),
+      creationFee: 10_000_000n,
+      rewardFee: 5_000n
+    });
+
+    logger.info(`Updating settings`);
+    const updateSettingsTxId = await signSubmitAndWaitConfirmation(
+      lucidGithoney,
+      updateSettingsCbor
+    );
+    const updateSettingsOutRef = { txHash: updateSettingsTxId, outputIndex: 0 };
+    const newSettingsUtxo = await outRefWithErrorCatching(
+      updateSettingsOutRef,
+      lucid
+    );
+    const newSettingsDatum = await lucid.datumOf(
+      newSettingsUtxo,
+      SettingsDatum
+    );
+
+    assert(newSettingsDatum.creation_fee === 10_000_000n);
+    assert(newSettingsDatum.reward_fee === 5_000n);
+    assert(
+      (await keyPairsToAddress(lucid, newSettingsDatum.githoney_wallet)) ===
+        githoneyAddr
+    );
+
+    const newCreateCbor = await createBounty(
+      newSettingsUtxo,
+      maintainerAddress,
+      githoneyAddr,
+      { [tokenAUnit]: 100n, lovelace: 15_000_000n },
+      deadline,
+      "Bounty DEMO 2",
+      lucid
+    );
+
+    logger.info(`Creating bounty Bounty DEMO 2`);
+    const newCreateTxId = await signSubmitAndWaitConfirmation(
+      lucidMaintainer,
+      newCreateCbor
+    );
+    const newCreateOutRef = { txHash: newCreateTxId, outputIndex: 0 };
+    const newGithoneyOutRef = { txHash: newCreateTxId, outputIndex: 1 };
+    const newGithoneyUtxo = await outRefWithErrorCatching(
+      newGithoneyOutRef,
+      lucid
+    );
+    const newCreateUtxo = await outRefWithErrorCatching(newCreateOutRef, lucid);
+
+    const newCreateDatum = await lucid.datumOf(newCreateUtxo, GithoneyDatum);
+
+    assert(newCreateDatum.bounty_reward_fee === 5_000n);
+    assert(
+      newGithoneyUtxo.assets["lovelace"] === 10_000_000n,
+      "Githoney payment wrong"
+    );
+
+    const closeSettingsCbor = await closeSettings(
+      nftOutRef,
+      newSettingsUtxo,
+      lucid
+    );
+
+    logger.info(`Closing settings`);
+    const closeSettingsTxId = await signSubmitAndWaitConfirmation(
+      lucidGithoney,
+      closeSettingsCbor
+    );
+    const githoneyPayOutRef = { txHash: closeSettingsTxId, outputIndex: 0 };
+    const githoneyPayUtxo = await outRefWithErrorCatching(
+      githoneyPayOutRef,
+      lucid
+    );
+    assert(
+      newSettingsUtxo.assets["lovelace"] === githoneyPayUtxo.assets["lovelace"]
     );
   });
 });

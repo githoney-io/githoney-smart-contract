@@ -1,6 +1,6 @@
 import { Data, Lucid, OutRef, UTxO } from "lucid-cardano";
 import { SettingsDatum, SettingsRedeemer } from "../../types";
-import { keyPairsToAddress } from "../../utils";
+import { clearZeroAssets, keyPairsToAddress } from "../../utils";
 import logger from "../../logger";
 import { settingsPolicy, settingsValidator } from "../../scripts";
 
@@ -25,6 +25,11 @@ async function closeSettings(
   );
   const githoneyPkh = settingsDatum.githoney_wallet.paymentKey;
 
+  const githoneyPaymentAssets = clearZeroAssets({
+    ...settingsUtxo.assets,
+    [settingsTokenUnit]: 0n
+  });
+
   lucid.selectWalletFrom({
     address: githoneyAddr
   });
@@ -33,6 +38,7 @@ async function closeSettings(
     .newTx()
     .collectFrom([settingsUtxo], SettingsRedeemer.Close())
     .mintAssets({ [settingsTokenUnit]: BigInt(-1) }, Data.void())
+    .payToAddress(githoneyAddr, githoneyPaymentAssets)
     .addSignerKey(githoneyPkh)
     .attachSpendingValidator(settingsValidatorScript)
     .attachMintingPolicy(settingsMintingPolicy)

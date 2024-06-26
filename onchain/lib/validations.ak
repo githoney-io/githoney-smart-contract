@@ -25,9 +25,9 @@ pub fn reference_input_settings_with_NFT(
   settings_policy_id: PolicyId,
 ) -> SettingsDatum {
   expect [ref_input] = tx.reference_inputs
-  let has_settings_nft =
+  let has_settings_policy =
     quantity_of(ref_input.output.value, settings_policy_id, settings_token_name) == 1
-  if !has_settings_nft {
+  if !has_settings_policy {
     fail @"There should be exactly one settings NFT in the reference input"
   } else {
     to_settings_datum(ref_input.output.datum)
@@ -217,7 +217,7 @@ pub fn minting_policy(settings_policy_id: PolicyId, ctx: ScriptContext) -> Bool 
 // Settings Validation
 pub fn update_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
   let script_input = get_script_input(ctx).output
-  expect [(settings_nft_policy, _, settings_amount)] =
+  expect [(settings_policy_policy, _, settings_amount)] =
     script_input.value
       |> value.without_lovelace()
       |> value.flatten()
@@ -229,18 +229,19 @@ pub fn update_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
     length(script_input.value |> value.policies) == 2 && settings_amount == 1
 
   let script_output = get_first_output(ctx)
-  let is_settings_nft_in_output =
-    quantity_of(script_output.value, settings_nft_policy, settings_token_name) == 1
+  let is_utxo_address_the_same = script_input.address == script_output.address
+  let is_settings_policy_in_output =
+    quantity_of(script_output.value, settings_policy_policy, settings_token_name) == 1
 
   expect InlineDatum(new_datum) = script_output.datum
   expect _settings_datum: SettingsDatum = new_datum
 
-  is_signed? && is_only_one_token_input? && is_settings_nft_in_output?
+  is_signed? && is_only_one_token_input? && is_settings_policy_in_output? && is_utxo_address_the_same?
 }
 
 pub fn close_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
   let script_input = get_script_input(ctx).output
-  expect [(settings_nft_policy, _, _)] =
+  expect [(settings_policy_policy, _, _)] =
     script_input.value
       |> value.without_lovelace()
       |> value.flatten()
@@ -248,24 +249,27 @@ pub fn close_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
   let (policy_id, minted_name, minted_quantity) =
     get_minting_info(ctx.transaction)
 
-  let is_settings_nft_burnt =
-    minted_quantity == -1 && minted_name == settings_token_name && policy_id == settings_nft_policy
-
+  let is_settings_policy_burnt =
+    minted_quantity == -1 && minted_name == settings_token_name && policy_id == settings_policy_policy
   let is_signed =
     is_signed_by(ctx.transaction, datum.githoney_wallet.payment_key)
-  let is_githoney_pay_valid =
-    value_paid_to(datum.githoney_wallet, ctx.transaction) == (
-      script_input.value
-        |> value.add(settings_nft_policy, settings_token_name, -1)
-    )
-  is_settings_nft_burnt? && is_signed? && is_githoney_pay_valid?
+
+  {
+    let is_githoney_pay_valid =
+      value_grater_than_or_equal(
+        value_paid_to(datum.githoney_wallet, ctx.transaction),
+        script_input.value
+          |> value.add(settings_policy_policy, settings_token_name, -1),
+      )
+    is_settings_policy_burnt? && is_signed? && is_githoney_pay_valid?
+  }
 }
 
 pub fn minting_policy_settings(
   utxo_ref: OutputReference,
   ctx: ScriptContext,
 ) -> Bool {
-  let (settings_nft, _, minted_quantity) = get_minting_info(ctx.transaction)
+  let (settings_policy, _, minted_quantity) = get_minting_info(ctx.transaction)
 
   let is_token_burned = minted_quantity == -1
   if is_token_burned {
@@ -284,7 +288,7 @@ pub fn minting_policy_settings(
     expect _settings_datum: SettingsDatum = datum
 
     let is_setting_token_in_output =
-      quantity_of(script_output.value, settings_nft, settings_token_name) == 1
+      quantity_of(script_output.value, settings_policy, settings_token_name) == 1
 
     is_minting_only_one_setting_token? && is_outref_in_inputs? && is_setting_token_in_output?
   }

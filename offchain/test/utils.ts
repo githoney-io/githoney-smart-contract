@@ -64,7 +64,7 @@ async function outRefWithErrorCatching(
     } catch (e: any) {
       i++;
       logger.error(e.message);
-      await new Promise((r) => setTimeout(r, 5000));
+      // await new Promise((r) => setTimeout(r, 5000));
       if (i > 15) {
         throw new Error("OutRef not found, max attempts reached");
       }
@@ -134,10 +134,7 @@ const newBounty = async (lucid: Lucid, settingsUtxo: UTxO) => {
     settingsUtxo,
     ACCOUNT_MANTAINER.address,
     ACCOUNT_ADMIN.address,
-    {
-      unit: tokenAUnit,
-      amount: 1_000n
-    },
+    { [tokenAUnit]: 1_000n },
     BigInt(deadline),
     bounty_id,
     lucid
@@ -180,9 +177,9 @@ const newClose = async (lucid: Lucid, outRef: OutRef, settingsUtxo: UTxO) => {
 };
 
 const deployUtxo = async (lucid: Lucid) => {
-  const tx = await deploy(lucid);
+  const { cbor } = await deploy(lucid);
   lucid.selectWalletFromSeed(ACCOUNT_GITHONEY.seedPhrase);
-  const deployTxId = await signAndSubmit(lucid, tx);
+  const deployTxId = await signAndSubmit(lucid, cbor);
   const [settingsUtxo] = await lucid.utxosByOutRef([
     { txHash: deployTxId, outputIndex: 0 }
   ]);

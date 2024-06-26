@@ -1,4 +1,4 @@
-import { Lucid, OutRef, UTxO } from "lucid-cardano";
+import { Assets, Lucid, OutRef, UTxO } from "lucid-cardano";
 import {
   GithoneyDatum,
   GithoneyDatumT,
@@ -10,7 +10,7 @@ async function addRewards(
   settingsUtxo: UTxO,
   utxoRef: OutRef,
   address: string,
-  reward: { unit: string; amount: bigint },
+  rewards: Assets,
   lucid: Lucid
 ): Promise<string> {
   logger.info("START addRewards");
@@ -29,11 +29,10 @@ async function addRewards(
   if (oldDatum.deadline < Date.now()) {
     throw new Error("Bounty deadline passed");
   }
-  const prevAssets = utxo.assets[reward.unit];
-  const newAssets = {
-    ...utxo.assets,
-    [reward.unit]: prevAssets ? prevAssets + reward.amount : reward.amount
-  };
+  let newAssets = { ...utxo.assets };
+  Object.entries(rewards).forEach(([asset, amount]) => {
+    newAssets[asset] = newAssets[asset] ? newAssets[asset] + amount : amount;
+  });
 
   lucid.selectWalletFrom({ address: address });
   const now = new Date();

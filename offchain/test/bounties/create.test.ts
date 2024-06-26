@@ -25,8 +25,7 @@ describe("Create tests", async () => {
       ACCOUNT_MANTAINER.address,
       ACCOUNT_ADMIN.address,
       {
-        unit: "lovelace",
-        amount: 100n
+        lovelace: 100n
       },
       BigInt(deadline),
       bounty_id,
@@ -49,8 +48,7 @@ describe("Create tests", async () => {
         ACCOUNT_MANTAINER.address,
         ACCOUNT_ADMIN.address,
         {
-          unit: "lovelace",
-          amount: 100n
+          lovelace: 100n
         },
         BigInt(deadline),
         bounty_id,
@@ -77,8 +75,7 @@ describe("Create tests", async () => {
         ACCOUNT_MANTAINER.address,
         ACCOUNT_ADMIN.address,
         {
-          unit: "lovelace",
-          amount: -100n
+          lovelace: 100n
         },
         BigInt(deadline),
         bounty_id,
