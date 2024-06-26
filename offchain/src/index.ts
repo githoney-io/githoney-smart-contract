@@ -5,6 +5,8 @@ import { claimBounty } from "./operations/bounties/claim";
 import { addRewards } from "./operations/bounties/addRewards";
 import { assignContributor } from "./operations/bounties/assignContributor";
 import { deploy } from "./operations/settings/deploy";
+import { update } from "./operations/settings/update";
+import { closeSettings } from "./operations/settings/close";
 
 export {
   createBounty,
@@ -13,5 +15,7 @@ export {
   assignContributor,
   claimBounty,
   addRewards,
-  deploy
+  deploy,
+  update,
+  closeSettings
 };

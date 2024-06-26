@@ -16,10 +16,11 @@ async function deploy(lucid: Lucid) {
     settingsValidatorScript
   );
   const utxo = (await lucid.utxosAt(githoneyAddr))[0];
-  const settingsMintingPolicy = settingsPolicy({
+  const outRef = {
     txHash: utxo.txHash,
     outputIndex: utxo.outputIndex
-  });
+  };
+  const settingsMintingPolicy = settingsPolicy(outRef);
 
   const settingsPolicyId = lucid.utils.mintingPolicyToId(settingsMintingPolicy);
   logger.info(`settingsPolicyId: ${settingsPolicyId}`);
@@ -45,7 +46,7 @@ async function deploy(lucid: Lucid) {
   const cbor = tx.toString();
   logger.info("END deploy");
   logger.info(`Deploy: ${cbor}`);
-  return cbor;
+  return { cbor, outRef };
 }
 
 export { deploy };
