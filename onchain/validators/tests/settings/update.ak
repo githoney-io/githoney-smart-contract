@@ -108,3 +108,18 @@ test bad_new_datum() fail {
 
   update_settings(datum, script_ctx)
 }
+
+test bad_pay_address() {
+  let ctx = mk_settings_script_context(UpdateSettings)
+  expect Some(script_input) = head(ctx.transaction.inputs)
+  let datum: SettingsDatum = to_settings_datum(script_input.output.datum)
+
+  let output =
+    Output { ..mocks.mk_settings_output(), address: mocks.mk_admin_address() }
+  let script_ctx =
+    ctx
+      |> add_output(output)
+      |> add_extra_signature(mocks.githoney_addr)
+
+  !update_settings(datum, script_ctx)
+}
