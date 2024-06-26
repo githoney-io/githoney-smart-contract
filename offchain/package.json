@@ -21,7 +21,8 @@
     "test-merge": "mocha --timeout 0 --grep 'Merge'",
     "test-close": "mocha --timeout 0 --grep 'Close'",
     "test-claim": "mocha --timeout 0 --grep 'Claim'",
-    "test-update-settings": "mocha --timeout 0 --grep 'Update'"
+    "test-update-settings": "mocha --timeout 0 --grep 'Update'",
+    "test-close-settings": "mocha --timeout 0 --grep 'Close Settings'"
   },
   "author": "Filabs",
   "license": "ISC",
