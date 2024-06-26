@@ -19,7 +19,7 @@ import logger from "../../src/logger";
 
 describe("Assign Contributor tests", async () => {
   it("Assign Contributor", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
     const createTxIdId = await newBounty(lucid, settingsUtxo);
     const bountyOutRef: OutRef = { txHash: createTxIdId, outputIndex: 0 };
 
@@ -36,7 +36,7 @@ describe("Assign Contributor tests", async () => {
   });
 
   it("Assign Contributor with already merged bounty", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
@@ -61,7 +61,7 @@ describe("Assign Contributor tests", async () => {
   });
 
   it("Assign Contributor with contributor already assigned", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const bountyOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };

@@ -20,7 +20,7 @@ import logger from "../../src/logger";
 
 describe("Claim tests", async () => {
   it("Claim bounty", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
     const createTxId = await newBounty(lucid, settingsUtxo);
     const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
@@ -42,7 +42,7 @@ describe("Claim tests", async () => {
   });
 
   it("Claim bounty after close", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
@@ -70,7 +70,7 @@ describe("Claim tests", async () => {
   });
 
   it("Claim bounty not merged", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
@@ -92,7 +92,7 @@ describe("Claim tests", async () => {
   });
 
   it("Claim bounty with no contributor", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
@@ -111,7 +111,7 @@ describe("Claim tests", async () => {
   });
 
   it("Claim bounty with wrong contributor", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };

@@ -14,7 +14,7 @@ import logger from "../../src/logger";
 describe("Create tests", async () => {
   const now = new Date();
   it("Create a New Bounty", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
 
     const deadline = new Date(
       now.getTime() + 1000 * 60 * 60 * 24 * 2
@@ -36,7 +36,7 @@ describe("Create tests", async () => {
   });
 
   it("Bounty with deadline in the past", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
 
     try {
       const deadline = new Date(
@@ -63,7 +63,7 @@ describe("Create tests", async () => {
   });
 
   it("Bounty with negative fees", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
 
     try {
       const deadline = new Date(

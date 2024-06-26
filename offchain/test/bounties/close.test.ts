@@ -9,7 +9,7 @@ import logger from "../../src/logger";
 
 describe("Close tests", async () => {
   it("Close Bounty After Contributor Assignment", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
     const createTxId = await newBounty(lucid, settingsUtxo);
     const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
@@ -24,7 +24,7 @@ describe("Close tests", async () => {
   });
 
   it("Close Bounty Before Contributor Assignment", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
     const createTxId = await newBounty(lucid, settingsUtxo);
     const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
@@ -36,7 +36,7 @@ describe("Close tests", async () => {
   });
 
   it("Close Bounty already merged", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };

@@ -8,7 +8,7 @@ import logger from "../../src/logger";
 
 describe("Merge tests", async () => {
   it("Merge bounty", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
     const createTxIdId = await newBounty(lucid, settingsUtxo);
     const createOutRef: OutRef = { txHash: createTxIdId, outputIndex: 0 };
 
@@ -23,7 +23,7 @@ describe("Merge tests", async () => {
   });
 
   it("Merge bounty already merged", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
@@ -49,7 +49,7 @@ describe("Merge tests", async () => {
   });
 
   it("Merge bounty without contributor", async () => {
-    const settingsUtxo = await deployUtxo(lucid);
+    const { settingsUtxo } = await deployUtxo(lucid);
     try {
       const createTxId = await newBounty(lucid, settingsUtxo);
       const bountyOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };

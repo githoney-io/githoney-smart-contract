@@ -34,6 +34,8 @@ async function closeSettings(
     address: githoneyAddr
   });
 
+  console.log("SETTINGS ASSETS", settingsUtxo.assets);
+
   const tx = await lucid
     .newTx()
     .collectFrom([settingsUtxo], SettingsRedeemer.Close())
