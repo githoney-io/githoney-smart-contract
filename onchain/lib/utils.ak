@@ -148,20 +148,20 @@ pub fn merge_payments_parts(
   let (script_part, fee_part) =
     reward_value
       |> reduce(
-          (managment_assets, zero()),
-          fn(policy_id, token_name, quantity, acc) {
-            if policy_id == bounty_id_policy {
-              acc
-            } else {
-              let (reward, fee) = acc
-              let fee_amount = quantity * reward_fee / ( 100 * 100 )
-              let reward_amount = quantity - fee_amount
-              (
-                merge(reward, from_asset(policy_id, token_name, reward_amount)),
-                merge(fee, from_asset(policy_id, token_name, fee_amount)),
-              )
-            }
-          },
-        )
+           (managment_assets, zero()),
+           fn(policy_id, token_name, quantity, acc) {
+             if policy_id == bounty_id_policy {
+               acc
+             } else {
+               let (reward, fee) = acc
+               let fee_amount = quantity * reward_fee / ( 100 * 100 )
+               let reward_amount = quantity - fee_amount
+               (
+                 merge(reward, from_asset(policy_id, token_name, reward_amount)),
+                 merge(fee, from_asset(policy_id, token_name, fee_amount)),
+               )
+             }
+           },
+         )
   (script_part, fee_part)
 }
