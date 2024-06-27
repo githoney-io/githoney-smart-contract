@@ -353,6 +353,56 @@ describe("Integration tests", async () => {
       "Githoney payment wrong"
     );
 
+    const assignCbor = await assignContributor(
+      newSettingsUtxo,
+      newCreateOutRef,
+      contributorAddr,
+      lucid
+    );
+
+    logger.info(`Assigning contributor with addr ${contributorAddr}`);
+    const assignTxId = await signSubmitAndWaitConfirmation(
+      lucidContributor,
+      assignCbor
+    );
+
+    const assignOutRef = { txHash: assignTxId, outputIndex: 0 };
+
+    const mergeCbor = await mergeBounty(newSettingsUtxo, assignOutRef, lucid);
+
+    logger.info(`Merging bounty`);
+    const mergeTxId = await signSubmitAndWaitConfirmation(
+      lucidGithoney,
+      mergeCbor
+    );
+    const mergeOutRef = { txHash: mergeTxId, outputIndex: 0 };
+    const githoneyFeePayOutRef = { txHash: mergeTxId, outputIndex: 2 };
+    const githoneyFeePayUtxo = await outRefWithErrorCatching(
+      githoneyFeePayOutRef,
+      lucid
+    );
+    assert(
+      githoneyFeePayUtxo.assets["lovelace"] === 15_000_000n / 2n,
+      `Githoney fee pay mismatch ${githoneyFeePayUtxo.assets["lovelace"]}`
+    );
+    assert(
+      githoneyFeePayUtxo.assets[tokenAUnit] === 100n / 2n,
+      `Githoney fee pay mismatch ${githoneyFeePayUtxo.assets[tokenAUnit]}`
+    );
+
+    const claimCbor = await claimBounty(
+      newSettingsUtxo,
+      mergeOutRef,
+      lucid,
+      contributorAddr
+    );
+
+    logger.info(`Claiming bounty`);
+    const claimTxId = await signSubmitAndWaitConfirmation(
+      lucidContributor,
+      claimCbor
+    );
+
     const closeSettingsCbor = await closeSettings(
       nftOutRef,
       newSettingsUtxo,
