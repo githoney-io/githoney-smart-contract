@@ -15,7 +15,7 @@ async function update(
     creationFee: bigint;
     rewardFee: bigint;
   }
-) {
+): Promise<string> {
   logger.info("START update");
   if (!settings) {
     settings = validatorSettings(lucid);
