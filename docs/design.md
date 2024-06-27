@@ -71,7 +71,7 @@ This transaction creates a `BountyUtxo` locking the reward assets plus min ADA a
 ```typescript
 /**
  * Builds a `createBounty` transaction. The tx is built in the context of the maintainer wallet.
- * @param settingsUtxo The reference of the last transaction output that contains the settings UTxO.
+ * @param settingsUtxo The settings UTxO.
  * @param maintainerAddr The maintainer's address.
  * @param adminAddr The admin's address.
  * @param rewards The reward assets and amount to be locked in the bounty UTxO.
@@ -100,7 +100,7 @@ Adds additional reward assets to an existing `BountyUtxo`.
 ```typescript
 /**
  * Builds an `addReward` transaction. The tx is built in the context of any wallet.
- * @param settingsUtxo The reference of the last transaction output that contains the settings UTxO.
+ * @param settingsUtxo The settings UTxO.
  * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
  * @param address The address of the current wallet.
  * @param rewards The reward assets and amount to be added.
@@ -125,7 +125,7 @@ Sets the contributor's `Wallet` to the `BountyUtxo` datum and adds the contribut
 ```typescript
 /**
  * Builds an `assignContributor` transaction. The tx is built in the context of the contributor wallet.
- * @param settingsUtxo The reference of the last transaction output that contains the settings UTxO.
+ * @param settingsUtxo The settings UTxO.
  * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
  * @param contributorAddr The contributor's address.
  * @param lucid Lucid instance.
@@ -148,7 +148,7 @@ The admin closes the bounty, returning the reward assets to the maintainer and b
 ```typescript
 /**
  * Builds a `closeBounty` transaction. The tx is built in the context of the admin wallet.
- * @param settingsUtxo The reference of the last transaction output that contains the settings UTxO.
+ * @param settingsUtxo The settings UTxO.
  * @param lucid Lucid instance.
  * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
  * @returns The cbor of the unsigned transaction.
@@ -175,7 +175,7 @@ Pays GitHoney the reward assets multiplied by the `BountyRewardFee`. Updates the
 ```typescript
 /**
  * Builds a `mergeBounty` transaction. The tx is built in the context of the admin wallet.
- * @param settingsUtxo The reference of the last transaction output that contains the settings UTxO.
+ * @param settingsUtxo The settings UTxO.
  * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
  * @param lucid Lucid instance.
  * @returns The cbor of the unsigned transaction.
@@ -196,7 +196,7 @@ Pays the contributor the remaining reward assets and burns the `BountyIdToken`.
 ```typescript
 /**
  * Builds a `claimBounty` transaction. The tx is built in the context of the contributor wallet.
- * @param settingsUtxo The reference of the last transaction output that contains the settings UTxO.
+ * @param settingsUtxo The settings UTxO.
  * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
  * @param lucid Lucid instance.
  * @param contributorAdrr The contributor's address.
@@ -220,7 +220,7 @@ This transaction deploys the `GlobalSettings` UTxO, which holds the global param
 
 ```typescript
 /**
- * Builds a `deploy` transaction. The tx is built in the context of the GitHoney address.
+ * Builds a `deploy` transaction. The tx is built in the context of the GitHoney address. This transaction configures the global parameters of the dApp, including the creation fee, reward fee, and the GitHoney wallet. These parameters are obtained from the environment configuration.
  * @param lucid Lucid instance.
  * @returns The cbor of the unsigned transaction and a output reference from the asoociated wallet.
  */
@@ -238,7 +238,7 @@ Updates the global parameters of the dApp, changing the datum of the `GlobalSett
 ```typescript
 /**
  * Builds an `update` transaction. The tx is built in the context of the GitHoney address.
- * @param settingsUtxo The reference of the last transaction output that contains the settings UTxO.
+ * @param settingsUtxo The settings UTxO.
  * @param lucid Lucid instance.
  * @param settings The new settings to be updated (Optional).
  * @returns The cbor of the unsigned transaction.
@@ -266,8 +266,9 @@ Closes the `GlobalSettings` UTxO, burning the NFT and refunding the ADA locked t
 ```typescript
 /**
  * Builds a `closeSettings` transaction. The tx is built in the context of the GitHoney address.
- * @param utxoRef An output reference from the associated wallet.
- * @param settingsUtxo The reference of the last transaction output that contains the settings UTxO.
+ * @param utxoRef The output reference passed as parameter of the settings nft minting policy,
+ * this outRef is returned in the deploySettings operation.
+ * @param settingsUtxo The settings UTxO.
  * @param lucid Lucid instance.
  * @returns The cbor of the unsigned transaction.
  */
