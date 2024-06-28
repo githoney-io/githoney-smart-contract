@@ -74,7 +74,7 @@ test fee_not_paid() {
   !minting_policy(mocks.settings_nft_policy, wrong_ctx)
 }
 
-test wrong_value() fail {
+test wrong_value() {
   let ctx = test_utils.mk_mp_script_context()
 
   expect Some(outputs) = list.tail(ctx.transaction.outputs)
@@ -91,7 +91,7 @@ test wrong_value() fail {
       },
     }
 
-  minting_policy(mocks.settings_nft_policy, wrong_ctx)
+  !minting_policy(mocks.settings_nft_policy, wrong_ctx)
 }
 
 test wrong_minted_amount() fail {

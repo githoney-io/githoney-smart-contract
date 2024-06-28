@@ -1,10 +1,9 @@
-use aiken/dict
 use aiken/interval.{Finite}
 use aiken/list
 use aiken/option.{is_none, is_some}
 use aiken/transaction.{Transaction}
 use aiken/transaction/value.{
-  Value, from_asset, from_lovelace, is_zero, merge, negate, quantity_of, tokens,
+  Value, from_asset, from_lovelace, is_zero, merge, negate, quantity_of,
 }
 use types.{GithoneyDatum, VerificationKeyHash}
 use utils.{min_ada}
@@ -13,14 +12,12 @@ pub fn is_signed_by(transaction: Transaction, vk: VerificationKeyHash) {
   list.has(transaction.extra_signatories, vk)
 }
 
-pub fn is_utxo_value_valid(policy_id: ByteArray, value: Value) {
-  expect [bounty_id_token_name] = value |> tokens(policy_id) |> dict.keys
-
+pub fn is_utxo_value_valid(policy_id: ByteArray, bounty_id: ByteArray, value: Value) {
   let is_bounty_id_token_in_output =
-    quantity_of(value, policy_id, bounty_id_token_name) == 1
+    quantity_of(value, policy_id, bounty_id) == 1
   let there_are_some_reward =
     from_lovelace(min_ada)
-      |> merge(from_asset(policy_id, bounty_id_token_name, 1))
+      |> merge(from_asset(policy_id, bounty_id, 1))
       |> negate
       |> merge(value)
       |> is_zero

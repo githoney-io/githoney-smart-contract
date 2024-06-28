@@ -1,5 +1,5 @@
 use aiken/dict
-use aiken/list.{length}
+use aiken/list
 use aiken/option.{is_none, is_some}
 use aiken/transaction.{
   InlineDatum, Output, OutputReference, ScriptContext, Transaction,
@@ -93,7 +93,6 @@ pub fn merge(
     script_input_and_token_id_info(ctx)
   let script_output = get_first_output(ctx)
   let new_datum = to_githoney_datum(script_output.datum)
-  let min_ada_value = from_lovelace(min_ada)
 
   let is_tx_before_deadline =
     is_tx_before_deadline(ctx.transaction, datum.deadline)
@@ -116,7 +115,7 @@ pub fn merge(
   let is_signed_by_admin =
     is_signed_by(ctx.transaction, datum.admin_wallet.payment_key)
   let is_maintainer_minada_payed =
-    value_paid_to(datum.maintainer_wallet, ctx.transaction) == min_ada_value
+    value_paid_to(datum.maintainer_wallet, ctx.transaction) == from_lovelace(min_ada)
   let is_datum_not_merged = !datum.merged
 
   is_datum_not_merged? && is_signed_by_admin? && is_new_datum_valid? && is_utxo_value_valid? && is_tx_before_deadline? && contributor_is_assigned? && is_utxo_address_the_same? && is_maintainer_minada_payed? && is_reward_fee_payed?
@@ -184,7 +183,7 @@ pub fn claim(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
 pub fn minting_policy(settings_policy_id: PolicyId, ctx: ScriptContext) -> Bool {
   let settings_datum =
     reference_input_settings_with_NFT(ctx.transaction, settings_policy_id)
-  let (own_policy, _, minted_quantity) = get_minting_info(ctx.transaction)
+  let (own_policy, bounty_id, minted_quantity) = get_minting_info(ctx.transaction)
 
   let is_token_burned = minted_quantity == -1
   if is_token_burned {
@@ -208,7 +207,7 @@ pub fn minting_policy(settings_policy_id: PolicyId, ctx: ScriptContext) -> Bool 
         ctx.transaction,
         datum,
       )
-    let valid_value = is_utxo_value_valid(own_policy, script_output.value)
+    let valid_value = is_utxo_value_valid(own_policy, bounty_id, script_output.value)
 
     is_creation_fee_paid? && is_minting_only_one_bounty_id_token? && is_script_output_address_valid? && valid_datum? && valid_value?
   }
@@ -225,8 +224,7 @@ pub fn update_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
   let is_signed =
     is_signed_by(ctx.transaction, datum.githoney_wallet.payment_key)
 
-  let is_only_one_token_input =
-    length(script_input.value |> value.policies) == 2 && settings_amount == 1
+  let is_only_one_token_input = settings_amount == 1
 
   let script_output = get_first_output(ctx)
   let is_utxo_address_the_same = script_input.address == script_output.address

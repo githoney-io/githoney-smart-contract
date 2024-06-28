@@ -33,7 +33,7 @@ describe("Update Settings Test", async () => {
     } catch (e) {
       const error = e as Error;
       logger.error(error.message);
-      expect(error.message).to.contain("Error: Could not serialize the data");
+      expect(error.message).to.contain("Creation fee must be at least 2 ADA");
     }
   });
 });

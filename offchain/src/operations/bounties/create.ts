@@ -31,6 +31,9 @@ async function createBounty(
   const now = new Date();
   const tomorrow = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).getTime();
 
+  if (settings.reward_fee < 0n || settings.reward_fee > 10_000n) {
+    throw new Error("Reward fee must be between 0 and 10000");
+  }
   if (BigInt(settings.creation_fee) < 2_000_000n) {
     throw new Error("Creation fee must be at least 2 ADA");
   }
