@@ -3,13 +3,13 @@ import {
   settingsValidator,
   settingsPolicy
 } from "../../scripts";
-import { Data, Lucid, fromText, toHex, toUnit } from "lucid-cardano";
-import { addrToWallet, validatorSettings } from "../../utils";
+import { Data, Lucid, OutRef, fromText, toUnit } from "lucid-cardano";
+import { validatorSettings } from "../../utils";
 import logger from "../../logger";
 import { githoneyAddr, settingsTokenName } from "../../constants";
 import { mkSettingsDatum } from "../../types";
 
-async function deploy(lucid: Lucid) {
+async function deploy(lucid: Lucid): Promise<{ cbor: string; outRef: OutRef }> {
   logger.info("START deploy");
   const settingsValidatorScript = settingsValidator();
   const settingsValidatorAddress = lucid.utils.validatorToAddress(
