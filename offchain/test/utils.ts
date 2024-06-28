@@ -12,7 +12,7 @@ import {
   assignContributor,
   closeBounty,
   createBounty,
-  deploy,
+  deploySettings,
   mergeBounty
 } from "../src";
 import {
@@ -177,7 +177,7 @@ const newClose = async (lucid: Lucid, outRef: OutRef, settingsUtxo: UTxO) => {
 };
 
 const deployUtxo = async (lucid: Lucid) => {
-  const { cbor, outRef } = await deploy(lucid);
+  const { cbor, outRef } = await deploySettings(lucid);
   lucid.selectWalletFromSeed(ACCOUNT_GITHONEY.seedPhrase);
   const deployTxId = await signAndSubmit(lucid, cbor);
   const [settingsUtxo] = await lucid.utxosByOutRef([

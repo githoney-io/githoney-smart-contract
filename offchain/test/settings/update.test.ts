@@ -3,13 +3,13 @@ import { expect } from "chai";
 import { ACCOUNT_GITHONEY, emulator, lucid } from "../emulatorConfig";
 import { deployUtxo, signAndSubmit } from "../utils";
 import logger from "../../src/logger";
-import { update } from "../../src/operations/settings/update";
+import { updateSettings } from "../../src/operations/settings/update";
 
 describe("Update Settings Test", async () => {
   it("Update settings", async () => {
     const { settingsUtxo } = await deployUtxo(lucid);
 
-    const tx = await update(settingsUtxo, lucid);
+    const tx = await updateSettings(settingsUtxo, lucid);
     emulator.awaitBlock(3);
     lucid.selectWalletFromSeed(ACCOUNT_GITHONEY.seedPhrase);
     await signAndSubmit(lucid, tx);
@@ -26,7 +26,7 @@ describe("Update Settings Test", async () => {
         creationFee: 1000000n,
         rewardFee: 1000n
       };
-      const tx = await update(settingsUtxo, lucid, settings);
+      const tx = await updateSettings(settingsUtxo, lucid, settings);
       emulator.awaitBlock(3);
       lucid.selectWalletFromSeed(ACCOUNT_GITHONEY.seedPhrase);
       await signAndSubmit(lucid, tx);
