@@ -224,7 +224,7 @@ This transaction deploys the `GlobalSettings` UTxO, which holds the global param
  * @param lucid Lucid instance.
  * @returns The cbor of the unsigned transaction and a output reference from the asoociated wallet.
  */
-async function deploy(
+async function deploySettings(
   lucid: Lucid
 ): Promise<{ cbor: string; outRef: OutRef }>;
 ```
@@ -243,7 +243,7 @@ Updates the global parameters of the dApp, changing the datum of the `GlobalSett
  * @param settings The new settings to be updated (Optional).
  * @returns The cbor of the unsigned transaction.
  */
-async function update(
+async function updateSettings(
   settingsUtxo: UTxO,
   lucid: Lucid,
   settings?: {
@@ -288,24 +288,24 @@ async function closeSettings(
 
 - Params: `NFT policy ID`.
 
-#### General Checks for all _Redeemers_
+#### General Checks for all **Redeemers**
 
 - `BountyUtxo` input with a `bountyIdToken`.
 
-#### _AddReward Redeemer_
+#### **AddReward Redeemer**
 
 - The `deadline` has not been reached.
 - `BountyUtxo` output value includes the input value plus additional reward assets.
 - Datum doesn't change.
 
-#### _AssignContributor Redeemer_
+#### **AssignContributor Redeemer**
 
 - The `deadline` has not been reached.
 - The `contributor` field in the datum is null.
 - Contributor's `Wallet` is added to the `BountyUtxo` datum, and the rest of the datum fields are the same.
 - UTxO assets are the same plus min ADAs.
 
-#### _CloseBounty Redeemer_
+#### **CloseBounty Redeemer**
 
 - `BountyIdToken` is burnt.
 - The merged field is False.
@@ -313,7 +313,7 @@ async function closeSettings(
 - If the `contributor` is setted the min ADAs are paid back to the contributor.
 - Datum Admin address signed the transaction.
 
-#### _MergeBounty Redeemer_
+#### **MergeBounty Redeemer**
 
 - Only one reference input holding a token with the `NFT policy ID`.
 - The merged field is False.
@@ -323,7 +323,7 @@ async function closeSettings(
 - Datum Admin address signed the transaction.
 - Datum merged field is updated to True, and the rest of the datum fields are the same.
 
-#### _ClaimBounty Redeemer_
+#### **ClaimBounty Redeemer**
 
 - The merged field is True.
 - `BountyIdToken` is burnt.
@@ -353,14 +353,14 @@ async function closeSettings(
 
 - No Params
 
-#### _UpdateSettings Redeemer_
+#### **UpdateSettings Redeemer**
 
 - The datum `GitHoneyAddress` signed the transaction.
 - There is only one token besides ADA in the input `Settings Utxo`.
 - The token is in the output `Settings Utxo`.
 - The new datum have the correct format.
 
-#### _CloseSettings Redeemer_
+#### **CloseSettings Redeemer**
 
 - The datum `GitHoneyAddress` signed the transaction.
 - The `Settings Utxo` value is payed to the `GitHoneyAddress`.
