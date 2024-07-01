@@ -4,7 +4,7 @@ import { keyPairsToAddress, validatorSettings } from "../../utils";
 import logger from "../../logger";
 import { SettingsDatum, SettingsRedeemer, mkSettingsDatum } from "../../types";
 
-async function update(
+async function updateSettings(
   settingsUtxo: UTxO,
   lucid: Lucid,
   settings?: {
@@ -64,4 +64,4 @@ async function update(
   return cbor;
 }
 
-export { update };
+export { updateSettings };

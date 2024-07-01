@@ -7,8 +7,8 @@ import {
   createBounty,
   mergeBounty,
   addRewards,
-  deploy,
-  update,
+  deploySettings,
+  updateSettings,
   closeSettings
 } from "../../src";
 import {
@@ -63,7 +63,7 @@ const bounty_id = "Bounty DEMO";
 
 describe("Integration tests", async () => {
   it("Demo Normal flow", async () => {
-    const { cbor: deployCbor } = await deploy(lucid);
+    const { cbor: deployCbor } = await deploySettings(lucid);
     logger.info(`Deploying Githoney`);
     const deployTxId = await signSubmitAndWaitConfirmation(
       lucidGithoney,
@@ -233,7 +233,7 @@ describe("Integration tests", async () => {
   });
 
   it("Demo with settings change", async () => {
-    const { cbor: deployCbor, outRef: nftOutRef } = await deploy(lucid);
+    const { cbor: deployCbor, outRef: nftOutRef } = await deploySettings(lucid);
     logger.info(`Deploying Githoney`);
     const deployTxId = await signSubmitAndWaitConfirmation(
       lucidGithoney,
@@ -294,7 +294,7 @@ describe("Integration tests", async () => {
       "Githoney payment wrong"
     );
 
-    const updateSettingsCbor = await update(settingsUtxo, lucid, {
+    const updateSettingsCbor = await updateSettings(settingsUtxo, lucid, {
       githoneyWallet: await addrToWallet(githoneyAddr, lucid),
       creationFee: 10_000_000n,
       rewardFee: 5_000n

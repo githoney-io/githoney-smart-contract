@@ -9,7 +9,9 @@ import logger from "../../logger";
 import { githoneyAddr, settingsTokenName } from "../../constants";
 import { mkSettingsDatum } from "../../types";
 
-async function deploy(lucid: Lucid): Promise<{ cbor: string; outRef: OutRef }> {
+async function deploySettings(
+  lucid: Lucid
+): Promise<{ cbor: string; outRef: OutRef }> {
   logger.info("START deploy");
   const settingsValidatorScript = settingsValidator();
   const settingsValidatorAddress = lucid.utils.validatorToAddress(
@@ -49,4 +51,4 @@ async function deploy(lucid: Lucid): Promise<{ cbor: string; outRef: OutRef }> {
   return { cbor, outRef };
 }
 
-export { deploy };
+export { deploySettings };
