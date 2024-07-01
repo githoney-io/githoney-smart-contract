@@ -20,21 +20,21 @@ Follow these steps to set up the project for the first time:
 
 1. Navigate to the `githoney/offchain` directory and install all dependencies:
 
-    ```sh
-    npm install
-    ```
+   ```sh
+   npm install
+   ```
 
 2. Build the code and produce an `offchain-1.0.0.tgz` file by running:
 
-    ```sh
-    npm pack
-    ```
+   ```sh
+   npm pack
+   ```
 
 3. In another npm project, install the library as a local npm package:
 
-    ```sh
-    npm i /path/to/offchain-1.0.0.tgz
-    ```
+   ```sh
+   npm i /path/to/offchain-1.0.0.tgz
+   ```
 
 ## Running Tests
 
@@ -65,9 +65,207 @@ npm run <test-name>
 
 Replace `<test-name>` with one of the following options:
 
-* test-create
-* test-addrewards
-* test-assign
-* test-merge
-* test-close
-* test-claim
+- test-create
+- test-addrewards
+- test-assign
+- test-merge
+- test-close
+- test-claim
+
+# Offchain Library API
+
+## Bounties Operations
+
+### Create BountyUtxo
+
+This transaction creates a `BountyUtxo` locking the reward assets plus min ADA and a `BountyIdToken`. It sets the maintainer, deadline, admin, and merged (**set to False**) in the datum.
+
+```typescript
+/**
+ * Builds a `createBounty` transaction. The tx is built in the context of the maintainer wallet.
+ * @param settingsUtxo The settings UTxO.
+ * @param maintainerAddr The maintainer's address.
+ * @param adminAddr The admin's address.
+ * @param rewards The reward assets and amount to be locked in the bounty UTxO.
+ * @param deadline The deadline for the bounty.
+ * @param bounty_id The bounty identifier.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction.
+ */
+async function createBounty(
+  settingsUtxo: UTxO,
+  maintainerAddr: string,
+  adminAddr: string,
+  rewards: Assets,
+  deadline: bigint,
+  bounty_id: string,
+  lucid: Lucid
+): Promise<string>;
+```
+
+### Add Reward
+
+Adds additional reward assets to an existing `BountyUtxo`.
+
+```typescript
+/**
+ * Builds an `addReward` transaction. The tx is built in the context of any wallet.
+ * @param settingsUtxo The settings UTxO.
+ * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param address The address of the current wallet.
+ * @param rewards The reward assets and amount to be added.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction.
+ */
+async function addRewards(
+  settingsUtxo: UTxO,
+  utxoRef: OutRef,
+  address: string,
+  rewards: Assets,
+  lucid: Lucid
+): Promise<string>;
+```
+
+### Assign Contributor
+
+Sets the contributor's `Wallet` to the `BountyUtxo` datum and adds the contributor's min ADA to the value.
+
+```typescript
+/**
+ * Builds an `assignContributor` transaction. The tx is built in the context of the contributor wallet.
+ * @param settingsUtxo The settings UTxO.
+ * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param contributorAddr The contributor's address.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction.
+ */
+async function assignContributor(
+  settingsUtxo: UTxO,
+  utxoRef: OutRef,
+  contributorAddr: string,
+  lucid: Lucid
+): Promise<string>;
+```
+
+### Close Bounty
+
+The admin closes the bounty, returning the reward assets to the maintainer and burning the `BountyIdToken`. If a contributor is assigned, the min ADA is returned to them.
+
+```typescript
+/**
+ * Builds a `closeBounty` transaction. The tx is built in the context of the admin wallet.
+ * @param settingsUtxo The settings UTxO.
+ * @param lucid Lucid instance.
+ * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @returns The cbor of the unsigned transaction.
+ */
+async function closeBounty(
+  settingsUtxo: UTxO,
+  utxoRef: OutRef,
+  lucid: Lucid
+): Promise<string>;
+```
+
+### Merge Bounty
+
+Pays GitHoney the reward assets multiplied by the `BountyRewardFee`. Updates the merged field to _True_. The contributor's min ADAs remain in the UTxO.
+
+```typescript
+/**
+ * Builds a `mergeBounty` transaction. The tx is built in the context of the admin wallet.
+ * @param settingsUtxo The settings UTxO.
+ * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction.
+ */
+async function mergeBounty(
+  settingsUtxo: UTxO,
+  utxoRef: OutRef,
+  lucid: Lucid
+): Promise<string>;
+```
+
+### Claim Bounty
+
+Pays the contributor the remaining reward assets and burns the `BountyIdToken`.
+
+```typescript
+/**
+ * Builds a `claimBounty` transaction. The tx is built in the context of the contributor wallet.
+ * @param settingsUtxo The settings UTxO.
+ * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param lucid Lucid instance.
+ * @param contributorAdrr The contributor's address.
+ * @returns The cbor of the unsigned transaction.
+ */
+async function claimBounty(
+  settingsUtxo: UTxO,
+  utxoRef: OutRef,
+  lucid: Lucid,
+  contributorAddr: string
+): Promise<string>;
+```
+
+## Settings Operations
+
+### Deploy Settings
+
+This transaction deploys the `GlobalSettings` UTxO, which holds the global parameters of the dApp. The NFT policy ID of the minted token identifies the `GlobalSettings` UTxO. Besides the settings, the utxo will hold also the `Githoney Validator` code, due to this utxo will be used as reference input of all the redeemers of the `Githoney Validator`.
+
+```typescript
+/**
+ * Builds a `deploy` transaction. The tx is built in the context of the GitHoney address. This transaction configures the global parameters of the dApp, including the creation fee, reward fee, and the GitHoney wallet. These parameters are obtained from the environment configuration.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction and a output reference from the asoociated wallet.
+ */
+async function deploySettings(
+  lucid: Lucid
+): Promise<{ cbor: string; outRef: OutRef }>;
+```
+
+### Update Settings
+
+Updates the global parameters of the dApp, changing the datum of the `GlobalSettings` UTxO.
+
+```typescript
+/**
+ * Builds an `update` transaction. The tx is built in the context of the GitHoney address.
+ * @param settingsUtxo The settings UTxO.
+ * @param lucid Lucid instance.
+ * @param settings The new settings to be updated (Optional).
+ * @returns The cbor of the unsigned transaction.
+ */
+async function updateSettings(
+  settingsUtxo: UTxO,
+  lucid: Lucid,
+  settings?: {
+    githoneyWallet: {
+      paymentKey: string;
+      stakeKey: string | null;
+    };
+    creationFee: bigint;
+    rewardFee: bigint;
+  }
+): Promise<string>;
+```
+
+### Close Settings
+
+Closes the `GlobalSettings` UTxO, burning the NFT and refunding the ADA locked to githoney.
+
+```typescript
+/**
+ * Builds a `closeSettings` transaction. The tx is built in the context of the GitHoney address.
+ * @param utxoRef The output reference passed as parameter of the settings nft minting policy,
+ * this outRef is returned in the deploySettings operation.
+ * @param settingsUtxo The settings UTxO.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction.
+ */
+
+async function closeSettings(
+  utxoRef: OutRef,
+  settingsUtxo: UTxO,
+  lucid: Lucid
+): Promise<string>;
+```
