@@ -95,7 +95,7 @@ async function createBounty(
 
 ### Add Reward
 
-Adds additional reward assets to an existing `BountyUtxo`.
+Adds additional reward assets to an existing `BountyUtxo`. The bounty must not be closed or merged.
 
 ```typescript
 /**
