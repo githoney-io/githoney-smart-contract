@@ -163,3 +163,24 @@ test without_bounty_id_token_burn() fail {
 
   validations.close(datum, script_ctx)
 }
+
+test already_merged_datum() {
+  let script_ctx = mk_burn_script_context(Close)
+  expect Some(script_input) = head(script_ctx.transaction.inputs)
+  let datum: GithoneyDatum = to_githoney_datum(script_input.output.datum)
+  let input_datum = GithoneyDatum { ..datum, merged: True }
+  let output =
+    Output {
+      address: mocks.mk_maintainer_address(),
+      value: script_input.output.value
+        |> value.add(mocks.bounty_id_policy, mocks.bounty_id_name, -1),
+      datum: NoDatum,
+      reference_script: None,
+    }
+  let script_ctx =
+    script_ctx
+      |> add_output(output)
+      |> add_extra_signature(mocks.admin_addr)
+
+  !validations.close(input_datum, script_ctx)
+}

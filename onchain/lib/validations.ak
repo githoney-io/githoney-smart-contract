@@ -62,8 +62,9 @@ pub fn add_rewards(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
   let is_value_grater_than_before =
     value_grater_than(script_output.value, script_input.value)
   let is_utxo_address_the_same = script_input.address == script_output.address
+  let is_datum_not_merged = !datum.merged
 
-  is_datum_the_same? && is_tx_before_deadline? && is_utxo_address_the_same? && is_value_grater_than_before?
+  is_datum_not_merged? && is_datum_the_same? && is_tx_before_deadline? && is_utxo_address_the_same? && is_value_grater_than_before?
 }
 
 pub fn assign(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
@@ -115,7 +116,9 @@ pub fn merge(
   let is_signed_by_admin =
     is_signed_by(ctx.transaction, datum.admin_wallet.payment_key)
   let is_maintainer_minada_payed =
-    value_paid_to(datum.maintainer_wallet, ctx.transaction) == from_lovelace(min_ada)
+    value_paid_to(datum.maintainer_wallet, ctx.transaction) == from_lovelace(
+      min_ada,
+    )
   let is_datum_not_merged = !datum.merged
 
   is_datum_not_merged? && is_signed_by_admin? && is_new_datum_valid? && is_utxo_value_valid? && is_tx_before_deadline? && contributor_is_assigned? && is_utxo_address_the_same? && is_maintainer_minada_payed? && is_reward_fee_payed?
@@ -183,7 +186,8 @@ pub fn claim(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
 pub fn minting_policy(settings_policy_id: PolicyId, ctx: ScriptContext) -> Bool {
   let settings_datum =
     reference_input_settings_with_NFT(ctx.transaction, settings_policy_id)
-  let (own_policy, bounty_id, minted_quantity) = get_minting_info(ctx.transaction)
+  let (own_policy, bounty_id, minted_quantity) =
+    get_minting_info(ctx.transaction)
 
   let is_token_burned = minted_quantity == -1
   if is_token_burned {
@@ -207,7 +211,8 @@ pub fn minting_policy(settings_policy_id: PolicyId, ctx: ScriptContext) -> Bool 
         ctx.transaction,
         datum,
       )
-    let valid_value = is_utxo_value_valid(own_policy, bounty_id, script_output.value)
+    let valid_value =
+      is_utxo_value_valid(own_policy, bounty_id, script_output.value)
 
     is_creation_fee_paid? && is_minting_only_one_bounty_id_token? && is_script_output_address_valid? && valid_datum? && valid_value?
   }
@@ -229,7 +234,11 @@ pub fn update_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
   let script_output = get_first_output(ctx)
   let is_utxo_address_the_same = script_input.address == script_output.address
   let is_settings_policy_in_output =
-    quantity_of(script_output.value, settings_policy_policy, settings_token_name) == 1
+    quantity_of(
+      script_output.value,
+      settings_policy_policy,
+      settings_token_name,
+    ) == 1
 
   expect InlineDatum(new_datum) = script_output.datum
   expect _settings_datum: SettingsDatum = new_datum
@@ -252,15 +261,13 @@ pub fn close_settings(datum: SettingsDatum, ctx: ScriptContext) -> Bool {
   let is_signed =
     is_signed_by(ctx.transaction, datum.githoney_wallet.payment_key)
 
-  {
-    let is_githoney_pay_valid =
-      value_grater_than_or_equal(
-        value_paid_to(datum.githoney_wallet, ctx.transaction),
-        script_input.value
-          |> value.add(settings_policy_policy, settings_token_name, -1),
-      )
-    is_settings_policy_burnt? && is_signed? && is_githoney_pay_valid?
-  }
+  let is_githoney_pay_valid =
+    value_grater_than_or_equal(
+      value_paid_to(datum.githoney_wallet, ctx.transaction),
+      script_input.value
+        |> value.add(settings_policy_policy, settings_token_name, -1),
+    )
+  is_settings_policy_burnt? && is_signed? && is_githoney_pay_valid?
 }
 
 pub fn minting_policy_settings(
