@@ -1,6 +1,16 @@
 use aiken/hash.{Blake2b_224, Hash}
 use aiken/transaction/credential.{VerificationKey}
 
+pub type AssetClass {
+  policy_id: PolicyId,
+  asset_name: AssetName,
+}
+
+pub type TokenInfo {
+  asset: AssetClass,
+  amount: Int,
+}
+
 pub type GithoneyContractRedeemers {
   AddRewards
   Assign
@@ -32,6 +42,7 @@ pub type GithoneyDatum {
   bounty_reward_fee: Int,
   deadline: Int,
   merged: Bool,
+  initial_value: List<TokenInfo>,
 }
 
 /// This is a hash of the sender's (or receiver) verification key.

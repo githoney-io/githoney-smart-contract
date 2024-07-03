@@ -1,5 +1,13 @@
 import { Constr, Data } from "lucid-cardano";
 
+// Aiken types
+
+const AssetClass = Data.Object({
+  policy_id: Data.Bytes(),
+  asset_name: Data.Bytes()
+});
+type AssetClassT = Data.Static<typeof AssetClass>;
+
 const WalletSchema = Data.Object({
   paymentKey: Data.Bytes(),
   stakeKey: Data.Nullable(Data.Bytes())
@@ -13,7 +21,10 @@ const DatumSchema = Data.Object({
   contributor: Data.Nullable(WalletSchema),
   bounty_reward_fee: Data.Integer(),
   deadline: Data.Integer(),
-  merged: Data.Boolean()
+  merged: Data.Boolean(),
+  initial_value: Data.Array(
+    Data.Object({ asset: AssetClass, amount: Data.Integer({ minimum: 0 }) })
+  )
 });
 
 type GithoneyDatumT = Data.Static<typeof DatumSchema>;
@@ -26,6 +37,7 @@ function mkDatum(params: {
   bounty_reward_fee: bigint;
   deadline: bigint;
   merged: boolean;
+  initial_value: Array<{ asset: AssetClassT; amount: bigint }>;
 }): string {
   const d: GithoneyDatumT = {
     admin: params.admin,
@@ -33,7 +45,8 @@ function mkDatum(params: {
     contributor: params.contributor,
     bounty_reward_fee: params.bounty_reward_fee,
     deadline: params.deadline,
-    merged: params.merged
+    merged: params.merged,
+    initial_value: params.initial_value
   };
   const datum = Data.to<GithoneyDatumT>(d, GithoneyDatum);
   return datum;
