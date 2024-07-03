@@ -6,7 +6,7 @@ This document describes the technical design of the GitHoney dApp - the script U
 
 There will be a single `BountyUtxo` for each bounty, holding the reward assets deposited by the maintainers. A `BountyIdToken` will be minted and held in the `BountyUtxo` during the bounty creation. Initially, the contributor field in the datum will be null until a developer decides to work on that bounty, at which point their `Wallet` will be added to the datum. The `BountyIdToken` ensures the correctness of the `BountyUtxo` datum, the initial payment of the bounty creation fee to GitHoney, and also that the reward assets are not null. The presence of the `BountyIdToken` within a UTxO held at the validator address will prove that the UTxO is a `BountyUtxo`. The token name of the `BountyIdToken` will be the bounty identifier, and will be burnt when the bounty is closed or claimed.
 **Multivalidators** will be utilized, meaning both scripts share the same parameters. Consequently, the script address and the minting policy ID are identical. This enables identification of the policy ID of the `BountyIdToken` within the validator and the validator address within the minting policy.
-Additionally, global parameters of the validator (e.g. the GitHoney wallet, creation fee, and reward fee) and minting policy are stored in the `Settings Utxo` identified by an `NFT policy ID`. This will allow for easy updating of the settings parameters without the redeploying the scripts.
+Additionally, global parameters of the validator (e.g. the GitHoney wallet, creation fee, and reward fee) and minting policy are stored in the `Settings Utxo` identified by an `NFT policy ID`. This will allow for easy updating of the settings parameters without redeploying the scripts.
 
 ## UTxOs Specification
 
@@ -54,7 +54,7 @@ Additionally, global parameters of the validator (e.g. the GitHoney wallet, crea
 
 ### BountyIdToken
 
-The `BountyIdToken` is a minted token that is used to validate the `BountyUtxo`, identifies the bounty with the token name and ensure the correctness of the datum.
+The `BountyIdToken` is a minted token that is used to validate the `BountyUtxo`, identifies the bounty with the token name, and ensure the correctness of the datum.
 
 ### SettingsNFT
 
@@ -95,7 +95,7 @@ async function createBounty(
 
 ### Add Reward
 
-Adds additional reward assets to an existing `BountyUtxo`. The bounty must not be closed or merged.
+Adds additional reward assets to an existing `BountyUtxo`. The bounty must not be merged.
 
 ```typescript
 /**
@@ -216,13 +216,13 @@ async function claimBounty(
 
 ### Deploy Settings
 
-This transaction deploys the `GlobalSettings` UTxO, which holds the global parameters of the dApp. The NFT policy ID of the minted token identifies the `GlobalSettings` UTxO. Besides the settings, the utxo will hold also the `Githoney Validator` code, due to this utxo will be used as reference input of all the redeemers of the `Githoney Validator`.
+This transaction deploys the `GlobalSettings` UTxO, which holds the global parameters of the dApp. The NFT policy ID of the minted token identifies the `GlobalSettings` UTxO. Besides the settings, the utxo will hold also the `Githoney Validator` code, due to this utxo will be used as a reference input for all the redeemers of the `Githoney Validator`.
 
 ```typescript
 /**
  * Builds a `deploy` transaction. The tx is built in the context of the GitHoney address. This transaction configures the global parameters of the dApp, including the creation fee, reward fee, and the GitHoney wallet. These parameters are obtained from the environment configuration.
  * @param lucid Lucid instance.
- * @returns The cbor of the unsigned transaction and a output reference from the asoociated wallet.
+ * @returns The cbor of the unsigned transaction and an output reference from the associated wallet.
  */
 async function deploySettings(
   lucid: Lucid
@@ -266,7 +266,7 @@ Closes the `GlobalSettings` UTxO, burning the NFT and refunding the ADA locked t
 ```typescript
 /**
  * Builds a `closeSettings` transaction. The tx is built in the context of the GitHoney address.
- * @param utxoRef The output reference passed as parameter of the settings nft minting policy,
+ * @param utxoRef The output reference passed as a parameter of the settings nft minting policy,
  * this outRef is returned in the deploySettings operation.
  * @param settingsUtxo The settings UTxO.
  * @param lucid Lucid instance.
@@ -310,7 +310,7 @@ async function closeSettings(
 - `BountyIdToken` is burnt.
 - The merged field is False.
 - Reward assets and the min ADAs are paid back to the maintainer.
-- If the `contributor` is setted the min ADAs are paid back to the contributor.
+- If the `contributor` is set the min ADAs are paid back to the contributor.
 - Datum Admin address signed the transaction.
 
 #### **MergeBounty Redeemer**
@@ -358,12 +358,12 @@ async function closeSettings(
 - The datum `GitHoneyAddress` signed the transaction.
 - There is only one token besides ADA in the input `Settings Utxo`.
 - The token is in the output `Settings Utxo`.
-- The new datum have the correct format.
+- The new datum has the correct format.
 
 #### **CloseSettings Redeemer**
 
 - The datum `GitHoneyAddress` signed the transaction.
-- The `Settings Utxo` value is payed to the `GitHoneyAddress`.
+- The `Settings Utxo` value is paid to the `GitHoneyAddress`.
 - The NFT is burnt.
 
 ### SettingsMintingPolicy
