@@ -49,11 +49,13 @@ async function createBounty(
     throw new Error("Deadline must be at least 24 hours from now");
   }
 
+  const rewardsWithLovelace = {
+    ...rewards,
+    lovelace: rewards.lovelace ? rewards.lovelace + MIN_ADA : MIN_ADA
+  };
+
   const utxoAssets: Assets = {
-    ...{
-      ...rewards,
-      lovelace: rewards.lovelace ? rewards.lovelace + MIN_ADA : MIN_ADA
-    },
+    ...rewardsWithLovelace,
     ...mintAssets
   };
   const maintainerWallet = addrToWallet(maintainerAddr, lucid);
@@ -65,17 +67,19 @@ async function createBounty(
   // New tx to pay to the contract the minAda and mint the admin, githoney, developer and mantainer tokens
   lucid.selectWalletFrom({ address: maintainerAddr });
 
-  const rewards_value = Object.entries(rewards).map(([key, value]) => {
-    const unit = fromUnit(key);
-    const asset: AssetClassT = {
-      policy_id: unit.policyId === "lovelace" ? "" : unit.policyId,
-      asset_name: unit.assetName || ""
-    };
-    return {
-      asset,
-      amount: value
-    };
-  });
+  const rewardsValue = Object.entries(rewardsWithLovelace).map(
+    ([key, value]) => {
+      const unit = fromUnit(key);
+      const asset: AssetClassT = {
+        policy_id: unit.policyId === "lovelace" ? "" : unit.policyId,
+        asset_name: unit.assetName || ""
+      };
+      return {
+        asset,
+        amount: value
+      };
+    }
+  );
 
   const bountyDatum = mkDatum({
     admin: adminWallet,
@@ -84,7 +88,7 @@ async function createBounty(
     bounty_reward_fee: settings.reward_fee,
     deadline,
     merged: false,
-    initial_value: rewards_value
+    initial_value: rewardsValue
   });
 
   lucid.selectWalletFrom({ address: maintainerAddr });
