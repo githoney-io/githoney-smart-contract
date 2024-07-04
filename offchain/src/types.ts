@@ -123,5 +123,7 @@ export {
   GithoneyValidatorRedeemer,
   SettingsRedeemer,
   WalletSchema,
-  WalletT
+  WalletT,
+  AssetClass,
+  AssetClassT
 };
