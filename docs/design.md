@@ -24,6 +24,7 @@ Additionally, global parameters of the validator (e.g. the GitHoney wallet, crea
 > - bounty_reward_fee: **Bigint**
 > - deadline: **POSIXTime**
 > - merged: **Bool**
+> - initial_value: **Assets**
 >
 > #### Value
 >
