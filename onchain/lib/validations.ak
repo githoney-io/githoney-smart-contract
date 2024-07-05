@@ -1,4 +1,3 @@
-use aiken/cbor
 use aiken/dict
 use aiken/list
 use aiken/option.{is_none, is_some}
