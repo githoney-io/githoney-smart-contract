@@ -1,3 +1,4 @@
+use aiken/cbor
 use aiken/dict
 use aiken/list
 use aiken/option.{is_none, is_some}
@@ -17,7 +18,7 @@ use types.{GithoneyDatum, SettingsDatum}
 use utils.{
   get_first_output, get_minting_info, get_script_input, merge_payments_parts,
   min_ada, settings_token_name, to_githoney_datum, to_settings_datum,
-  value_grater_than, value_grater_than_or_equal, value_paid_to,
+  tokens_to_value, value_grater_than, value_grater_than_or_equal, value_paid_to,
 }
 
 pub fn reference_input_settings_with_NFT(
@@ -125,7 +126,7 @@ pub fn merge(
 }
 
 pub fn close(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
-  let (script_input, bounty_id_policy, bounty_id_name) =
+  let (_, bounty_id_policy, bounty_id_name) =
     script_input_and_token_id_info(ctx)
   let (policy_id, minted_name, minted_quantity) =
     get_minting_info(ctx.transaction)
@@ -138,17 +139,16 @@ pub fn close(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
           )
         let is_maintainer_pay_valid =
           value_paid_to(datum.maintainer_wallet, ctx.transaction) == (
-            script_input.value
+            tokens_to_value(datum.initial_value)
               |> value.add(ada_policy_id, ada_asset_name, -min_ada)
-              |> value.add(bounty_id_policy, bounty_id_name, -1)
           )
         is_contributor_pay_valid? && is_maintainer_pay_valid?
       }
+
       None -> {
         let is_maintainer_pay_valid =
-          value_paid_to(datum.maintainer_wallet, ctx.transaction) == (
-            script_input.value
-              |> value.add(bounty_id_policy, bounty_id_name, -1)
+          value_paid_to(datum.maintainer_wallet, ctx.transaction) == tokens_to_value(
+            datum.initial_value,
           )
         is_maintainer_pay_valid?
       }
@@ -188,7 +188,6 @@ pub fn minting_policy(settings_policy_id: PolicyId, ctx: ScriptContext) -> Bool 
     reference_input_settings_with_NFT(ctx.transaction, settings_policy_id)
   let (own_policy, bounty_id, minted_quantity) =
     get_minting_info(ctx.transaction)
-
   let is_token_burned = minted_quantity == -1
   if is_token_burned {
     True
@@ -214,7 +213,12 @@ pub fn minting_policy(settings_policy_id: PolicyId, ctx: ScriptContext) -> Bool 
     let valid_value =
       is_utxo_value_valid(own_policy, bounty_id, script_output.value)
 
-    is_creation_fee_paid? && is_minting_only_one_bounty_id_token? && is_script_output_address_valid? && valid_datum? && valid_value?
+    let valid_deposit =
+      tokens_to_value(datum.initial_value) == (
+        script_output.value |> value.add(own_policy, bounty_id, -1)
+      )
+
+    is_creation_fee_paid? && is_minting_only_one_bounty_id_token? && is_script_output_address_valid? && valid_datum? && valid_value? && valid_deposit?
   }
 }
 
