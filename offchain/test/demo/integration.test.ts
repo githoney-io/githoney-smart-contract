@@ -63,7 +63,7 @@ const bounty_id = "Bounty DEMO";
 
 describe("Integration tests", async () => {
   it("Demo Normal flow", async () => {
-    const { cbor: deployCbor } = await deploySettings(lucid);
+    const { cbor: deployCbor } = await deploySettings(githoneyAddr, lucid);
     logger.info(`Deploying Githoney`);
     const deployTxId = await signSubmitAndWaitConfirmation(
       lucidGithoney,
@@ -233,7 +233,10 @@ describe("Integration tests", async () => {
   });
 
   it("Demo with settings change", async () => {
-    const { cbor: deployCbor, outRef: nftOutRef } = await deploySettings(lucid);
+    const { cbor: deployCbor, outRef: nftOutRef } = await deploySettings(
+      githoneyAddr,
+      lucid
+    );
     logger.info(`Deploying Githoney`);
     const deployTxId = await signSubmitAndWaitConfirmation(
       lucidGithoney,

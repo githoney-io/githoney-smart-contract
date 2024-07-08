@@ -25,6 +25,7 @@ import {
   tokenAUnit
 } from "./emulatorConfig";
 import logger from "../src/logger";
+import { githoneyAddr } from "../src/constants";
 
 const cexplorerUrl = "https://preprod.cexplorer.io";
 
@@ -177,7 +178,7 @@ const newClose = async (lucid: Lucid, outRef: OutRef, settingsUtxo: UTxO) => {
 };
 
 const deployUtxo = async (lucid: Lucid) => {
-  const { cbor, outRef } = await deploySettings(lucid);
+  const { cbor, outRef } = await deploySettings(githoneyAddr, lucid);
   lucid.selectWalletFromSeed(ACCOUNT_GITHONEY.seedPhrase);
   const deployTxId = await signAndSubmit(lucid, cbor);
   const [settingsUtxo] = await lucid.utxosByOutRef([

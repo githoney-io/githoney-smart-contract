@@ -6,10 +6,11 @@ import {
 import { Data, Lucid, OutRef, fromText, toUnit } from "lucid-cardano";
 import { validatorSettings } from "../../utils";
 import logger from "../../logger";
-import { githoneyAddr, settingsTokenName } from "../../constants";
+import { settingsTokenName } from "../../constants";
 import { mkSettingsDatum } from "../../types";
 
 async function deploySettings(
+  githoneyAddr: string,
   lucid: Lucid
 ): Promise<{ cbor: string; outRef: OutRef }> {
   logger.info("START deploy");
