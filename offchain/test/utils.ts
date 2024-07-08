@@ -10,6 +10,7 @@ import {
 } from "lucid-cardano";
 import {
   assignContributor,
+  claimBounty,
   closeBounty,
   createBounty,
   deploySettings,
@@ -169,6 +170,19 @@ const newMerge = async (lucid: Lucid, outRef: OutRef, settingsUtxo: UTxO) => {
   return txId;
 };
 
+const newClaim = async (lucid: Lucid, outRef: OutRef, settingsUtxo: UTxO) => {
+  const claimTx = await claimBounty(
+    settingsUtxo,
+    outRef,
+    lucid,
+    ACCOUNT_CONTRIBUTOR.address
+  );
+  emulator.awaitBlock(3);
+  lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
+  const txId = await signAndSubmit(lucid, claimTx);
+  return txId;
+};
+
 const newClose = async (lucid: Lucid, outRef: OutRef, settingsUtxo: UTxO) => {
   const closeTx = await closeBounty(settingsUtxo, outRef, lucid);
   emulator.awaitBlock(3);
@@ -191,6 +205,7 @@ export {
   newAssign,
   newBounty,
   newMerge,
+  newClaim,
   newClose,
   deployUtxo,
   signAndSubmit,

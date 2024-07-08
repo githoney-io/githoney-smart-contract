@@ -4,8 +4,8 @@ use aiken/transaction.{
 use aiken/transaction/credential.{
   Address, ScriptCredential, VerificationKeyCredential,
 }
-use aiken/transaction/value
-use types.{GithoneyDatum, SettingsDatum, Wallet}
+use aiken/transaction/value.{ada_asset_name, ada_policy_id}
+use types.{AssetClass, GithoneyDatum, SettingsDatum, TokenInfo, Wallet}
 use utils.{min_ada, settings_token_name}
 
 // This module includes mock values for testing the main validator and minting policy.
@@ -185,6 +185,22 @@ pub fn mk_output_bounty_utxo() {
         bounty_reward_fee: reward_fee,
         deadline: 1718938800,
         merged: False,
+        initial_value: [
+          TokenInfo {
+            asset: AssetClass {
+              policy_id: ada_policy_id,
+              asset_name: ada_asset_name,
+            },
+            amount: min_ada,
+          },
+          TokenInfo {
+            asset: AssetClass {
+              policy_id: token_a_policy,
+              asset_name: token_a_name,
+            },
+            amount: reward_amount,
+          },
+        ],
       },
     ),
     reference_script: None,

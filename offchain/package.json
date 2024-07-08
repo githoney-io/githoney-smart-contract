@@ -22,7 +22,8 @@
     "test-close": "mocha --timeout 0 --grep 'Close'",
     "test-claim": "mocha --timeout 0 --grep 'Claim'",
     "test-update-settings": "mocha --timeout 0 --grep 'Update'",
-    "test-close-settings": "mocha --timeout 0 --grep 'Close Settings'"
+    "test-close-settings": "mocha --timeout 0 --grep 'Close Settings'",
+    "test-rewards": "mocha --timeout 0 --grep 'Reward bounds'"
   },
   "author": "Filabs",
   "license": "ISC",

@@ -1,6 +1,14 @@
-import { Data, fromText, toUnit, Lucid, UTxO, Assets } from "lucid-cardano";
+import {
+  Data,
+  fromText,
+  toUnit,
+  Lucid,
+  UTxO,
+  Assets,
+  fromUnit
+} from "lucid-cardano";
 import { MIN_ADA } from "../../constants";
-import { SettingsDatum, mkDatum } from "../../types";
+import { AssetClassT, SettingsDatum, mkDatum } from "../../types";
 import { addrToWallet, keyPairsToAddress } from "../../utils";
 import logger from "../../logger";
 
@@ -41,11 +49,13 @@ async function createBounty(
     throw new Error("Deadline must be at least 24 hours from now");
   }
 
+  const rewardsWithLovelace = {
+    ...rewards,
+    lovelace: rewards.lovelace ? rewards.lovelace + MIN_ADA : MIN_ADA
+  };
+
   const utxoAssets: Assets = {
-    ...{
-      ...rewards,
-      lovelace: rewards.lovelace ? rewards.lovelace + MIN_ADA : MIN_ADA
-    },
+    ...rewardsWithLovelace,
     ...mintAssets
   };
   const maintainerWallet = addrToWallet(maintainerAddr, lucid);
@@ -57,13 +67,28 @@ async function createBounty(
   // New tx to pay to the contract the minAda and mint the admin, githoney, developer and mantainer tokens
   lucid.selectWalletFrom({ address: maintainerAddr });
 
+  const rewardsValue = Object.entries(rewardsWithLovelace).map(
+    ([key, value]) => {
+      const unit = fromUnit(key);
+      const asset: AssetClassT = {
+        policy_id: unit.policyId === "lovelace" ? "" : unit.policyId,
+        asset_name: unit.assetName || ""
+      };
+      return {
+        asset,
+        amount: value
+      };
+    }
+  );
+
   const bountyDatum = mkDatum({
     admin: adminWallet,
     maintainer: maintainerWallet,
     contributor: null,
     bounty_reward_fee: settings.reward_fee,
     deadline,
-    merged: false
+    merged: false,
+    initial_value: rewardsValue
   });
 
   lucid.selectWalletFrom({ address: maintainerAddr });

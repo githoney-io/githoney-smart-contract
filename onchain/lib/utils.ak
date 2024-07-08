@@ -9,7 +9,7 @@ use aiken/transaction/value.{
   AssetName, PolicyId, Value, from_asset, from_lovelace, merge, quantity_of,
   reduce, tokens, zero,
 }
-use types.{GithoneyDatum, SettingsDatum, Wallet}
+use types.{GithoneyDatum, SettingsDatum, TokenInfo, Wallet}
 
 pub const settings_token_name: ByteArray = "settingsNFT"
 
@@ -148,20 +148,35 @@ pub fn merge_payments_parts(
   let (script_part, fee_part) =
     reward_value
       |> reduce(
-           (managment_assets, zero()),
-           fn(policy_id, token_name, quantity, acc) {
-             if policy_id == bounty_id_policy {
-               acc
-             } else {
-               let (reward, fee) = acc
-               let fee_amount = quantity * reward_fee / ( 100 * 100 )
-               let reward_amount = quantity - fee_amount
-               (
-                 merge(reward, from_asset(policy_id, token_name, reward_amount)),
-                 merge(fee, from_asset(policy_id, token_name, fee_amount)),
-               )
-             }
-           },
-         )
+          (managment_assets, zero()),
+          fn(policy_id, token_name, quantity, acc) {
+            if policy_id == bounty_id_policy {
+              acc
+            } else {
+              let (reward, fee) = acc
+              let fee_amount = quantity * reward_fee / ( 100 * 100 )
+              let reward_amount = quantity - fee_amount
+              (
+                merge(reward, from_asset(policy_id, token_name, reward_amount)),
+                merge(fee, from_asset(policy_id, token_name, fee_amount)),
+              )
+            }
+          },
+        )
   (script_part, fee_part)
+}
+
+pub fn tokens_to_value(tokens: List<TokenInfo>) -> Value {
+  list.reduce(
+    tokens,
+    value.zero(),
+    fn(acc, token) {
+      value.add(
+        acc,
+        token.asset.policy_id,
+        token.asset.asset_name,
+        token.amount,
+      )
+    },
+  )
 }
