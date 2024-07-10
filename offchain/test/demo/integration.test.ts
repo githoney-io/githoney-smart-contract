@@ -29,7 +29,7 @@ import logger from "../../src/logger";
 
 dotenv.config();
 const {
-  BLOCKFROST_PROJECT_ID,
+  PREPROD_BLOCKFROST_PROJECT_ID,
   CONTRIBUTOR_SEED,
   MAINTAINER_SEED,
   GITHONEY_SEED
@@ -37,7 +37,7 @@ const {
 
 const blockfrost = new Blockfrost(
   "https://cardano-preprod.blockfrost.io/api/v0",
-  BLOCKFROST_PROJECT_ID
+  PREPROD_BLOCKFROST_PROJECT_ID
 );
 const lucid = await Lucid.new(blockfrost, "Preprod");
 

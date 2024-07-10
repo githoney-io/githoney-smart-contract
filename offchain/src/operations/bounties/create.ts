@@ -62,8 +62,9 @@ async function createBounty(
   const adminWallet = addrToWallet(adminAddr, lucid);
   const githoneyAddr = await keyPairsToAddress(lucid, settings.githoney_wallet);
 
-  logger.info("Maintainer Address", maintainerAddr);
-  logger.info("Githoney Address", JSON.stringify(settings.githoney_wallet));
+  logger.info(`Maintainer Address ${maintainerAddr}`);
+  logger.info(`Admin Address ${adminAddr}`);
+  logger.info(`Githoney Address ${githoneyAddr}`);
   // New tx to pay to the contract the minAda and mint the admin, githoney, developer and mantainer tokens
   lucid.selectWalletFrom({ address: maintainerAddr });
 

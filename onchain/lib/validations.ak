@@ -198,9 +198,11 @@ pub fn minting_policy(settings_policy_id: PolicyId, ctx: ScriptContext) -> Bool 
 
     let is_script_output_address_valid =
       script_output.address == from_script(own_policy)
+
     let is_creation_fee_paid =
-      value_paid_to(settings_datum.githoney_wallet, ctx.transaction) == from_lovelace(
-        settings_datum.bounty_creation_fee,
+      value_grater_than_or_equal(
+        value_paid_to(settings_datum.githoney_wallet, ctx.transaction),
+        from_lovelace(settings_datum.bounty_creation_fee),
       )
 
     let valid_datum =

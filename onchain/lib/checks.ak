@@ -12,7 +12,11 @@ pub fn is_signed_by(transaction: Transaction, vk: VerificationKeyHash) {
   list.has(transaction.extra_signatories, vk)
 }
 
-pub fn is_utxo_value_valid(policy_id: ByteArray, bounty_id: ByteArray, value: Value) {
+pub fn is_utxo_value_valid(
+  policy_id: ByteArray,
+  bounty_id: ByteArray,
+  value: Value,
+) {
   let is_bounty_id_token_in_output =
     quantity_of(value, policy_id, bounty_id) == 1
   let there_are_some_reward =
