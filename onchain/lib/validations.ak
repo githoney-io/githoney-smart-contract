@@ -138,9 +138,10 @@ pub fn close(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
             min_ada,
           )
         let is_maintainer_pay_valid =
-          value_paid_to(datum.maintainer_wallet, ctx.transaction) == (
+          value_grater_than_or_equal(
+            value_paid_to(datum.maintainer_wallet, ctx.transaction),
             tokens_to_value(datum.initial_value)
-              |> value.add(ada_policy_id, ada_asset_name, -min_ada)
+              |> value.add(ada_policy_id, ada_asset_name, -min_ada),
           )
         is_contributor_pay_valid? && is_maintainer_pay_valid?
       }
