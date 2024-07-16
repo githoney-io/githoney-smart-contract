@@ -171,12 +171,7 @@ const newMerge = async (lucid: Lucid, outRef: OutRef, settingsUtxo: UTxO) => {
 };
 
 const newClaim = async (lucid: Lucid, outRef: OutRef, settingsUtxo: UTxO) => {
-  const claimTx = await claimBounty(
-    settingsUtxo,
-    outRef,
-    lucid,
-    ACCOUNT_CONTRIBUTOR.address
-  );
+  const claimTx = await claimBounty(settingsUtxo, outRef, lucid);
   emulator.awaitBlock(3);
   lucid.selectWalletFromSeed(ACCOUNT_CONTRIBUTOR.seedPhrase);
   const txId = await signAndSubmit(lucid, claimTx);

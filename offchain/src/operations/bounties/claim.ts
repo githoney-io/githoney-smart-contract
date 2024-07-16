@@ -7,15 +7,15 @@ import {
 import {
   addrToWallet,
   clearZeroAssets,
-  extractBountyIdTokenUnit
+  extractBountyIdTokenUnit,
+  keyPairsToAddress
 } from "../../utils";
 import logger from "../../logger";
 
 async function claimBounty(
   settingsUtxo: UTxO,
   utxoRef: OutRef,
-  lucid: Lucid,
-  contributorAddr: string
+  lucid: Lucid
 ): Promise<string> {
   logger.info("START claim");
   const githoneyScript = settingsUtxo.scriptRef;
@@ -33,13 +33,7 @@ async function claimBounty(
   if (!oldDatum.merged) {
     throw new Error("Bounty is not merged");
   }
-  const contributorWallet = addrToWallet(contributorAddr, lucid);
-  if (
-    oldDatum.contributor.paymentKey !== contributorWallet.paymentKey ||
-    oldDatum.contributor.stakeKey !== contributorWallet.stakeKey
-  ) {
-    throw new Error("Invalid contributor");
-  }
+  const contributorAddr = await keyPairsToAddress(lucid, oldDatum.contributor);
 
   lucid.selectWalletFrom({
     address: contributorAddr

@@ -116,8 +116,9 @@ pub fn merge(
   let is_signed_by_admin =
     is_signed_by(ctx.transaction, datum.admin_wallet.payment_key)
   let is_maintainer_minada_payed =
-    value_paid_to(datum.maintainer_wallet, ctx.transaction) == from_lovelace(
-      min_ada,
+    value_grater_than_or_equal(
+      value_paid_to(datum.maintainer_wallet, ctx.transaction),
+      from_lovelace(min_ada),
     )
   let is_datum_not_merged = !datum.merged
 

@@ -212,8 +212,7 @@ describe("Integration tests", async () => {
     const claimCbor = await claimBounty(
       settingsUtxo,
       { txHash: mergeTxId, outputIndex: 0 },
-      lucid,
-      contributorAddr
+      lucid
     );
     const claimTxId = await signSubmitAndWaitConfirmation(
       lucidContributor,
@@ -393,12 +392,7 @@ describe("Integration tests", async () => {
       `Githoney fee pay mismatch ${githoneyFeePayUtxo.assets[tokenAUnit]}`
     );
 
-    const claimCbor = await claimBounty(
-      newSettingsUtxo,
-      mergeOutRef,
-      lucid,
-      contributorAddr
-    );
+    const claimCbor = await claimBounty(newSettingsUtxo, mergeOutRef, lucid);
 
     logger.info(`Claiming bounty`);
     const claimTxId = await signSubmitAndWaitConfirmation(

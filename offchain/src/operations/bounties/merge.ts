@@ -19,7 +19,7 @@ async function mergeBounty(
   utxoRef: OutRef,
   lucid: Lucid
 ): Promise<string> {
-  console.debug("START mergeBounty");
+  logger.info("START mergeBounty");
   const githoneyScript = settingsUtxo.scriptRef;
   if (!githoneyScript) {
     throw new Error("Githoney validator not found");
