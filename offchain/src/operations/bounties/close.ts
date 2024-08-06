@@ -1,4 +1,13 @@
-import { Assets, Data, Lucid, OutRef, Tx, UTxO } from "lucid-cardano";
+import {
+  Assets,
+  Data,
+  fromUnit,
+  Lucid,
+  OutRef,
+  toUnit,
+  Tx,
+  UTxO
+} from "lucid-cardano";
 import {
   GithoneyDatum,
   GithoneyDatumT,
@@ -51,7 +60,7 @@ async function closeBounty(
     .addSignerKey(adminPkh);
 
   const txWithPayments = await (
-    await addPayments(tx, bountyDatum, utxo.assets, bountyIdTokenUnit, lucid)
+    await addPayments(tx, bountyDatum, utxo.assets, lucid)
   ).complete();
 
   const cbor = txWithPayments.toString();
@@ -64,7 +73,6 @@ const addPayments = async (
   tx: Tx,
   datum: GithoneyDatumT,
   assets: Assets,
-  bountyIdTokenUnit: string,
   lucid: Lucid
 ): Promise<Tx> => {
   if (datum.contributor) {
@@ -76,8 +84,18 @@ const addPayments = async (
     };
   }
   const maintainerAddr = await keyPairsToAddress(lucid, datum.maintainer);
-  assets = clearZeroAssets({ ...assets, [bountyIdTokenUnit]: 0n });
-  tx = tx.payToAddress(maintainerAddr, assets);
+  let initial_assets: Assets = {};
+  datum.initial_value.forEach(({ asset, amount }) => {
+    let unit;
+    if (asset.policy_id === "") {
+      unit = "lovelace";
+    } else {
+      unit = toUnit(asset.policy_id, asset.asset_name);
+    }
+    initial_assets[unit] = amount;
+  });
+  tx = tx.payToAddress(maintainerAddr, initial_assets);
+
   return tx;
 };
 
