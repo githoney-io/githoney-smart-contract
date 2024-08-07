@@ -1,13 +1,4 @@
-import {
-  Assets,
-  Data,
-  fromUnit,
-  Lucid,
-  OutRef,
-  toUnit,
-  Tx,
-  UTxO
-} from "lucid-cardano";
+import { Assets, Data, Lucid, OutRef, toUnit, Tx, UTxO } from "lucid-cardano";
 import {
   GithoneyDatum,
   GithoneyDatumT,
@@ -24,6 +15,7 @@ import logger from "../../logger";
 async function closeBounty(
   settingsUtxo: UTxO,
   utxoRef: OutRef,
+  refundings: { [key: string]: Assets },
   lucid: Lucid
 ): Promise<string> {
   logger.info("START close");
@@ -39,6 +31,16 @@ async function closeBounty(
   if (bountyDatum.merged) {
     throw new Error("Bounty already merged");
   }
+  if (
+    !checkRefundingsAreValid(
+      refundings,
+      initialValueToAssets(bountyDatum.initial_value),
+      utxo.assets
+    )
+  ) {
+    throw new Error("Refundings are invalid");
+  }
+
   const adminAddr = await keyPairsToAddress(lucid, bountyDatum.admin);
   const bountyIdTokenUnit = extractBountyIdTokenUnit(
     utxo.assets,
@@ -60,7 +62,7 @@ async function closeBounty(
     .addSignerKey(adminPkh);
 
   const txWithPayments = await (
-    await addPayments(tx, bountyDatum, utxo.assets, lucid)
+    await addPayments(tx, bountyDatum, utxo.assets, refundings, lucid)
   ).complete();
 
   const cbor = txWithPayments.toString();
@@ -73,6 +75,7 @@ const addPayments = async (
   tx: Tx,
   datum: GithoneyDatumT,
   assets: Assets,
+  refundings: { [key: string]: Assets },
   lucid: Lucid
 ): Promise<Tx> => {
   if (datum.contributor) {
@@ -84,19 +87,60 @@ const addPayments = async (
     };
   }
   const maintainerAddr = await keyPairsToAddress(lucid, datum.maintainer);
-  let initial_assets: Assets = {};
-  datum.initial_value.forEach(({ asset, amount }) => {
-    let unit;
-    if (asset.policy_id === "") {
-      unit = "lovelace";
-    } else {
-      unit = toUnit(asset.policy_id, asset.asset_name);
-    }
-    initial_assets[unit] = amount;
+  const initialAssets = initialValueToAssets(datum.initial_value);
+
+  tx = tx.payToAddress(maintainerAddr, initialAssets);
+  Object.entries(refundings).forEach(([addr, refund]) => {
+    tx = tx.payToAddress(addr, refund);
   });
-  tx = tx.payToAddress(maintainerAddr, initial_assets);
 
   return tx;
+};
+
+const assetsAdd = (a: Assets, b: Assets): Assets => {
+  const result: Assets = {};
+  for (const key of Object.keys(a)) {
+    result[key] = a[key] + (b[key] || 0n);
+  }
+  for (const key of Object.keys(b)) {
+    if (!a[key]) {
+      result[key] = b[key];
+    }
+  }
+  return clearZeroAssets(result);
+};
+
+const checkRefundingsAreValid = (
+  refundings: { [key: string]: Assets },
+  initialValue: Assets,
+  assetsInUtxo: Assets
+): boolean => {
+  let totalRefundings = Object.values(refundings).reduce(assetsAdd, {});
+  totalRefundings = assetsAdd(totalRefundings, initialValue);
+  return Object.entries(totalRefundings).every(([unit, amount]) => {
+    return amount <= (assetsInUtxo[unit] || 0n);
+  });
+};
+
+const initialValueToAssets = (
+  initialValue: {
+    asset: { policy_id: string; asset_name: string };
+    amount: bigint;
+  }[]
+): Assets => {
+  {
+    let initialAssets: Assets = {};
+    initialValue.forEach(({ asset, amount }) => {
+      let unit;
+      if (asset.policy_id === "") {
+        unit = "lovelace";
+      } else {
+        unit = toUnit(asset.policy_id, asset.asset_name);
+      }
+      initialAssets[unit] = amount;
+    });
+    return initialAssets;
+  }
 };
 
 export { closeBounty };
