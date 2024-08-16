@@ -23,7 +23,7 @@ describe("Close tests", async () => {
     const assignTxId = await newAssign(lucid, createOutRef, settingsUtxo);
     const assignOutRef: OutRef = { txHash: assignTxId, outputIndex: 0 };
 
-    const closeTx = await closeBounty(settingsUtxo, assignOutRef, lucid);
+    const closeTx = await closeBounty(settingsUtxo, assignOutRef, {}, lucid);
     emulator.awaitBlock(3);
 
     lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
@@ -35,7 +35,7 @@ describe("Close tests", async () => {
     const createTxId = await newBounty(lucid, settingsUtxo);
     const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
-    const closeTx = await closeBounty(settingsUtxo, createOutRef, lucid);
+    const closeTx = await closeBounty(settingsUtxo, createOutRef, {}, lucid);
     emulator.awaitBlock(3);
 
     lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
@@ -58,7 +58,7 @@ describe("Close tests", async () => {
       const mergeTxId = await signAndSubmit(lucid, mergeTx);
       const mergeOutRef: OutRef = { txHash: mergeTxId, outputIndex: 0 };
 
-      await closeBounty(settingsUtxo, mergeOutRef, lucid);
+      await closeBounty(settingsUtxo, mergeOutRef, {}, lucid);
     } catch (e) {
       const error = e as Error;
       logger.error(error.message);
@@ -93,7 +93,12 @@ describe("Close tests", async () => {
       outputIndex: 0
     };
 
-    const closeTx = await closeBounty(settingsUtxo, addRewardsOutRef, lucid);
+    const closeTx = await closeBounty(
+      settingsUtxo,
+      addRewardsOutRef,
+      {},
+      lucid
+    );
     emulator.awaitBlock(3);
 
     lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);

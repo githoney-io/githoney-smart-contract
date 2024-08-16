@@ -179,7 +179,7 @@ const newClaim = async (lucid: Lucid, outRef: OutRef, settingsUtxo: UTxO) => {
 };
 
 const newClose = async (lucid: Lucid, outRef: OutRef, settingsUtxo: UTxO) => {
-  const closeTx = await closeBounty(settingsUtxo, outRef, lucid);
+  const closeTx = await closeBounty(settingsUtxo, outRef, {}, lucid);
   emulator.awaitBlock(3);
   lucid.selectWalletFromSeed(ACCOUNT_ADMIN.seedPhrase);
   const txId = await signAndSubmit(lucid, closeTx);
