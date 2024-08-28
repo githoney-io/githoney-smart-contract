@@ -1,5 +1,5 @@
 import { githoneyValidator, settingsValidator } from "../../scripts";
-import { Lucid, UTxO, fromUnit } from "lucid-cardano";
+import { Lucid, UTxO, fromUnit } from "lucid-txpipe";
 import { keyPairsToAddress, validatorSettings } from "../../utils";
 import logger from "../../logger";
 import { SettingsDatum, SettingsRedeemer, mkSettingsDatum } from "../../types";

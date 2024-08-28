@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { describe, it } from "mocha";
-import { Blockfrost, Lucid, fromText, fromUnit, toUnit } from "lucid-cardano";
+import { Blockfrost, Lucid, fromText, fromUnit, toUnit } from "lucid-txpipe";
 import {
   assignContributor,
   claimBounty,

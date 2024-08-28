@@ -1,4 +1,4 @@
-import { Assets, Lucid, OutRef, UTxO } from "lucid-cardano";
+import { Assets, Lucid, OutRef, UTxO } from "lucid-txpipe";
 import {
   GithoneyDatum,
   GithoneyDatumT,

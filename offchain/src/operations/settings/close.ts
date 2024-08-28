@@ -1,4 +1,4 @@
-import { Data, Lucid, OutRef, UTxO } from "lucid-cardano";
+import { Data, Lucid, OutRef, UTxO } from "lucid-txpipe";
 import { SettingsDatum, SettingsRedeemer } from "../../types";
 import { clearZeroAssets, keyPairsToAddress } from "../../utils";
 import logger from "../../logger";

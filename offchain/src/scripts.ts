@@ -4,12 +4,9 @@ import {
   applyParamsToScript,
   ScriptHash,
   OutRef,
-  PolicyId,
-  AddressDetails
-} from "lucid-cardano";
+  PolicyId
+} from "lucid-txpipe";
 import plutusBlueprint from "../../onchain/plutus.json" assert { type: "json" };
-import { KeyPairKeyObjectResult } from "crypto";
-import { WalletSchema, WalletT } from "./types";
 
 const GITHONEY_VALIDATOR = plutusBlueprint.validators.find(
   ({ title }) => title === "githoney_contract.githoney_contract"

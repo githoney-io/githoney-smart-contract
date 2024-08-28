@@ -1,7 +1,7 @@
 import { creationFee, githoneyAddr, rewardFee } from "./constants";
 import { WalletT } from "./types";
 import dotenv from "dotenv";
-import { Address, Assets, Lucid, Utils, fromUnit } from "lucid-cardano";
+import { Address, Assets, Lucid, Utils, fromUnit } from "lucid-txpipe";
 
 dotenv.config();
 

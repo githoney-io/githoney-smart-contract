@@ -5,7 +5,7 @@ import {
   generateSeedPhrase,
   Lucid,
   toUnit
-} from "lucid-cardano";
+} from "lucid-txpipe";
 import { deployUtxo } from "./utils";
 
 const tokenA = {

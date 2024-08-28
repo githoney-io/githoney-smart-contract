@@ -3,7 +3,7 @@ import {
   settingsValidator,
   settingsPolicy
 } from "../../scripts";
-import { Data, Lucid, OutRef, fromText, toUnit } from "lucid-cardano";
+import { Data, Lucid, OutRef, fromText, toUnit } from "lucid-txpipe";
 import { validatorSettings } from "../../utils";
 import logger from "../../logger";
 import { settingsTokenName } from "../../constants";

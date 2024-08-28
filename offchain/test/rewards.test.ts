@@ -10,7 +10,7 @@ import {
   signAndSubmit
 } from "./utils";
 import logger from "../src/logger";
-import { OutRef } from "lucid-cardano";
+import { OutRef } from "lucid-txpipe";
 import { addrToWallet } from "../src/utils";
 import { updateSettings } from "../src";
 

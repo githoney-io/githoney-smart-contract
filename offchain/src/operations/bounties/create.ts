@@ -6,7 +6,7 @@ import {
   UTxO,
   Assets,
   fromUnit
-} from "lucid-cardano";
+} from "lucid-txpipe";
 import { MIN_ADA } from "../../constants";
 import { AssetClassT, SettingsDatum, mkDatum } from "../../types";
 import { addrToWallet, keyPairsToAddress } from "../../utils";

@@ -7,7 +7,7 @@ import {
   PrivateKey,
   UTxO,
   fromHex
-} from "lucid-cardano";
+} from "lucid-txpipe";
 import {
   assignContributor,
   claimBounty,

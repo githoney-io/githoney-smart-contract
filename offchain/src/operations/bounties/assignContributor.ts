@@ -1,4 +1,4 @@
-import { Lucid, OutRef, UTxO } from "lucid-cardano";
+import { Lucid, OutRef, UTxO } from "lucid-txpipe";
 import { MIN_ADA } from "../../constants";
 import {
   GithoneyDatum,

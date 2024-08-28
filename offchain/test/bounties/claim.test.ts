@@ -5,7 +5,7 @@ import {
   ACCOUNT_0,
   lucid
 } from "../emulatorConfig";
-import { OutRef } from "lucid-cardano";
+import { OutRef } from "lucid-txpipe";
 import { expect } from "chai";
 import { claimBounty } from "../../src/operations/bounties/claim";
 import {

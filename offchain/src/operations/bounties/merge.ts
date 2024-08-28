@@ -6,7 +6,7 @@ import {
   SettingsDatum,
   mkDatum
 } from "../../types";
-import { OutRef, Lucid, Assets, UTxO } from "lucid-cardano";
+import { OutRef, Lucid, Assets, UTxO } from "lucid-txpipe";
 import {
   keyPairsToAddress,
   clearZeroAssets,

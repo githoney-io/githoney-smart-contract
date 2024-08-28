@@ -6,7 +6,7 @@ import {
   lucid,
   tokenAUnit
 } from "../emulatorConfig";
-import { OutRef } from "lucid-cardano";
+import { OutRef } from "lucid-txpipe";
 import { mergeBounty } from "../../src/operations/bounties/merge";
 import { closeBounty } from "../../src/operations/bounties/close";
 import { deployUtxo, newAssign, newBounty, signAndSubmit } from "../utils";
