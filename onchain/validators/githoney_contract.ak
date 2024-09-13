@@ -1,4 +1,4 @@
-use aiken/transaction.{OutputReference, Redeemer, ScriptContext}
+use aiken/transaction.{OutputReference, Redeemer, ScriptContext, Datum}
 use aiken/transaction/value.{PolicyId}
 use types.{
   AddRewards, Assign, Claim, Close, CloseSettings, GithoneyContractRedeemers,
@@ -6,8 +6,10 @@ use types.{
 }
 use validations.{
   add_rewards, assign, claim, close, close_settings, merge, minting_policy,
-  minting_policy_settings, update_settings,
+  minting_policy_settings, update_settings, reference_input_settings_with_NFT
 }
+use checks.{is_signed_by}
+use aiken/list
 
 validator(settings_policy_id: PolicyId) {
   fn githoney_contract(
@@ -45,5 +47,32 @@ validator {
 validator(utxo_ref: OutputReference) {
   fn settings_policy(_redeemer: Redeemer, ctx: ScriptContext) {
     minting_policy_settings(utxo_ref, ctx)
+  }
+}
+
+validator(utxo_ref: OutputReference, nonce: Int) {
+  fn badges_policy(_redeemer: Redeemer, ctx: ScriptContext) {
+    let is_outref_in_inputs =
+      list.any(
+        ctx.transaction.inputs,
+      fn(input) { input.output_reference == utxo_ref },
+    )
+
+    let is_valid_nonce = nonce >= 0
+
+    is_outref_in_inputs? && is_valid_nonce?
+  }
+}
+
+validator(settings_policy_id: PolicyId) {
+  fn badges_contract(
+    _datum: Datum,
+    _redeemer: Redeemer,
+    ctx: ScriptContext,
+  ) {
+    let settings_datum =
+      reference_input_settings_with_NFT(ctx.transaction, settings_policy_id)
+    let is_signed_by_githoney = is_signed_by(ctx.transaction, settings_datum.githoney_wallet.payment_key)
+    is_signed_by_githoney
   }
 }
