@@ -113,21 +113,19 @@ namespace SettingsRedeemer {
     );
 }
 
-const MetadataSchema = Data.Object({
-  name: Data.Bytes(),
-  logo: Data.Bytes(),
-  description: Data.Bytes()
-});
-
 const BadgeDatumSchema = Data.Object({
   metadata: Data.Map(Data.Bytes(), Data.Bytes()),
   version: Data.Integer()
 });
 
-type Metadata = Data.Static<typeof MetadataSchema>;
-
 type BadgeDatumT = Data.Static<typeof BadgeDatumSchema>;
 const BadgeDatum = BadgeDatumSchema as unknown as BadgeDatumT;
+
+interface Metadata {
+  name: string;
+  logo: string;
+  description: string;
+}
 
 const mkBadgeDatum = (metadata: Metadata, version: bigint) => {
   const hexMetadata: [string, string][] = Object.entries(metadata).map(
