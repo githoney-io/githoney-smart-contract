@@ -7,7 +7,7 @@ import { assignContributor } from "./operations/bounties/assignContributor";
 import { deploySettings } from "./operations/settings/deploy";
 import { updateSettings } from "./operations/settings/update";
 import { closeSettings } from "./operations/settings/close";
-import { deployBadges } from "./operations/badges/deploy";
+import { deployBadges, MetadataWithPolicy } from "./operations/badges/deploy";
 
 export {
   createBounty,
@@ -19,5 +19,6 @@ export {
   deploySettings,
   updateSettings,
   closeSettings,
-  deployBadges
+  deployBadges,
+  type MetadataWithPolicy
 };
