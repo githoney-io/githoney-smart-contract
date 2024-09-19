@@ -8,7 +8,6 @@ import {
   Lucid,
   Constr,
   fromUnit,
-  fromLabel,
   toText,
   PolicyId
 } from "lucid-txpipe";
@@ -16,7 +15,6 @@ import { Metadata, mkBadgeDatum, SettingsDatum } from "../../types";
 import logger from "../../logger";
 import { keyPairsToAddress } from "../../utils";
 import { badgesPolicy, badgesValidator, settingsPolicy } from "../../scripts";
-import { log } from "console";
 
 export interface MetadataWithPolicy {
   metadata: Metadata;
@@ -58,36 +56,42 @@ async function deployBadges(
   const utxosToCollect: UTxO[] = [];
   const newMetadatas: MetadataWithPolicy[] = [];
   for (const meta of metadatas) {
+    logger.info("-------------------------------------------------");
+    logger.info(`Deploying badge ${JSON.stringify(meta)}`);
     const { res, referenceNftPolicyId } = await isReferenceNftMinted(
       lucid,
       utxosAtScript,
-      meta.metadata
+      meta
     );
     if (res) {
-      logger.info(`Badge already minted ${JSON.stringify(meta.metadata)}`);
+      logger.info(`Badge already minted ${meta.metadata.name}`);
       newMetadatas.push({
         metadata: meta.metadata,
         policyId: referenceNftPolicyId
       });
       continue;
+    } else {
+      logger.error(`Badge not minted ${JSON.stringify(meta)}`);
     }
+    let utxos: UTxO[] = [];
     if (meta.policyId) {
       logger.info(
         `Updating metadata of badge ${meta.metadata.name} policy ${meta.policyId}`
       );
       // We only need to update the metadata
       const nftUnit = toUnit(meta.policyId!, fromText(meta.metadata.name), 100);
-      const utxos = await lucid.utxosAtWithUnit(githoneyAddr, nftUnit);
+      utxos = await lucid.utxosAtWithUnit(scriptAddr, nftUnit);
       if (utxos.length === 1) {
         utxosToCollect.push(utxos[0]);
-        logger.info("Collecting utxo");
+        logger.info("Collecting utxo to update metadata");
         tx.payToAddressWithData(
           scriptAddr,
           { inline: mkBadgeDatum(meta.metadata, 1n) },
           { [nftUnit]: 1n }
         );
       }
-    } else {
+    }
+    if ((meta.policyId && utxos.length === 0) || !meta.policyId) {
       const policyScript = badgesPolicy(outRef, i);
       i++;
 
@@ -116,15 +120,15 @@ async function deployBadges(
   }
   if (utxosToCollect.length > 0) {
     logger.info("Collecting utxos from script");
-    logger.info(utxosToCollect);
-    tx.readFrom([settingsUtxo]);
-    tx.attachSpendingValidator(badgesScript);
-    tx.collectFrom(utxosToCollect, Data.void());
+    tx.readFrom([settingsUtxo])
+      .attachSpendingValidator(badgesScript)
+      .collectFrom(utxosToCollect, Data.void())
+      .addSignerKey(settings.githoney_wallet.paymentKey);
   }
 
   const txComplete = await tx.payToAddress(githoneyAddr, ftAssets).complete();
   let cbor: string = "";
-  if (Object.keys(ftAssets).length === 0) {
+  if (Object.keys(ftAssets).length === 0 && utxosToCollect.length === 0) {
     logger.info("All badges already minted");
   } else {
     cbor = txComplete.toString();
@@ -138,7 +142,7 @@ async function deployBadges(
 async function isReferenceNftMinted(
   lucid: Lucid,
   utxos: UTxO[],
-  metadata: Metadata
+  meta: MetadataWithPolicy
 ): Promise<{ res: boolean; referenceNftPolicyId: string | undefined }> {
   for (const utxo of utxos) {
     let referenceNftPolicyId: string | undefined;
@@ -146,17 +150,17 @@ async function isReferenceNftMinted(
       try {
         referenceNftPolicyId = await hasReferenceNft(
           utxo.assets,
-          metadata.name
+          meta.metadata.name,
+          meta.policyId
         );
         const datum = (await lucid.datumOf(utxo)) as Constr<Data>;
         const datumJson = Data.toJson(datum.fields[0]);
         if (
           referenceNftPolicyId &&
-          datumJson.name === metadata.name &&
-          datumJson.logo === metadata.logo &&
-          datumJson.description === metadata.description
+          datumJson.name === meta.metadata.name &&
+          datumJson.logo === meta.metadata.logo &&
+          datumJson.description === meta.metadata.description
         ) {
-          logger.info("Badge already minted");
           return { res: true, referenceNftPolicyId };
         }
       } catch (error) {
@@ -170,13 +174,18 @@ async function isReferenceNftMinted(
 
 async function hasReferenceNft(
   assets: Assets,
-  name: string
+  name: string,
+  policyId?: PolicyId
 ): Promise<string | undefined> {
   for (const [unit, amount] of Object.entries(assets)) {
     const asset = fromUnit(unit);
     if (asset.name) {
       if (toText(asset.name) === name && asset.label === 100 && amount === 1n) {
-        return asset.policyId;
+        if (policyId && asset.policyId !== policyId) {
+          return undefined;
+        } else {
+          return asset.policyId;
+        }
       }
     }
   }

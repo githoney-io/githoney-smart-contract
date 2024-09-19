@@ -1,4 +1,4 @@
-import { Data, Lucid, OutRef, UTxO } from "lucid-txpipe";
+import { Data, fromUnit, Lucid, OutRef, UTxO } from "lucid-txpipe";
 import { MetadataWithPolicy } from "./deploy";
 import { SettingsDatum } from "../../types";
 import { keyPairsToAddress } from "../../utils";
@@ -31,7 +31,8 @@ async function collectUtxos(
   const tx = lucid
     .newTx()
     .attachSpendingValidator(badgesScript)
-    .readFrom([settingsUtxo]);
+    .readFrom([settingsUtxo])
+    .addSignerKey(settings.githoney_wallet.paymentKey);
   const policiesToAvoid: string[] = [];
   for (const meta of metadatas) {
     if (meta.policyId) {
@@ -41,9 +42,10 @@ async function collectUtxos(
   const inputUtxos: UTxO[] = [];
   utxosAtScript.forEach((utxo) => {
     if (
-      Object.keys(utxo.assets).some((policyId) =>
-        policiesToAvoid.includes(policyId)
-      )
+      Object.keys(utxo.assets).some((unit) => {
+        const { policyId } = fromUnit(unit);
+        return policiesToAvoid.includes(policyId);
+      })
     ) {
       return;
     }
