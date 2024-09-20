@@ -1,4 +1,3 @@
-use aiken/cbor
 use aiken/dict
 use aiken/list
 use aiken/option.{is_none, is_some}
@@ -7,8 +6,7 @@ use aiken/transaction.{
 }
 use aiken/transaction/credential.{ScriptCredential, from_script}
 use aiken/transaction/value.{
-  AssetName, PolicyId, from_lovelace, quantity_of,
-  tokens,
+  AssetName, PolicyId, from_lovelace, quantity_of, tokens,
 }
 use checks.{
   is_assign_datum_valid, is_merge_datum_valid, is_signed_by,
@@ -131,48 +129,39 @@ pub fn close(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
     script_input_and_token_id_info(ctx)
   let (policy_id, minted_name, minted_quantity) =
     get_minting_info(ctx.transaction)
-  trace cbor.diagnostic(value_paid_to(datum.maintainer_wallet, ctx.transaction))
-  trace cbor.diagnostic(tokens_to_value(datum.initial_value))
-  {
-    let are_payments_valid =
-      when datum.contributor_wallet is {
-        Some(contributor_wallet) -> {
-          trace @"bb"
-          {
-            let is_contributor_pay_valid =
-              value_paid_to(contributor_wallet, ctx.transaction) == from_lovelace(
-                min_ada,
-              )
-            let is_maintainer_pay_valid =
-              value_grater_than_or_equal(
-                value_paid_to(datum.maintainer_wallet, ctx.transaction),
-                tokens_to_value(datum.initial_value),
-              )
-            is_contributor_pay_valid? && is_maintainer_pay_valid?
-          }
-        }
-
-        None -> {
-          trace @"aa"
-          {
-            let is_maintainer_pay_valid =
-              value_grater_than_or_equal(
-                value_paid_to(datum.maintainer_wallet, ctx.transaction),
-                tokens_to_value(datum.initial_value),
-              )
-            is_maintainer_pay_valid?
-          }
-        }
+  let are_payments_valid =
+    when datum.contributor_wallet is {
+      Some(contributor_wallet) -> {
+        let is_contributor_pay_valid =
+          value_grater_than_or_equal(
+            value_paid_to(contributor_wallet, ctx.transaction),
+            from_lovelace(min_ada),
+          )
+        let is_maintainer_pay_valid =
+          value_grater_than_or_equal(
+            value_paid_to(datum.maintainer_wallet, ctx.transaction),
+            tokens_to_value(datum.initial_value),
+          )
+        is_contributor_pay_valid? && is_maintainer_pay_valid?
       }
 
-    let is_signed_by_admin =
-      is_signed_by(ctx.transaction, datum.admin_wallet.payment_key)
-    let is_bounty_id_token_burnt =
-      minted_quantity == -1 && minted_name == bounty_id_name && policy_id == bounty_id_policy
-    let is_datum_not_merged = !datum.merged
+      None -> {
+        let is_maintainer_pay_valid =
+          value_grater_than_or_equal(
+            value_paid_to(datum.maintainer_wallet, ctx.transaction),
+            tokens_to_value(datum.initial_value),
+          )
+        is_maintainer_pay_valid?
+      }
+    }
 
-    is_datum_not_merged? && is_signed_by_admin? && are_payments_valid? && is_bounty_id_token_burnt?
-  }
+  let is_signed_by_admin =
+    is_signed_by(ctx.transaction, datum.admin_wallet.payment_key)
+  let is_bounty_id_token_burnt =
+    minted_quantity == -1 && minted_name == bounty_id_name && policy_id == bounty_id_policy
+  let is_datum_not_merged = !datum.merged
+
+  is_datum_not_merged? && is_signed_by_admin? && are_payments_valid? && is_bounty_id_token_burnt?
 }
 
 pub fn claim(datum: GithoneyDatum, ctx: ScriptContext) -> Bool {
