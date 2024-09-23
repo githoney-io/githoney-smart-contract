@@ -25,6 +25,7 @@ async function deployBadges(
   settingsUtxo: UTxO,
   settingsNftOutRef: OutRef,
   ftBadgeAmount: bigint,
+  ftAddress: string,
   metadatas: MetadataWithPolicy[],
   lucid: Lucid
 ): Promise<{ cbor: string; newMetadatas: MetadataWithPolicy[] }> {
@@ -126,7 +127,7 @@ async function deployBadges(
       .addSignerKey(settings.githoney_wallet.paymentKey);
   }
 
-  const txComplete = await tx.payToAddress(githoneyAddr, ftAssets).complete();
+  const txComplete = await tx.payToAddress(ftAddress, ftAssets).complete();
   let cbor: string = "";
   if (Object.keys(ftAssets).length === 0 && utxosToCollect.length === 0) {
     logger.info("All badges already minted");

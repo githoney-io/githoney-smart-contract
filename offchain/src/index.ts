@@ -9,6 +9,7 @@ import { updateSettings } from "./operations/settings/update";
 import { closeSettings } from "./operations/settings/close";
 import { deployBadges, MetadataWithPolicy } from "./operations/badges/deploy";
 import { collectUtxos } from "./operations/badges/collectUtxos";
+import { payBadgesTo } from "./operations/badges/payBadgesTo";
 
 export {
   createBounty,
@@ -22,5 +23,6 @@ export {
   closeSettings,
   deployBadges,
   collectUtxos,
+  payBadgesTo,
   type MetadataWithPolicy
 };
