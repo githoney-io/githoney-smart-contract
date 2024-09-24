@@ -3,8 +3,7 @@ import logger from "../../logger";
 
 async function payBadgesTo(
   ftAddress: string,
-  payAddress: string, // this info should be in the badges for more general use
-  badges: { badgeName: string; badgePolicy: string }[],
+  badges: { badgeName: string; badgePolicy: string; payAddress: string }[],
   lucid: Lucid
 ) {
   logger.info("START payBadgeTo");
@@ -13,13 +12,13 @@ async function payBadgesTo(
   lucid.selectWalletFrom({ address: ftAddress });
   for (const badge of badges) {
     const { badgeName, badgePolicy } = badge;
-    logger.info(`paying badge ${badgeName} to ${payAddress}`);
+    logger.info(`paying badge ${badgeName} to ${badge.payAddress}`);
     const utxos = await lucid.wallet.getUtxos();
     const badgeUnit = toUnit(badgePolicy, fromText(badgeName), 333);
     const ftUtxo = utxos.find((utxo) =>
       Object.keys(utxo.assets).find((unit) => unit === badgeUnit)
     );
-    const userUtxos = await lucid.utxosAt(payAddress);
+    const userUtxos = await lucid.utxosAt(badge.payAddress);
     const userFtUtxo = userUtxos.find((utxo) =>
       Object.keys(utxo.assets).find((unit) => unit === badgeUnit)
     );
@@ -28,10 +27,12 @@ async function payBadgesTo(
       continue;
     }
     if (userFtUtxo) {
-      logger.error(`Badge ${badgeName} already in user wallet ${payAddress}`);
+      logger.error(
+        `Badge ${badgeName} already in user wallet ${badge.payAddress}`
+      );
       continue;
     }
-    tx.payToAddress(payAddress, { [badgeUnit]: 1n });
+    tx.payToAddress(badge.payAddress, { [badgeUnit]: 1n });
     returnCbor = true;
   }
 
