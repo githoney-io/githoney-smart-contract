@@ -24,6 +24,14 @@ const SETTINGS_MINTING = plutusBlueprint.validators.find(
   ({ title }) => title === "githoney_contract.settings_policy"
 );
 
+const BADGES_MINTING = plutusBlueprint.validators.find(
+  ({ title }) => title === "githoney_contract.badges_policy"
+);
+
+const BADGES_VALIDATOR = plutusBlueprint.validators.find(
+  ({ title }) => title === "githoney_contract.badges_contract"
+);
+
 if (!GITHONEY_VALIDATOR) {
   throw new Error(
     "githoney validator indexed with 'main.githoney_validator' in plutus.json failed!"
@@ -48,6 +56,18 @@ if (!SETTINGS_MINTING) {
   );
 }
 
+if (!BADGES_MINTING) {
+  throw new Error(
+    "Badges policy indexed with 'main.githoney_badges_policy' in plutus.json failed!"
+  );
+}
+
+if (!BADGES_VALIDATOR) {
+  throw new Error(
+    "Badges validator indexed with 'main.githoney_badges_validator' in plutus.json failed!"
+  );
+}
+
 const GITHONEY_SCRIPT: SpendingValidator["script"] =
   GITHONEY_VALIDATOR.compiledCode;
 const MINTING_SCRIPT: SpendingValidator["script"] =
@@ -56,6 +76,9 @@ const SETTINGS_SCRIPT: SpendingValidator["script"] =
   SETTINGS_VALIDATOR.compiledCode;
 const SETTINGS_POLICY: SpendingValidator["script"] =
   SETTINGS_MINTING.compiledCode;
+const BADGES_POLICY: SpendingValidator["script"] = BADGES_MINTING.compiledCode;
+const BADGES_SCRIPT: SpendingValidator["script"] =
+  BADGES_VALIDATOR.compiledCode;
 
 const ParamsSchema = Data.Tuple([Data.Bytes()]);
 type ParamsT = Data.Static<typeof ParamsSchema>;
@@ -68,6 +91,10 @@ const OutRefSchema = Data.Object({
 const SettingsParamsSchema = Data.Tuple([OutRefSchema]);
 type SettingsParamsT = Data.Static<typeof SettingsParamsSchema>;
 const SettingsParams = SettingsParamsSchema as unknown as SettingsParamsT;
+
+const BadgesPolicySchema = Data.Tuple([OutRefSchema, Data.Integer()]);
+type BadgesPolicyT = Data.Static<typeof BadgesPolicySchema>;
+const BadgesPolicy = BadgesPolicySchema as unknown as BadgesPolicyT;
 
 function githoneyValidator(settingsPolicyId: PolicyId): SpendingValidator {
   return {
@@ -116,10 +143,40 @@ function settingsValidator(): SpendingValidator {
   };
 }
 
+function badgesPolicy(outRef: OutRef, nonce: bigint): SpendingValidator {
+  return {
+    type: "PlutusV2",
+    script: applyParamsToScript<BadgesPolicyT>(
+      BADGES_POLICY,
+      [
+        {
+          txHash: { hash: outRef.txHash },
+          outputIndex: BigInt(outRef.outputIndex)
+        },
+        nonce
+      ],
+      BadgesPolicy
+    )
+  };
+}
+
+function badgesValidator(settingsPolicyId: PolicyId): SpendingValidator {
+  return {
+    type: "PlutusV2",
+    script: applyParamsToScript<ParamsT>(
+      BADGES_SCRIPT,
+      [settingsPolicyId],
+      Params
+    )
+  };
+}
+
 export {
   githoneyMintingPolicy,
   GITHONEY_SCRIPT_HASH,
   githoneyValidator,
   settingsPolicy,
-  settingsValidator
+  settingsValidator,
+  badgesPolicy,
+  badgesValidator
 };

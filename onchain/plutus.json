@@ -12,6 +12,56 @@
   },
   "validators": [
     {
+      "title": "githoney_contract.badges_contract",
+      "datum": {
+        "title": "_datum",
+        "schema": {
+          "$ref": "#/definitions/aiken~1transaction~1Datum"
+        }
+      },
+      "redeemer": {
+        "title": "_redeemer",
+        "schema": {
+          "$ref": "#/definitions/Data"
+        }
+      },
+      "parameters": [
+        {
+          "title": "settings_policy_id",
+          "schema": {
+            "$ref": "#/definitions/ByteArray"
+          }
+        }
+      ],
+      "compiledCode": "59027501000032323232323232323223222253330083232332232323300100100222533301200114a026464a66602266e3c008018528899802002000980b0011bae301400137586022602460246024602460246024602460246014004600460100066eb8c008c020c008c020004cc88c8c94ccc040c04c0084c94ccc038ccc0380052825116132533300f3370e9002180700089919299980a180b80109900119299980919b87480000044c8c8c8c8c8c94ccc06cc0780084c9263253330193370e90000008991919192999810181180109924c64a66603c66e1d20000011323253330233026002149858dd71812000980e0010a99980f19b874800800454ccc084c0700085261616301c0011630210013021002375c603e002602e00c2c602e00a2c6eb4c070004c070008dd6980d000980d001180c00098080010b18080008b180a80098068008b1809980a180a18061802980600119b873232323253330113370e90010008a400026eb4c058c03c008c03c004c94ccc040cdc3a40040022980103d87a8000132323300100100222533301600114c103d87a800013232323253330173371e9110b73657474696e67734e46540000213374a90001980d9ba80014bd700998030030019bad3018003375c602c004603400460300026eacc054c038008c038004c8cc004004008894ccc04c0045300103d87a800013232323253330143371e020004266e95200033018374c00297ae01330060060033756602a0066eb8c04c008c05c008c054004dd59802180598021805800a40042c60220026eb0c008c0240048c03cc040004c004c01c0088c03800452613656375c0024600a6ea80048c00cdd5000ab9a5573aaae7955cfaba05742ae89",
+      "hash": "2cf86f07256a1764f6e4498443f51fae57c1e5ec8e09b40fed41b973"
+    },
+    {
+      "title": "githoney_contract.badges_policy",
+      "redeemer": {
+        "title": "_redeemer",
+        "schema": {
+          "$ref": "#/definitions/Data"
+        }
+      },
+      "parameters": [
+        {
+          "title": "utxo_ref",
+          "schema": {
+            "$ref": "#/definitions/aiken~1transaction~1OutputReference"
+          }
+        },
+        {
+          "title": "nonce",
+          "schema": {
+            "$ref": "#/definitions/Int"
+          }
+        }
+      ],
+      "compiledCode": "5877010000323232323232223222533300732325333009002100114a066e2520000043232323300100100222533300d00114a026464a66601a66ebcc018c03000802c528899802002000980800118070009bac30013007300130070022300b00114984d958dd6800918019baa0015734aae7955cfaba157441",
+      "hash": "321a3acc0d9b2fd80d8cdbdce1c37b4d4a61b1ca744812f7cbeb32d5"
+    },
+    {
       "title": "githoney_contract.githoney_contract",
       "datum": {
         "title": "datum",
@@ -182,6 +232,40 @@
           "fields": [
             {
               "$ref": "#/definitions/types~1GithoneyContractRedeemers"
+            }
+          ]
+        }
+      ]
+    },
+    "aiken/transaction/Datum": {
+      "title": "Datum",
+      "description": "An output `Datum`.",
+      "anyOf": [
+        {
+          "title": "NoDatum",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": []
+        },
+        {
+          "title": "DatumHash",
+          "description": "A datum referenced by its hash digest.",
+          "dataType": "constructor",
+          "index": 1,
+          "fields": [
+            {
+              "$ref": "#/definitions/ByteArray"
+            }
+          ]
+        },
+        {
+          "title": "InlineDatum",
+          "description": "A datum completely inlined in the output.",
+          "dataType": "constructor",
+          "index": 2,
+          "fields": [
+            {
+              "$ref": "#/definitions/Data"
             }
           ]
         }

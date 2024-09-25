@@ -1,4 +1,4 @@
-import { Constr, Data } from "lucid-txpipe";
+import { Constr, Data, fromText } from "lucid-txpipe";
 
 // Aiken types
 
@@ -113,8 +113,35 @@ namespace SettingsRedeemer {
     );
 }
 
+const BadgeDatumSchema = Data.Object({
+  metadata: Data.Map(Data.Bytes(), Data.Bytes()),
+  version: Data.Integer()
+});
+
+type BadgeDatumT = Data.Static<typeof BadgeDatumSchema>;
+const BadgeDatum = BadgeDatumSchema as unknown as BadgeDatumT;
+
+interface Metadata {
+  name: string;
+  logo: string;
+  description: string;
+}
+
+const mkBadgeDatum = (metadata: Metadata, version: bigint) => {
+  const hexMetadata: [string, string][] = Object.entries(metadata).map(
+    ([key, value]) => [fromText(key), fromText(value)]
+  );
+  const mapMetadata = new Map<string, string>(hexMetadata);
+  const datum: BadgeDatumT = {
+    metadata: mapMetadata,
+    version: version
+  };
+  return Data.to<BadgeDatumT>(datum, BadgeDatum);
+};
+
 export {
   mkDatum,
+  mkBadgeDatum,
   mkSettingsDatum,
   SettingsDatumT,
   GithoneyDatumT,
@@ -125,5 +152,7 @@ export {
   WalletSchema,
   WalletT,
   AssetClass,
-  AssetClassT
+  AssetClassT,
+  Metadata,
+  BadgeDatum
 };
