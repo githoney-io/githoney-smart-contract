@@ -3,8 +3,16 @@ import { MetadataWithPolicy } from "./deploy";
 import { SettingsDatum } from "../../types";
 import { keyPairsToAddress } from "../../utils";
 import { badgesValidator, settingsPolicy } from "../../scripts";
-import assert from "assert";
 import logger from "../../logger";
+
+/**
+ * Collects UTxOs from the badges script address avoiding the ones holding some specific metadata.
+ * @param settingsUtxo The settings UTxO.
+ * @param settingsNftOutRef The output reference passed as a parameter of the settings nft minting policy,
+ * @param metadatas The metadata of the badges to be skipped from collection.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction.
+ */
 
 async function collectUtxos(
   settingsUtxo: UTxO,

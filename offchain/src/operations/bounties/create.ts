@@ -12,6 +12,18 @@ import { AssetClassT, SettingsDatum, mkDatum } from "../../types";
 import { addrToWallet, keyPairsToAddress } from "../../utils";
 import logger from "../../logger";
 
+/**
+ * Builds a `createBounty` transaction. The tx is built in the context of the maintainer wallet.
+ * @param settingsUtxo The settings UTxO.
+ * @param maintainerAddr The maintainer's address.
+ * @param adminAddr The admin's address.
+ * @param rewards The reward assets and amount to be locked in the bounty UTxO.
+ * @param deadline The deadline for the bounty.
+ * @param bounty_id The bounty identifier.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction.
+ */
+
 async function createBounty(
   settingsUtxo: UTxO,
   maintainerAddr: string,

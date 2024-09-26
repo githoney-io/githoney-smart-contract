@@ -21,6 +21,19 @@ export interface MetadataWithPolicy {
   policyId?: string;
 }
 
+/**
+ * Builds a `deployBadges` transaction. The tx is built in the context of the GitHoney address,
+ * checks if the badge is already minted, and deploys the badge if it is not.
+ * In the case of updating the metadata, the badge utxo is consumed and the NFT reutilized.
+ * @param settingsUtxo The settings UTxO.
+ * @param settingsNftOutRef The output reference passed as a parameter of the settings nft minting policy,
+ * @param ftBadgeAmount The amount of FT tokens to be minted for each badge.
+ * @param ftAddress The address where the FT tokens should be payed.
+ * @param metadatas The metadata of the badges to be deployed.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction.
+ */
+
 async function deployBadges(
   settingsUtxo: UTxO,
   settingsNftOutRef: OutRef,

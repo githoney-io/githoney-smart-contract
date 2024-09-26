@@ -9,6 +9,13 @@ import logger from "../../logger";
 import { settingsTokenName } from "../../constants";
 import { mkSettingsDatum } from "../../types";
 
+/**
+ * Builds a `deploy` transaction. The tx is built in the context of the GitHoney address. This transaction configures the global parameters of the dApp, including the creation fee, reward fee, and the GitHoney wallet. These parameters are obtained from the environment configuration.
+ * @param githoneyAddr The GitHoney bech32 address.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction and an output reference from the associated wallet.
+ */
+
 async function deploySettings(
   githoneyAddr: string,
   lucid: Lucid

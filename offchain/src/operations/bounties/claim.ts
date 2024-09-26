@@ -5,12 +5,19 @@ import {
   GithoneyValidatorRedeemer
 } from "../../types";
 import {
-  addrToWallet,
   clearZeroAssets,
   extractBountyIdTokenUnit,
   keyPairsToAddress
 } from "../../utils";
 import logger from "../../logger";
+
+/**
+ * Builds a `claimBounty` transaction. The tx is built in the context of the contributor wallet.
+ * @param settingsUtxo The settings UTxO.
+ * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction.
+ */
 
 async function claimBounty(
   settingsUtxo: UTxO,

@@ -4,6 +4,14 @@ import { keyPairsToAddress, validatorSettings } from "../../utils";
 import logger from "../../logger";
 import { SettingsDatum, SettingsRedeemer, mkSettingsDatum } from "../../types";
 
+/**
+ * Builds an `update` transaction. The tx is built in the context of the GitHoney address.
+ * @param settingsUtxo The settings UTxO.
+ * @param lucid Lucid instance.
+ * @param settings The new settings to be updated (Optional).
+ * @returns The cbor of the unsigned transaction.
+ */
+
 async function updateSettings(
   settingsUtxo: UTxO,
   lucid: Lucid,

@@ -12,6 +12,15 @@ import {
 import { MIN_ADA } from "../../constants";
 import logger from "../../logger";
 
+/**
+ * Builds a `closeBounty` transaction. The tx is built in the context of the admin wallet.
+ * @param settingsUtxo The settings UTxO.
+ * @param lucid Lucid instance.
+ * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param refundings The refundings needed for after creation sponsors.
+ * @returns The cbor of the unsigned transaction.
+ */
+
 async function closeBounty(
   settingsUtxo: UTxO,
   utxoRef: OutRef,

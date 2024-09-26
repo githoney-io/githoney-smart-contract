@@ -1,6 +1,14 @@
 import { Lucid, toUnit, fromText } from "lucid-txpipe";
 import logger from "../../logger";
 
+/**
+ * Builds a transaction on the context of the ftAddress and pays the badges requested.
+ * @param ftAddress The address of the wallet holding the FT badges tokens.
+ * @param badges The badges to be paid and where.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction.
+ */
+
 async function payBadgesTo(
   ftAddress: string,
   badges: { badgeName: string; badgePolicy: string; payAddress: string }[],

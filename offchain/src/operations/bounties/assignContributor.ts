@@ -9,6 +9,15 @@ import {
 import { addrToWallet } from "../../utils";
 import logger from "../../logger";
 
+/**
+ * Builds an `assignContributor` transaction. The tx is built in the context of the contributor wallet.
+ * @param settingsUtxo The settings UTxO.
+ * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param contributorAddr The contributor's address.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction.
+ */
+
 async function assignContributor(
   settingsUtxo: UTxO,
   utxoRef: OutRef,

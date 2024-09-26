@@ -4,6 +4,15 @@ import { clearZeroAssets, keyPairsToAddress } from "../../utils";
 import logger from "../../logger";
 import { settingsPolicy, settingsValidator } from "../../scripts";
 
+/**
+ * Builds a `closeSettings` transaction. The tx is built in the context of the GitHoney address.
+ * @param utxoRef The output reference passed as a parameter of the settings nft minting policy,
+ * this outRef is returned in the deploySettings operation.
+ * @param settingsUtxo The settings UTxO.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction.
+ */
+
 async function closeSettings(
   utxoRef: OutRef,
   settingsUtxo: UTxO,

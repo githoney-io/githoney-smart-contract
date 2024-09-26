@@ -14,6 +14,14 @@ import {
 } from "../../utils";
 import logger from "../../logger";
 
+/**
+ * Builds a `mergeBounty` transaction. The tx is built in the context of the admin wallet.
+ * @param settingsUtxo The settings UTxO.
+ * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction.
+ */
+
 async function mergeBounty(
   settingsUtxo: UTxO,
   utxoRef: OutRef,

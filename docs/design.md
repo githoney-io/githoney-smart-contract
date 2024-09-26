@@ -152,6 +152,7 @@ The admin closes the bounty, returning the reward assets to the maintainer and b
  * @param settingsUtxo The settings UTxO.
  * @param lucid Lucid instance.
  * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param refundings The refundings needed for after creation sponsors.
  * @returns The cbor of the unsigned transaction.
  */
 async function closeBounty(
@@ -222,6 +223,7 @@ This transaction deploys the `GlobalSettings` UTxO, which holds the global param
 ```typescript
 /**
  * Builds a `deploy` transaction. The tx is built in the context of the GitHoney address. This transaction configures the global parameters of the dApp, including the creation fee, reward fee, and the GitHoney wallet. These parameters are obtained from the environment configuration.
+ * @param githoneyAddr The GitHoney bech32 address.
  * @param lucid Lucid instance.
  * @returns The cbor of the unsigned transaction and an output reference from the associated wallet.
  */

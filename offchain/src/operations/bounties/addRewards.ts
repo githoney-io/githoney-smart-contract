@@ -6,6 +6,16 @@ import {
 } from "../../types";
 import logger from "../../logger";
 
+/**
+ * Builds an `addReward` transaction. The tx is built in the context of any wallet.
+ * @param settingsUtxo The settings UTxO.
+ * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param address The address of the current wallet.
+ * @param rewards The reward assets and amount to be added.
+ * @param lucid Lucid instance.
+ * @returns The cbor of the unsigned transaction.
+ */
+
 async function addRewards(
   settingsUtxo: UTxO,
   utxoRef: OutRef,
