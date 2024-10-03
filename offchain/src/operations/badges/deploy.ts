@@ -124,6 +124,7 @@ async function deployBadges(
         { inline: datum },
         { [referenceNFTUnit]: 1n }
       )
+        .payToAddress(ftAddress, { [ftUnit]: ftBadgeAmount })
         .attachMintingPolicy(policyScript)
         .mintAssets(
           { [referenceNFTUnit]: 1n, [ftUnit]: ftBadgeAmount },
@@ -140,7 +141,7 @@ async function deployBadges(
       .addSignerKey(settings.githoney_wallet.paymentKey);
   }
 
-  const txComplete = await tx.payToAddress(ftAddress, ftAssets).complete();
+  const txComplete = await tx.complete();
   let cbor: string = "";
   if (Object.keys(ftAssets).length === 0 && utxosToCollect.length === 0) {
     logger.info("All badges already minted");
