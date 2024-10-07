@@ -25,16 +25,6 @@ async function updateSettings(
   }
 ): Promise<string> {
   logger.info("START update");
-  if (!settings) {
-    settings = validatorSettings(lucid);
-  } else {
-    if (settings.rewardFee < 0n || settings.rewardFee > 10_000n) {
-      throw new Error("Reward fee must be between 0 and 10000");
-    }
-    if (settings.creationFee < 2_000_000n) {
-      throw new Error("Creation fee must be at least 2 ADA");
-    }
-  }
   const settingsValidatorScript = settingsValidator();
 
   const settingsPolicyId = fromUnit(
@@ -44,13 +34,23 @@ async function updateSettings(
   ).policyId;
   const oldSettings = await lucid.datumOf(settingsUtxo, SettingsDatum);
 
-  const newSettingsDatum = mkSettingsDatum(settings);
   const gitHoneyValidator = githoneyValidator(settingsPolicyId);
   const githoneyAddr = await keyPairsToAddress(
     lucid,
     oldSettings.githoney_wallet
   );
   const githoneyPkh = oldSettings.githoney_wallet.paymentKey;
+  if (!settings) {
+    settings = validatorSettings(lucid, githoneyAddr);
+  } else {
+    if (settings.rewardFee < 0n || settings.rewardFee > 10_000n) {
+      throw new Error("Reward fee must be between 0 and 10000");
+    }
+    if (settings.creationFee < 2_000_000n) {
+      throw new Error("Creation fee must be at least 2 ADA");
+    }
+  }
+  const newSettingsDatum = mkSettingsDatum(settings);
 
   lucid.selectWalletFrom({ address: githoneyAddr });
 

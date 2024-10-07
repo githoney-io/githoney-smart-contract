@@ -36,7 +36,7 @@ async function deploySettings(
   logger.info(`settingsPolicyId: ${settingsPolicyId}`);
   const settingsNFTUnit = toUnit(settingsPolicyId, fromText(settingsTokenName));
 
-  const settingsDatum = mkSettingsDatum(validatorSettings(lucid));
+  const settingsDatum = mkSettingsDatum(validatorSettings(lucid, githoneyAddr));
   const gitHoneyValidator = githoneyValidator(settingsPolicyId);
 
   lucid.selectWalletFrom({ address: githoneyAddr });
