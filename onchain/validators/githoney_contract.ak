@@ -1,7 +1,7 @@
 use aiken/collection/dict
 use aiken/collection/list
 use aiken/option.{is_none, is_some}
-use cardano/address.{Script, from_script}
+use cardano/address.{Script, from_script, Address}
 use cardano/assets.{
   PolicyId, flatten, from_asset_list, from_lovelace, lovelace_of, match,
   quantity_of, tokens,
@@ -98,18 +98,18 @@ validator githoney(settings_policy_id: PolicyId) {
             bounty_id_name,
           )
         let is_utxo_value_valid = match(script_output.value, script_value, ==)
-        let is_reward_fee_payed =
+        let is_reward_fee_paid =
           value_greater_than_or_equal(githoney_output.value, githoney_value)
         let is_signed_by_admin =
           is_signed_by(tx.extra_signatories, datum.admin_payment_credential)
-        let is_maintainer_minada_payed =
+        let is_maintainer_minada_paid =
           value_greater_than_or_equal(
             maintainer_output.value,
             from_lovelace(min_ada),
           )
         let is_datum_not_merged = !datum.merged
 
-        is_datum_not_merged? && is_signed_by_admin? && is_new_datum_valid? && is_utxo_value_valid? && is_tx_before_deadline? && contributor_is_assigned? && is_maintainer_minada_payed? && is_reward_fee_payed?
+        is_datum_not_merged? && is_signed_by_admin? && is_new_datum_valid? && is_utxo_value_valid? && is_tx_before_deadline? && contributor_is_assigned? && is_maintainer_minada_paid? && is_reward_fee_paid?
       }
       Close -> {
         let (policy_id, minted_name, minted_quantity) = get_minting_info(tx)
@@ -219,14 +219,14 @@ validator settings {
         |> assets.without_lovelace()
         |> assets.flatten()
 
+    let is_signed =
+      is_signed_by(
+        tx.extra_signatories,
+        datum.githoney_address.payment_credential,
+      )
+
     when redeemer is {
       UpdateSettings -> {
-        let is_signed =
-          is_signed_by(
-            tx.extra_signatories,
-            datum.githoney_address.payment_credential,
-          )
-
         let script_output =
           utxo_at_paid_to_address(tx.outputs, script_input.address, 0)
         let is_settings_policy_in_output =
@@ -242,11 +242,6 @@ validator settings {
 
         let is_settings_policy_burnt =
           minted_quantity == -1 && minted_name == settings_token_name && policy_id == settings_policy
-        let is_signed =
-          is_signed_by(
-            tx.extra_signatories,
-            datum.githoney_address.payment_credential,
-          )
 
         is_settings_policy_burnt? && is_signed?
       }
@@ -258,7 +253,7 @@ validator settings {
   }
 }
 
-validator settings_minting(utxo_ref: OutputReference) {
+validator settings_minting(utxo_ref: OutputReference, settings_script_addr: Address) {
   mint(_redeemer: Redeemer, settings_policy: PolicyId, tx: Transaction) {
     let (_, _, minted_quantity) = get_minting_info(tx)
 
@@ -271,7 +266,7 @@ validator settings_minting(utxo_ref: OutputReference) {
         list.any(tx.inputs, fn(input) { input.output_reference == utxo_ref })
 
       let script_output =
-        utxo_at_paid_to_address(tx.outputs, from_script(settings_policy), 0)
+        utxo_at_paid_to_address(tx.outputs, settings_script_addr, 0)
 
       expect InlineDatum(datum) = script_output.datum
       expect _settings_datum: SettingsDatum = datum

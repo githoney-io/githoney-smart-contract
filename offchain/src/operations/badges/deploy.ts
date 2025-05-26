@@ -28,7 +28,7 @@ export interface MetadataWithPolicy {
  * @param settingsUtxo The settings UTxO.
  * @param settingsNftOutRef The output reference passed as a parameter of the settings nft minting policy,
  * @param ftBadgeAmount The amount of FT tokens to be minted for each badge.
- * @param ftAddress The address where the FT tokens should be payed.
+ * @param ftAddress The address where the FT tokens should be paid.
  * @param metadatas The metadata of the badges to be deployed.
  * @param lucid Lucid instance.
  * @returns The cbor of the unsigned transaction.

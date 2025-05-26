@@ -9,27 +9,27 @@ import {
 import plutusBlueprint from "../../onchain/plutus.json" assert { type: "json" };
 
 const GITHONEY_VALIDATOR = plutusBlueprint.validators.find(
-  ({ title }) => title === "githoney_contract.githoney_contract"
+  ({ title }) => title === "githoney_contract.githoney.spend"
 );
 
 const GITHONEY_MINTING = plutusBlueprint.validators.find(
-  ({ title }) => title === "githoney_contract.githoney_policy"
+  ({ title }) => title === "githoney_contract.githoney.mint"
 );
 
 const SETTINGS_VALIDATOR = plutusBlueprint.validators.find(
-  ({ title }) => title === "githoney_contract.settings_contract"
+  ({ title }) => title === "githoney_contract.settings.spend"
 );
 
 const SETTINGS_MINTING = plutusBlueprint.validators.find(
-  ({ title }) => title === "githoney_contract.settings_policy"
+  ({ title }) => title === "githoney_contract.settings_minting.mint"
 );
 
 const BADGES_MINTING = plutusBlueprint.validators.find(
-  ({ title }) => title === "githoney_contract.badges_policy"
+  ({ title }) => title === "githoney_contract.badges_policy.mint"
 );
 
 const BADGES_VALIDATOR = plutusBlueprint.validators.find(
-  ({ title }) => title === "githoney_contract.badges_contract"
+  ({ title }) => title === "githoney_contract.badges_contract.spend"
 );
 
 if (!GITHONEY_VALIDATOR) {

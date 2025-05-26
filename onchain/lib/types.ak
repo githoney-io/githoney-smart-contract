@@ -1,8 +1,6 @@
 use cardano/address.{Address, Credential}
 use cardano/assets.{AssetName, PolicyId}
 
-pub type TokenInfo =
-  (PolicyId, AssetName, Int)
 
 pub type GithoneyContractRedeemers {
   AddRewards
