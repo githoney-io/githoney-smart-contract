@@ -54,7 +54,7 @@ async function deployBadges(
     txHash: utxo.txHash,
     outputIndex: utxo.outputIndex
   };
-  const settingsMintingPolicy = settingsPolicy(settingsNftOutRef);
+  const settingsMintingPolicy = settingsPolicy(settingsNftOutRef, lucid);
   const settingsNftPolicy = await lucid.utils.mintingPolicyToId(
     settingsMintingPolicy
   );

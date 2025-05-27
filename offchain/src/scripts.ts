@@ -4,9 +4,11 @@ import {
   applyParamsToScript,
   ScriptHash,
   OutRef,
-  PolicyId
+  PolicyId,
+  Lucid
 } from "lucid-txpipe";
 import plutusBlueprint from "../../onchain/plutus.json" assert { type: "json" };
+import { WalletSchema } from "./types";
 
 const GITHONEY_VALIDATOR = plutusBlueprint.validators.find(
   ({ title }) => title === "githoney_contract.githoney.spend"
@@ -88,7 +90,7 @@ const OutRefSchema = Data.Object({
   txHash: Data.Object({ hash: Data.Bytes() }),
   outputIndex: Data.Integer()
 });
-const SettingsParamsSchema = Data.Tuple([OutRefSchema]);
+const SettingsParamsSchema = Data.Tuple([OutRefSchema, WalletSchema]);
 type SettingsParamsT = Data.Static<typeof SettingsParamsSchema>;
 const SettingsParams = SettingsParamsSchema as unknown as SettingsParamsT;
 
@@ -120,7 +122,14 @@ function githoneyMintingPolicy(settingsPolicyId: PolicyId): SpendingValidator {
   };
 }
 
-function settingsPolicy(outRef: OutRef): SpendingValidator {
+function settingsPolicy(outRef: OutRef, lucid: Lucid): SpendingValidator {
+  const settingsValidatorScript = settingsValidator();
+  const settingsValidatorAddress = lucid.utils.validatorToAddress(
+    settingsValidatorScript
+  );
+  const settingsValidatorDetails = lucid.utils.getAddressDetails(
+    settingsValidatorAddress
+  );
   return {
     type: "PlutusV2",
     script: applyParamsToScript<SettingsParamsT>(
@@ -129,6 +138,10 @@ function settingsPolicy(outRef: OutRef): SpendingValidator {
         {
           txHash: { hash: outRef.txHash },
           outputIndex: BigInt(outRef.outputIndex)
+        },
+        {
+          paymentKey: settingsValidatorDetails.paymentCredential!.hash,
+          stakeKey: settingsValidatorDetails.stakeCredential?.hash || null
         }
       ],
       SettingsParams

@@ -22,7 +22,7 @@ async function closeSettings(
 
   const settingsValidatorScript = settingsValidator();
 
-  const settingsMintingPolicy = settingsPolicy(utxoRef);
+  const settingsMintingPolicy = settingsPolicy(utxoRef, lucid);
 
   const settingsTokenUnit = Object.keys(settingsUtxo.assets).find((unit) => {
     return unit !== "lovelace";

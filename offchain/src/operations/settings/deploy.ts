@@ -30,7 +30,7 @@ async function deploySettings(
     txHash: utxo.txHash,
     outputIndex: utxo.outputIndex
   };
-  const settingsMintingPolicy = settingsPolicy(outRef);
+  const settingsMintingPolicy = settingsPolicy(outRef, lucid);
 
   const settingsPolicyId = lucid.utils.mintingPolicyToId(settingsMintingPolicy);
   logger.info(`settingsPolicyId: ${settingsPolicyId}`);

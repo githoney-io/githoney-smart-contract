@@ -5,7 +5,7 @@ use cardano/assets.{
   quantity_of, reduce, zero,
 }
 use cardano/transaction.{
-  Datum, InlineDatum, Input, Output, OutputReference, Transaction,
+  Datum, InlineDatum, Input, Output, Transaction,
 }
 use types.{GithoneyDatum, SettingsDatum}
 
@@ -43,17 +43,12 @@ pub fn is_script_utxo(input: Input) -> Bool {
 }
 
 pub fn get_unique_script_input(
-  output_reference: OutputReference,
   inputs: List<Input>,
 ) -> Input {
   expect [input] =
     inputs
       |> list.filter(is_script_utxo)
-  if input.output_reference == output_reference {
-    input
-  } else {
-    fail @"The input does not coincide with the output reference"
-  }
+  input
 }
 
 pub fn value_greater_than(v1: Value, v2: Value) {

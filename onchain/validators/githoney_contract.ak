@@ -28,12 +28,12 @@ validator githoney(settings_policy_id: PolicyId) {
   spend(
     datum: Option<GithoneyDatum>,
     redeemer: GithoneyContractRedeemers,
-    input_ref: OutputReference,
+    _input_ref: OutputReference,
     tx: Transaction,
   ) {
     expect Some(datum) = datum
 
-    let script_input = get_unique_script_input(input_ref, tx.inputs).output
+    let script_input = get_unique_script_input(tx.inputs).output
     expect Script(bounty_id_policy) = script_input.address.payment_credential
     expect [Pair(bounty_id_name, 1)] =
       // expect only one bounty token id
@@ -209,11 +209,11 @@ validator settings {
   spend(
     datum: Option<SettingsDatum>,
     redeemer: SettingsRedeemers,
-    input_ref: OutputReference,
+    _input_ref: OutputReference,
     tx: Transaction,
   ) {
     expect Some(datum) = datum
-    let script_input = get_unique_script_input(input_ref, tx.inputs).output
+    let script_input = get_unique_script_input(tx.inputs).output
     expect [(settings_policy, _, 1)] =
       script_input.value
         |> assets.without_lovelace()

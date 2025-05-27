@@ -27,7 +27,7 @@ async function collectUtxos(
     settings.githoney_address
   );
 
-  const settingsMintingPolicy = settingsPolicy(settingsNftOutRef);
+  const settingsMintingPolicy = settingsPolicy(settingsNftOutRef, lucid);
   const settingsNftPolicy = await lucid.utils.mintingPolicyToId(
     settingsMintingPolicy
   );
