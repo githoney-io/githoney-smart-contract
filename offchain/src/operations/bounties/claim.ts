@@ -1,7 +1,7 @@
-import { Data, Lucid, OutRef, UTxO } from "lucid-txpipe";
+import { Addresses, Data, Lucid, OutRef, Utxo } from "@spacebudz/lucid";
 import {
   GithoneyDatum,
-  GithoneyDatumT,
+  GithoneyDatumSchema,
   GithoneyValidatorRedeemer
 } from "../../types";
 import {
@@ -13,14 +13,14 @@ import logger from "../../logger";
 
 /**
  * Builds a `claimBounty` transaction. The tx is built in the context of the contributor wallet.
- * @param settingsUtxo The settings UTxO.
- * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param settingsUtxo The settings Utxo.
+ * @param utxoRef The reference of the last transaction output that contains the bounty Utxo.
  * @param lucid Lucid instance.
  * @returns The cbor of the unsigned transaction.
  */
 
 async function claimBounty(
-  settingsUtxo: UTxO,
+  settingsUtxo: Utxo,
   utxoRef: OutRef,
   lucid: Lucid
 ): Promise<string> {
@@ -30,25 +30,31 @@ async function claimBounty(
     throw new Error("Githoney validator not found");
   }
 
-  const mintingPolicyid = lucid.utils.mintingPolicyToId(githoneyScript);
+  const mintingPolicyid = Addresses.scriptToCredential(githoneyScript);
   const [utxo] = await lucid.utxosByOutRef([utxoRef]);
-  const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
+  const oldDatum: GithoneyDatum = await lucid.datumOf(
+    utxo,
+    GithoneyDatumSchema
+  );
 
-  if (!oldDatum.contributor) {
+  if (!oldDatum.contributorAddress) {
     throw new Error("Bounty doesn't have a contributor");
   }
   if (!oldDatum.merged) {
     throw new Error("Bounty is not merged");
   }
-  const contributorAddr = await keyPairsToAddress(lucid, oldDatum.contributor);
+  const contributorAddr = await keyPairsToAddress(
+    lucid.network,
+    oldDatum.contributorAddress
+  );
 
-  lucid.selectWalletFrom({
+  lucid.selectReadOnlyWallet({
     address: contributorAddr
   });
 
   const bountyIdTokenUnit = extractBountyIdTokenUnit(
     utxo.assets,
-    mintingPolicyid
+    mintingPolicyid.hash
   );
   const contributorPayment = clearZeroAssets({
     ...utxo.assets,
@@ -59,9 +65,9 @@ async function claimBounty(
     .newTx()
     .readFrom([settingsUtxo])
     .collectFrom([utxo], GithoneyValidatorRedeemer.Claim())
-    .payToAddress(contributorAddr, contributorPayment)
-    .mintAssets({ [bountyIdTokenUnit]: BigInt(-1) }, Data.void())
-    .complete();
+    .payTo(contributorAddr, contributorPayment)
+    .mint({ [bountyIdTokenUnit]: BigInt(-1) }, Data.void())
+    .commit();
 
   const cbor = tx.toString();
   logger.info("END claim");

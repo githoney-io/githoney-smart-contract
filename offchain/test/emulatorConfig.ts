@@ -1,19 +1,17 @@
 import {
   Assets,
+  Crypto,
   Emulator,
   fromText,
-  generateSeedPhrase,
   Lucid,
   toUnit
-} from "lucid-txpipe";
-import { deployUtxo } from "./utils";
-import { AssetClassT } from "../src/types";
+} from "@spacebudz/lucid";
 
 const tokenA = {
   policy_id: "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb",
   asset_name: "tokenA"
 };
-export const tokens: AssetClassT[] = [];
+export const tokens: { policy_id: string; asset_name: string }[] = [];
 for (let index = 0; index < 13; index++) {
   tokens.push({
     policy_id: "bab31a281f888aa25f6fd7b0754be83729069d66ad76c98be4a06deb",
@@ -25,13 +23,13 @@ const bounty_id = "Bounty Name Test";
 
 const tokenAUnit = toUnit(tokenA.policy_id, fromText(tokenA.asset_name));
 
-const generateAccount = async (assets: Assets) => {
-  const seedPhrase = generateSeedPhrase();
+const generateAccount = async (assets: Assets, seed?: string) => {
+  const seedPhrase = seed ?? Crypto.generateSeed();
   return {
     seedPhrase,
-    address: await (await Lucid.new(undefined, "Custom"))
-      .selectWalletFromSeed(seedPhrase)
-      .wallet.address(),
+    address: await new Lucid({
+      wallet: { Seed: { seed: seedPhrase } }
+    }).wallet.address(),
     assets
   };
 };
@@ -52,16 +50,10 @@ tokens.forEach((token) => {
 
 const ACCOUNT_MANTAINER = await generateAccount(maintainerAssets);
 
-const ACCOUNT_GITHONEY = {
-  seedPhrase: process.env.GITHONEY_SEED!,
-  address: await (await Lucid.new(undefined, "Custom"))
-    .selectWalletFromSeed(process.env.GITHONEY_SEED!)
-    .wallet.address(),
-  assets: {
-    lovelace: 10_000_000_000n,
-    [tokenAUnit]: 10_000_000_000n
-  }
-};
+const ACCOUNT_GITHONEY = await generateAccount({
+  lovelace: 10_000_000_000n,
+  [tokenAUnit]: 10_000_000_000n
+});
 
 const ACCOUNT_0 = await generateAccount({
   lovelace: 10_000_000_000n,
@@ -80,7 +72,7 @@ const emulator = new Emulator([
   ACCOUNT_0
 ]);
 
-const lucid = await Lucid.new(emulator, "Custom");
+const lucid = new Lucid({ provider: emulator });
 
 export {
   ACCOUNT_ADMIN,

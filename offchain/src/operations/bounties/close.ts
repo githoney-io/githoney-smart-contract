@@ -1,8 +1,18 @@
-import { Assets, Data, Lucid, OutRef, toUnit, Tx, UTxO } from "lucid-txpipe";
+import {
+  Addresses,
+  Assets,
+  Data,
+  Lucid,
+  OutRef,
+  toUnit,
+  Tx,
+  Utxo
+} from "@spacebudz/lucid";
 import {
   GithoneyDatum,
-  GithoneyDatumT,
-  GithoneyValidatorRedeemer
+  GithoneyDatumSchema,
+  GithoneyValidatorRedeemer,
+  InitialValue
 } from "../../types";
 import {
   clearZeroAssets,
@@ -14,15 +24,16 @@ import logger from "../../logger";
 
 /**
  * Builds a `closeBounty` transaction. The tx is built in the context of the admin wallet.
- * @param settingsUtxo The settings UTxO.
+ * @param settingsUtxo The settings Utxo.
  * @param lucid Lucid instance.
- * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param utxoRef The reference of the last transaction output that contains the bounty Utxo.
  * @param refundings The refundings needed for after creation sponsors.
  * @returns The cbor of the unsigned transaction.
  */
 
 async function closeBounty(
-  settingsUtxo: UTxO,
+  adminAddress: string,
+  settingsUtxo: Utxo,
   utxoRef: OutRef,
   refundings: { [key: string]: Assets },
   lucid: Lucid
@@ -33,9 +44,12 @@ async function closeBounty(
   if (!githoneyScript) {
     throw new Error("Githoney validator not found");
   }
-  const mintingPolicyid = lucid.utils.mintingPolicyToId(githoneyScript);
+  const mintingPolicyid = Addresses.scriptToCredential(githoneyScript);
   const [utxo] = await lucid.utxosByOutRef([utxoRef]);
-  const bountyDatum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
+  const bountyDatum: GithoneyDatum = await lucid.datumOf(
+    utxo,
+    GithoneyDatumSchema
+  );
 
   if (bountyDatum.merged) {
     throw new Error("Bounty already merged");
@@ -43,22 +57,20 @@ async function closeBounty(
   if (
     !checkRefundingsAreValid(
       refundings,
-      initialValueToAssets(bountyDatum.initial_value),
+      initialValueToAssets(bountyDatum.initialValue),
       utxo.assets
     )
   ) {
     throw new Error("Refundings are invalid");
   }
 
-  const adminAddr = await keyPairsToAddress(lucid, bountyDatum.admin);
   const bountyIdTokenUnit = extractBountyIdTokenUnit(
     utxo.assets,
-    mintingPolicyid
+    mintingPolicyid.hash
   );
 
-  lucid.selectWalletFrom({ address: adminAddr });
-  const adminPkh =
-    lucid.utils.getAddressDetails(adminAddr).paymentCredential?.hash!;
+  lucid.selectReadOnlyWallet({ address: adminAddress });
+  const adminPkh = Addresses.inspect(adminAddress).payment?.hash!;
   const now = new Date();
   const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
 
@@ -67,12 +79,12 @@ async function closeBounty(
     .readFrom([settingsUtxo])
     .validTo(sixHoursFromNow.getTime())
     .collectFrom([utxo], GithoneyValidatorRedeemer.Close())
-    .mintAssets({ [bountyIdTokenUnit]: BigInt(-1) }, Data.void())
-    .addSignerKey(adminPkh);
+    .mint({ [bountyIdTokenUnit]: BigInt(-1) }, Data.void())
+    .addSigner(adminPkh);
 
   const txWithPayments = await (
     await addPayments(tx, bountyDatum, utxo.assets, refundings, lucid)
-  ).complete();
+  ).commit();
 
   const cbor = txWithPayments.toString();
   logger.info("END close");
@@ -82,25 +94,31 @@ async function closeBounty(
 
 const addPayments = async (
   tx: Tx,
-  datum: GithoneyDatumT,
+  datum: GithoneyDatum,
   assets: Assets,
   refundings: { [key: string]: Assets },
   lucid: Lucid
 ): Promise<Tx> => {
-  const maintainerAddr = await keyPairsToAddress(lucid, datum.maintainer);
-  const initialAssets = initialValueToAssets(datum.initial_value);
-  tx = tx.payToAddress(maintainerAddr, initialAssets);
+  const maintainerAddr = await keyPairsToAddress(
+    lucid.network,
+    datum.maintainerAddress
+  );
+  const initialAssets = initialValueToAssets(datum.initialValue);
+  tx = tx.payTo(maintainerAddr, initialAssets);
 
-  if (datum.contributor) {
-    const contributorAddr = await keyPairsToAddress(lucid, datum.contributor);
-    tx = tx.payToAddress(contributorAddr, { lovelace: MIN_ADA });
+  if (datum.contributorAddress) {
+    const contributorAddr = await keyPairsToAddress(
+      lucid.network,
+      datum.contributorAddress
+    );
+    tx = tx.payTo(contributorAddr, { lovelace: MIN_ADA });
     assets = {
       ...assets,
       lovelace: assets["lovelace"] - MIN_ADA
     };
   }
   Object.entries(refundings).forEach(([addr, refund]) => {
-    tx = tx.payToAddress(addr, refund);
+    tx = tx.payTo(addr, refund);
   });
 
   return tx;
@@ -131,25 +149,22 @@ const checkRefundingsAreValid = (
   });
 };
 
-const initialValueToAssets = (
-  initialValue: {
-    asset: { policy_id: string; asset_name: string };
-    amount: bigint;
-  }[]
-): Assets => {
+const initialValueToAssets = (initialValue: InitialValue): Assets => {
   {
     let initialAssets: Assets = {};
-    initialValue.forEach(({ asset, amount }) => {
-      let unit;
-      if (asset.policy_id === "") {
-        unit = "lovelace";
-      } else {
-        unit = toUnit(asset.policy_id, asset.asset_name);
+    for (const [policy, tokens] of initialValue.entries()) {
+      for (const [assetName, amount] of tokens.entries()) {
+        let unit;
+        if (policy === "") {
+          unit = "lovelace";
+        } else {
+          unit = toUnit(policy, assetName);
+        }
+        initialAssets[unit] = amount;
       }
-      initialAssets[unit] = amount;
-    });
+    }
     return initialAssets;
   }
 };
 
-export { closeBounty };
+export { closeBounty, initialValueToAssets };

@@ -1,25 +1,25 @@
-import { Lucid, OutRef, UTxO } from "lucid-txpipe";
+import { Addresses, Lucid, OutRef, Utxo } from "@spacebudz/lucid";
 import { MIN_ADA } from "../../constants";
 import {
   GithoneyDatum,
-  GithoneyDatumT,
+  GithoneyDatumSchema,
   GithoneyValidatorRedeemer,
   mkDatum
 } from "../../types";
-import { addrToWallet } from "../../utils";
+import { bech32ToAddressType } from "../../utils";
 import logger from "../../logger";
 
 /**
  * Builds an `assignContributor` transaction. The tx is built in the context of the contributor wallet.
- * @param settingsUtxo The settings UTxO.
- * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param settingsUtxo The settings Utxo.
+ * @param utxoRef The reference of the last transaction output that contains the bounty Utxo.
  * @param contributorAddr The contributor's address.
  * @param lucid Lucid instance.
  * @returns The cbor of the unsigned transaction.
  */
 
 async function assignContributor(
-  settingsUtxo: UTxO,
+  settingsUtxo: Utxo,
   utxoRef: OutRef,
   contributorAddr: string,
   lucid: Lucid
@@ -30,27 +30,36 @@ async function assignContributor(
     throw new Error("Githoney validator not found");
   }
 
-  const validatorAddress = lucid.utils.validatorToAddress(githoneyScript);
+  const validatorAddress = Addresses.scriptToAddress(
+    lucid.network,
+    githoneyScript
+  );
   const [utxo] = await lucid.utxosByOutRef([utxoRef]);
-  const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
+  const oldDatum: GithoneyDatum = await lucid.datumOf(
+    utxo,
+    GithoneyDatumSchema
+  );
   if (oldDatum.merged) {
     throw new Error("Bounty already merged");
   }
   if (oldDatum.deadline < Date.now()) {
     throw new Error("Bounty deadline passed");
   }
-  if (oldDatum.contributor) {
+  if (oldDatum.contributorAddress) {
     throw new Error("Bounty already has a contributor");
   }
-  const contributorWallet = addrToWallet(contributorAddr, lucid);
-  const newDatum = mkDatum({ ...oldDatum, contributor: contributorWallet });
+  const contributorWallet = bech32ToAddressType(contributorAddr);
+  const newDatum = mkDatum({
+    ...oldDatum,
+    contributorAddress: contributorWallet
+  });
 
   const newAssets = {
     ...utxo.assets,
     lovelace: utxo.assets.lovelace + MIN_ADA
   };
 
-  lucid.selectWalletFrom({ address: contributorAddr });
+  lucid.selectReadOnlyWallet({ address: contributorAddr });
   const now = new Date();
   const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
 
@@ -59,8 +68,8 @@ async function assignContributor(
     .readFrom([settingsUtxo])
     .validTo(sixHoursFromNow.getTime())
     .collectFrom([utxo], GithoneyValidatorRedeemer.Assign())
-    .payToContract(validatorAddress, { inline: newDatum }, newAssets)
-    .complete();
+    .payToContract(validatorAddress, { Inline: newDatum }, newAssets)
+    .commit();
 
   const cbor = tx.toString();
   logger.info("END assignContributor");

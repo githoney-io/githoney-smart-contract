@@ -1,13 +1,20 @@
-import { Data, fromUnit, Lucid, OutRef, UTxO } from "lucid-txpipe";
+import {
+  Addresses,
+  Data,
+  fromUnit,
+  Lucid,
+  OutRef,
+  Utxo
+} from "@spacebudz/lucid";
 import { MetadataWithPolicy } from "./deploy";
-import { SettingsDatum } from "../../types";
-import { keyPairsToAddress } from "../../utils";
+import { SettingsDatumSchema } from "../../types";
+import { cardanoCredentialToCredential, keyPairsToAddress } from "../../utils";
 import { badgesValidator, settingsPolicy } from "../../scripts";
 import logger from "../../logger";
 
 /**
- * Collects UTxOs from the badges script address avoiding the ones holding some specific metadata.
- * @param settingsUtxo The settings UTxO.
+ * Collects Utxos from the badges script address avoiding the ones holding some specific metadata.
+ * @param settingsUtxo The settings Utxo.
  * @param settingsNftOutRef The output reference passed as a parameter of the settings nft minting policy,
  * @param metadatas The metadata of the badges to be skipped from collection.
  * @param lucid Lucid instance.
@@ -15,42 +22,49 @@ import logger from "../../logger";
  */
 
 async function collectUtxos(
-  settingsUtxo: UTxO,
+  settingsUtxo: Utxo,
   settingsNftOutRef: OutRef,
   metadatas: MetadataWithPolicy[],
   lucid: Lucid
 ) {
   logger.info("START collectUtxos");
-  const settings = await lucid.datumOf(settingsUtxo, SettingsDatum);
+  const settings = await lucid.datumOf(settingsUtxo, SettingsDatumSchema);
   const githoneyAddr = await keyPairsToAddress(
-    lucid,
-    settings.githoney_address
+    lucid.network,
+    settings.githoneyAddress
   );
 
   const settingsMintingPolicy = settingsPolicy(settingsNftOutRef, lucid);
-  const settingsNftPolicy = await lucid.utils.mintingPolicyToId(
+  const settingsNftPolicy = await Addresses.scriptToCredential(
     settingsMintingPolicy
-  );
+  ).hash;
   const badgesScript = badgesValidator(settingsNftPolicy);
-  const scriptAddr = await lucid.utils.validatorToAddress(badgesScript);
+  const scriptAddr = await Addresses.scriptToAddress(
+    lucid.network,
+    badgesScript
+  );
   logger.info(`Collecting utxos from ${scriptAddr}`);
 
   const utxosAtScript = await lucid.utxosAt(scriptAddr);
 
-  lucid.selectWalletFrom({ address: githoneyAddr });
+  const githoneyPaymentHash = cardanoCredentialToCredential(
+    settings.githoneyAddress.paymentCredential
+  ).hash;
+
+  lucid.selectReadOnlyWallet({ address: githoneyAddr });
 
   const tx = lucid
     .newTx()
-    .attachSpendingValidator(badgesScript)
+    .attachScript(badgesScript)
     .readFrom([settingsUtxo])
-    .addSignerKey(settings.githoney_address.paymentKey);
+    .addSigner(githoneyPaymentHash);
   const policiesToAvoid: string[] = [];
   for (const meta of metadatas) {
     if (meta.policyId) {
       policiesToAvoid.push(meta.policyId);
     }
   }
-  const inputUtxos: UTxO[] = [];
+  const inputUtxos: Utxo[] = [];
   utxosAtScript.forEach((utxo) => {
     if (
       Object.keys(utxo.assets).some((unit) => {
@@ -65,7 +79,7 @@ async function collectUtxos(
   if (inputUtxos.length === 0) {
     return "";
   }
-  const txComplete = await tx.collectFrom(inputUtxos, Data.void()).complete();
+  const txComplete = await tx.collectFrom(inputUtxos, Data.void()).commit();
   const cbor = txComplete.toString();
 
   return cbor;

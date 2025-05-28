@@ -23,11 +23,12 @@
     "test-claim": "mocha --timeout 0 --grep 'Claim'",
     "test-update-settings": "mocha --timeout 0 --grep 'Update'",
     "test-close-settings": "mocha --timeout 0 --grep 'Close Settings'",
-    "test-rewards": "mocha --timeout 0 --grep 'Reward bounds'"
+    "test-rewards": "NODE_OPTIONS='--experimental-wasm-modules' mocha --timeout 0 --grep 'Reward bounds'"
   },
   "author": "Filabs",
   "license": "ISC",
   "dependencies": {
+    "@spacebudz/lucid": "npm:@jsr/spacebudz__lucid@^0.20.10",
     "chai": "^5.1.1",
     "dotenv": "^16.4.5",
     "lucid-txpipe": "^0.10.13",

@@ -1,192 +1,69 @@
+import { OutRef, Lucid, Addresses, Script } from "@spacebudz/lucid";
 import {
-  SpendingValidator,
-  Data,
-  applyParamsToScript,
-  ScriptHash,
-  OutRef,
-  PolicyId,
-  Lucid
-} from "lucid-txpipe";
-import plutusBlueprint from "../../onchain/plutus.json" assert { type: "json" };
-import { WalletSchema } from "./types";
+  GithoneyContractBadgesContractSpend,
+  GithoneyContractBadgesPolicyMint,
+  GithoneyContractGithoneyMint,
+  GithoneyContractGithoneySpend,
+  GithoneyContractSettingsMintingMint,
+  GithoneyContractSettingsSpend
+} from "./plutus";
 
-const GITHONEY_VALIDATOR = plutusBlueprint.validators.find(
-  ({ title }) => title === "githoney_contract.githoney.spend"
-);
+const GITHONEY_SCRIPT = GithoneyContractGithoneySpend;
+const MINTING_SCRIPT = GithoneyContractGithoneyMint;
+const SETTINGS_SCRIPT = new GithoneyContractSettingsSpend();
+const SETTINGS_POLICY = GithoneyContractSettingsMintingMint;
+const BADGES_POLICY = GithoneyContractBadgesPolicyMint;
+const BADGES_SCRIPT = GithoneyContractBadgesContractSpend;
 
-const GITHONEY_MINTING = plutusBlueprint.validators.find(
-  ({ title }) => title === "githoney_contract.githoney.mint"
-);
-
-const SETTINGS_VALIDATOR = plutusBlueprint.validators.find(
-  ({ title }) => title === "githoney_contract.settings.spend"
-);
-
-const SETTINGS_MINTING = plutusBlueprint.validators.find(
-  ({ title }) => title === "githoney_contract.settings_minting.mint"
-);
-
-const BADGES_MINTING = plutusBlueprint.validators.find(
-  ({ title }) => title === "githoney_contract.badges_policy.mint"
-);
-
-const BADGES_VALIDATOR = plutusBlueprint.validators.find(
-  ({ title }) => title === "githoney_contract.badges_contract.spend"
-);
-
-if (!GITHONEY_VALIDATOR) {
-  throw new Error(
-    "githoney validator indexed with 'main.githoney_validator' in plutus.json failed!"
-  );
+function githoneyValidator(settingsPolicyId: string): Script {
+  return new GITHONEY_SCRIPT(settingsPolicyId);
 }
 
-if (!GITHONEY_MINTING) {
-  throw new Error(
-    "Minting validator indexed with 'main.githoney_token_minting_policy' in plutus.json failed!"
-  );
+function githoneyMintingPolicy(settingsPolicyId: string): Script {
+  return new MINTING_SCRIPT(settingsPolicyId);
 }
 
-if (!SETTINGS_VALIDATOR) {
-  throw new Error(
-    "Settings validator indexed with 'main.githoney_settings_validator' in plutus.json failed!"
-  );
-}
-
-if (!SETTINGS_MINTING) {
-  throw new Error(
-    "Settings policy indexed with 'main.githoney_settings_policy' in plutus.json failed!"
-  );
-}
-
-if (!BADGES_MINTING) {
-  throw new Error(
-    "Badges policy indexed with 'main.githoney_badges_policy' in plutus.json failed!"
-  );
-}
-
-if (!BADGES_VALIDATOR) {
-  throw new Error(
-    "Badges validator indexed with 'main.githoney_badges_validator' in plutus.json failed!"
-  );
-}
-
-const GITHONEY_SCRIPT: SpendingValidator["script"] =
-  GITHONEY_VALIDATOR.compiledCode;
-const MINTING_SCRIPT: SpendingValidator["script"] =
-  GITHONEY_MINTING.compiledCode;
-const SETTINGS_SCRIPT: SpendingValidator["script"] =
-  SETTINGS_VALIDATOR.compiledCode;
-const SETTINGS_POLICY: SpendingValidator["script"] =
-  SETTINGS_MINTING.compiledCode;
-const BADGES_POLICY: SpendingValidator["script"] = BADGES_MINTING.compiledCode;
-const BADGES_SCRIPT: SpendingValidator["script"] =
-  BADGES_VALIDATOR.compiledCode;
-
-const ParamsSchema = Data.Tuple([Data.Bytes()]);
-type ParamsT = Data.Static<typeof ParamsSchema>;
-const Params = ParamsSchema as unknown as ParamsT;
-
-const OutRefSchema = Data.Object({
-  txHash: Data.Object({ hash: Data.Bytes() }),
-  outputIndex: Data.Integer()
-});
-const SettingsParamsSchema = Data.Tuple([OutRefSchema, WalletSchema]);
-type SettingsParamsT = Data.Static<typeof SettingsParamsSchema>;
-const SettingsParams = SettingsParamsSchema as unknown as SettingsParamsT;
-
-const BadgesPolicySchema = Data.Tuple([OutRefSchema, Data.Integer()]);
-type BadgesPolicyT = Data.Static<typeof BadgesPolicySchema>;
-const BadgesPolicy = BadgesPolicySchema as unknown as BadgesPolicyT;
-
-function githoneyValidator(settingsPolicyId: PolicyId): SpendingValidator {
-  return {
-    type: "PlutusV2",
-    script: applyParamsToScript<ParamsT>(
-      GITHONEY_SCRIPT,
-      [settingsPolicyId],
-      Params
-    )
+function settingsPolicy(outRef: OutRef, lucid: Lucid): Script {
+  // Convert OutRef to CardanoTransactionOutputReference
+  const outRefParam = {
+    transactionId: outRef.txHash,
+    outputIndex: BigInt(outRef.outputIndex)
   };
-}
-
-const GITHONEY_SCRIPT_HASH: ScriptHash = GITHONEY_VALIDATOR.hash;
-
-function githoneyMintingPolicy(settingsPolicyId: PolicyId): SpendingValidator {
-  return {
-    type: "PlutusV2",
-    script: applyParamsToScript<ParamsT>(
-      MINTING_SCRIPT,
-      [settingsPolicyId],
-      Params
-    )
-  };
-}
-
-function settingsPolicy(outRef: OutRef, lucid: Lucid): SpendingValidator {
-  const settingsValidatorScript = settingsValidator();
-  const settingsValidatorAddress = lucid.utils.validatorToAddress(
+  // Get the script address for the settings validator
+  const settingsValidatorScript = SETTINGS_SCRIPT;
+  const settingsValidatorCredential = Addresses.scriptToCredential(
     settingsValidatorScript
   );
-  const settingsValidatorDetails = lucid.utils.getAddressDetails(
-    settingsValidatorAddress
-  );
-  return {
-    type: "PlutusV2",
-    script: applyParamsToScript<SettingsParamsT>(
-      SETTINGS_POLICY,
-      [
-        {
-          txHash: { hash: outRef.txHash },
-          outputIndex: BigInt(outRef.outputIndex)
-        },
-        {
-          paymentKey: settingsValidatorDetails.paymentCredential!.hash,
-          stakeKey: settingsValidatorDetails.stakeCredential?.hash || null
-        }
-      ],
-      SettingsParams
-    )
-  };
+  if (!settingsValidatorCredential) {
+    throw new Error(
+      "Settings validator address does not have a payment credential"
+    );
+  }
+  return new SETTINGS_POLICY(outRefParam, {
+    paymentCredential: { Script: [settingsValidatorCredential.hash] },
+    stakeCredential: null
+  });
 }
 
-function settingsValidator(): SpendingValidator {
-  return {
-    type: "PlutusV2",
-    script: SETTINGS_SCRIPT
-  };
+function settingsValidator(): Script {
+  return SETTINGS_SCRIPT;
 }
 
-function badgesPolicy(outRef: OutRef, nonce: bigint): SpendingValidator {
-  return {
-    type: "PlutusV2",
-    script: applyParamsToScript<BadgesPolicyT>(
-      BADGES_POLICY,
-      [
-        {
-          txHash: { hash: outRef.txHash },
-          outputIndex: BigInt(outRef.outputIndex)
-        },
-        nonce
-      ],
-      BadgesPolicy
-    )
+function badgesPolicy(outRef: OutRef, nonce: bigint): Script {
+  // Convert OutRef to CardanoTransactionOutputReference
+  const outRefParam = {
+    transactionId: outRef.txHash,
+    outputIndex: BigInt(outRef.outputIndex)
   };
+  return new BADGES_POLICY(outRefParam, nonce);
 }
 
-function badgesValidator(settingsPolicyId: PolicyId): SpendingValidator {
-  return {
-    type: "PlutusV2",
-    script: applyParamsToScript<ParamsT>(
-      BADGES_SCRIPT,
-      [settingsPolicyId],
-      Params
-    )
-  };
+function badgesValidator(settingsPolicyId: string): Script {
+  return new BADGES_SCRIPT(settingsPolicyId);
 }
 
 export {
   githoneyMintingPolicy,
-  GITHONEY_SCRIPT_HASH,
   githoneyValidator,
   settingsPolicy,
   settingsValidator,

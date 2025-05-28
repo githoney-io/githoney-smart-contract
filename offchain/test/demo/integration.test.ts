@@ -1,6 +1,12 @@
 import dotenv from "dotenv";
 import { describe, it } from "mocha";
-import { Blockfrost, Lucid, fromText, fromUnit, toUnit } from "lucid-txpipe";
+import {
+  Blockfrost,
+  Lucid,
+  fromText,
+  fromUnit,
+  toUnit,
+} from "@spacebudz/lucid";
 import {
   assignContributor,
   claimBounty,
@@ -9,21 +15,21 @@ import {
   addRewards,
   deploySettings,
   updateSettings,
-  closeSettings
+  closeSettings,
 } from "../../src";
 import {
   MIN_ADA,
   creationFee,
   githoneyAddr,
-  rewardFee
+  rewardFee,
 } from "../../src/constants";
 import {
   outRefWithErrorCatching,
-  signSubmitAndWaitConfirmation
+  signSubmitAndWaitConfirmation,
 } from "../utils";
 import { GithoneyDatum, SettingsDatum } from "../../src/types";
 import { assert } from "console";
-import { addrToWallet, keyPairsToAddress } from "../../src/utils";
+import { bech32ToAddressType, keyPairsToAddress } from "../../src/utils";
 import { githoneyMintingPolicy } from "../../src/scripts";
 import logger from "../../src/logger";
 
@@ -32,7 +38,7 @@ const {
   PREPROD_BLOCKFROST_PROJECT_ID,
   CONTRIBUTOR_SEED,
   MAINTAINER_SEED,
-  GITHONEY_SEED
+  GITHONEY_SEED,
 } = process.env;
 
 const blockfrost = new Blockfrost(
@@ -81,7 +87,7 @@ describe("Integration tests", async () => {
     });
     const mintingScript = githoneyMintingPolicy(settingsNFTPolicy);
 
-    const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
+    const mintingPolicyid = Addresses.scriptToCredential(mintingScript);
     const bountyIdTokenUnit = toUnit(mintingPolicyid, fromText(bounty_id));
 
     // CREATE BOUNTY
@@ -115,7 +121,7 @@ describe("Integration tests", async () => {
     const utxoAssets = {
       lovelace: 3_000_000n, // Min ADA
       [bountyIdTokenUnit]: 1n,
-      [tokenAUnit]: 100n
+      [tokenAUnit]: 100n,
     };
 
     assert(createDatum.deadline === deadline, "Deadline mismatch");
@@ -170,9 +176,9 @@ describe("Integration tests", async () => {
 
     assert(assignDatum.merged === false, "Merged mismatch");
     assert(
-      (await keyPairsToAddress(lucid, assignDatum.contributor!)) ===
+      (await keyPairsToAddress(lucid, assignDatum.contributorAddress!)) ===
         contributorAddr,
-      `Contributor mismatch: ${assignDatum.contributor} !== ${contributorAddr}`
+      `Contributor mismatch: ${assignDatum.contributorAddress} !== ${contributorAddr}`
     );
     assert(
       assignUtxo.assets["lovelace"] === 26_000_000n,
@@ -253,14 +259,14 @@ describe("Integration tests", async () => {
       }
     });
     assert(settingsDatum.creation_fee === creationFee);
-    assert(settingsDatum.reward_fee === rewardFee);
+    assert(settingsDatum.bountyRewardFee === rewardFee);
     assert(
-      (await keyPairsToAddress(lucid, settingsDatum.githoney_address)) ===
+      (await keyPairsToAddress(lucid, settingsDatum.githoneyAddress)) ===
         githoneyAddr
     );
     const mintingScript = githoneyMintingPolicy(settingsNFTPolicy);
 
-    const mintingPolicyid = lucid.utils.mintingPolicyToId(mintingScript);
+    const mintingPolicyid = Addresses.scriptToCredential(mintingScript);
     const bountyIdTokenUnit = toUnit(mintingPolicyid, fromText(bounty_id));
 
     // CREATE BOUNTY
@@ -290,16 +296,16 @@ describe("Integration tests", async () => {
     const createUtxo = await outRefWithErrorCatching(createOutRef, lucid);
     const createDatum = await lucid.datumOf(createUtxo, GithoneyDatum);
 
-    assert(createDatum.bounty_reward_fee === rewardFee);
+    assert(createDatum.bountyRewardFee === rewardFee);
     assert(
       githoneyUtxo.assets["lovelace"] === creationFee,
       "Githoney payment wrong"
     );
 
     const updateSettingsCbor = await updateSettings(settingsUtxo, lucid, {
-      githoneyWallet: await addrToWallet(githoneyAddr, lucid),
+      githoneyWallet: await bech32ToAddressType(githoneyAddr, lucid),
       creationFee: 10_000_000n,
-      rewardFee: 5_000n
+      rewardFee: 5_000n,
     });
 
     logger.info(`Updating settings`);
@@ -318,9 +324,9 @@ describe("Integration tests", async () => {
     );
 
     assert(newSettingsDatum.creation_fee === 10_000_000n);
-    assert(newSettingsDatum.reward_fee === 5_000n);
+    assert(newSettingsDatum.bountyRewardFee === 5_000n);
     assert(
-      (await keyPairsToAddress(lucid, newSettingsDatum.githoney_address)) ===
+      (await keyPairsToAddress(lucid, newSettingsDatum.githoneyAddress)) ===
         githoneyAddr
     );
 
@@ -349,7 +355,7 @@ describe("Integration tests", async () => {
 
     const newCreateDatum = await lucid.datumOf(newCreateUtxo, GithoneyDatum);
 
-    assert(newCreateDatum.bounty_reward_fee === 5_000n);
+    assert(newCreateDatum.bountyRewardFee === 5_000n);
     assert(
       newGithoneyUtxo.assets["lovelace"] === 10_000_000n,
       "Githoney payment wrong"

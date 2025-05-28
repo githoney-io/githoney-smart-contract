@@ -1,124 +1,108 @@
-import { Constr, Data, fromText } from "lucid-txpipe";
-
-// Aiken types
-
-const AssetClass = Data.Object({
-  policy_id: Data.Bytes(),
-  asset_name: Data.Bytes()
-});
-type AssetClassT = Data.Static<typeof AssetClass>;
+import { Constr, Data, fromText } from "@spacebudz/lucid";
+import { Data as DataOld } from "lucid-txpipe";
+import {
+  CardanoAddressAddress,
+  CardanoAddressPaymentCredential,
+  GithoneyContractGithoneySpend,
+  GithoneyContractSettingsSpend,
+  PairsCardanoAssetsPolicyIdPairsCardanoAssetsAssetNameInt,
+  TypesGithoneyContractRedeemers,
+  TypesGithoneyDatum,
+  TypesSettingsDatum,
+  TypesSettingsRedeemers
+} from "./plutus";
 
 const WalletSchema = Data.Object({
   paymentKey: Data.Bytes(),
   stakeKey: Data.Nullable(Data.Bytes())
 });
 
-type WalletT = Data.Static<typeof WalletSchema>;
+type Address = CardanoAddressAddress;
+type PaymentCredential = CardanoAddressPaymentCredential;
 
-const DatumSchema = Data.Object({
-  admin: WalletSchema,
-  maintainer: WalletSchema,
-  contributor: Data.Nullable(WalletSchema),
-  bounty_reward_fee: Data.Integer(),
-  deadline: Data.Integer(),
-  merged: Data.Boolean(),
-  initial_value: Data.Array(
-    Data.Object({ asset: AssetClass, amount: Data.Integer({ minimum: 0 }) })
-  )
-});
+const GithoneyDatumSchema = GithoneyContractGithoneySpend.datum;
 
-type GithoneyDatumT = Data.Static<typeof DatumSchema>;
-const GithoneyDatum = DatumSchema as unknown as GithoneyDatumT;
+type GithoneyDatum = TypesGithoneyDatum;
+
+type InitialValue = PairsCardanoAssetsPolicyIdPairsCardanoAssetsAssetNameInt;
 
 function mkDatum(params: {
-  admin: WalletT;
-  maintainer: WalletT;
-  contributor: WalletT | null;
-  bounty_reward_fee: bigint;
+  adminPaymentCredential: PaymentCredential;
+  maintainerAddress: Address;
+  contributorAddress: Address | null;
+  bountyRewardFee: bigint;
   deadline: bigint;
   merged: boolean;
-  initial_value: Array<{ asset: AssetClassT; amount: bigint }>;
+  initialValue: InitialValue;
 }): string {
-  const d: GithoneyDatumT = {
-    admin: params.admin,
-    maintainer: params.maintainer,
-    contributor: params.contributor,
-    bounty_reward_fee: params.bounty_reward_fee,
+  const d: GithoneyDatum = {
+    adminPaymentCredential: params.adminPaymentCredential,
+    maintainerAddress: params.maintainerAddress,
+    contributorAddress: params.contributorAddress,
+    bountyRewardFee: params.bountyRewardFee,
     deadline: params.deadline,
     merged: params.merged,
-    initial_value: params.initial_value
+    initialValue: params.initialValue
   };
-  const datum = Data.to<GithoneyDatumT>(d, GithoneyDatum);
+  const datum = Data.to<GithoneyDatum>(d, GithoneyDatumSchema);
   return datum;
 }
-
-const multiValWrapper = (
-  val_index: number,
-  redeemer_index: number,
-  params: Data[]
-) => Data.to(new Constr(val_index, [new Constr(redeemer_index, params)]));
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace GithoneyValidatorRedeemer {
-  export const AddRewards = () => multiValWrapper(1, 0, []);
-  export const Assign = () => multiValWrapper(1, 1, []);
-  export const Merge = () => multiValWrapper(1, 2, []);
-  export const Close = () => multiValWrapper(1, 3, []);
-  export const Claim = () => multiValWrapper(1, 4, []);
-  export const Mint = () => multiValWrapper(0, 0, []);
+  export const AddRewards = () => Data.to("AddRewards", GitHoneyRedeemerSchema);
+  export const Assign = () => Data.to("Assign", GitHoneyRedeemerSchema);
+  export const Merge = () => Data.to("Merge", GitHoneyRedeemerSchema);
+  export const Close = () => Data.to("Close", GitHoneyRedeemerSchema);
+  export const Claim = () => Data.to("Claim", GitHoneyRedeemerSchema);
 }
+const GitHoneyRedeemerSchema = GithoneyContractGithoneySpend.redeemer;
+type GithoneyValidatorRedeemer = TypesGithoneyContractRedeemers;
 
-const SettingsDatumSchema = Data.Object({
-  githoney_address: WalletSchema,
-  creation_fee: Data.Integer(),
-  reward_fee: Data.Integer()
-});
+const SettingsDatumSchema = GithoneyContractSettingsSpend.datum;
 
-type SettingsDatumT = Data.Static<typeof SettingsDatumSchema>;
-const SettingsDatum = SettingsDatumSchema as unknown as SettingsDatumT;
+type SettingsDatum = TypesSettingsDatum;
 
 function mkSettingsDatum(params: {
-  githoneyWallet: WalletT;
+  githoneyAddress: Address;
   creationFee: bigint;
   rewardFee: bigint;
 }): string {
-  const d: SettingsDatumT = {
-    githoney_address: params.githoneyWallet,
-    creation_fee: params.creationFee,
-    reward_fee: params.rewardFee
+  console.dir(params, { depth: 5 });
+  const d: SettingsDatum = {
+    githoneyAddress: params.githoneyAddress,
+    bountyCreationFee: params.creationFee,
+    bountyRewardFee: params.rewardFee
   };
-  const datum = Data.to<SettingsDatumT>(d, SettingsDatum);
+  const datum = Data.to(d, SettingsDatumSchema);
   return datum;
 }
 
-const SettingsRedeemerSchema = Data.Enum([
-  Data.Literal("UpdateSettings"),
-  Data.Literal("CloseSettings")
-]);
+const SettingsRedeemerSchema = GithoneyContractSettingsSpend.redeemer;
 
-type SettingsRedeemerT = Data.Static<typeof SettingsRedeemerSchema>;
+type SettingsRedeemer = TypesSettingsRedeemers;
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace SettingsRedeemer {
   export const Update = () =>
     Data.to(
       "UpdateSettings",
-      SettingsRedeemerSchema as unknown as SettingsRedeemerT
+      SettingsRedeemerSchema as unknown as SettingsRedeemer
     );
 
   export const Close = () =>
     Data.to(
       "CloseSettings",
-      SettingsRedeemerSchema as unknown as SettingsRedeemerT
+      SettingsRedeemerSchema as unknown as SettingsRedeemer
     );
 }
 
-const BadgeDatumSchema = Data.Object({
-  metadata: Data.Map(Data.Bytes(), Data.Bytes()),
-  version: Data.Integer()
+const BadgeDatumSchema = DataOld.Object({
+  metadata: DataOld.Map(DataOld.Bytes(), DataOld.Bytes()),
+  version: DataOld.Integer()
 });
 
-type BadgeDatumT = Data.Static<typeof BadgeDatumSchema>;
+type BadgeDatumT = DataOld.Static<typeof BadgeDatumSchema>;
 const BadgeDatum = BadgeDatumSchema as unknown as BadgeDatumT;
 
 interface Metadata {
@@ -143,16 +127,15 @@ export {
   mkDatum,
   mkBadgeDatum,
   mkSettingsDatum,
-  SettingsDatumT,
-  GithoneyDatumT,
+  SettingsDatumSchema,
   SettingsDatum,
   GithoneyDatum,
+  GithoneyDatumSchema,
   GithoneyValidatorRedeemer,
   SettingsRedeemer,
   WalletSchema,
-  WalletT,
-  AssetClass,
-  AssetClassT,
+  Address,
   Metadata,
-  BadgeDatum
+  BadgeDatum,
+  InitialValue
 };

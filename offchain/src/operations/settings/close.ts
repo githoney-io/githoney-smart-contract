@@ -1,6 +1,14 @@
-import { Data, Lucid, OutRef, UTxO } from "lucid-txpipe";
-import { SettingsDatum, SettingsRedeemer } from "../../types";
-import { clearZeroAssets, keyPairsToAddress } from "../../utils";
+import { Data, Lucid, OutRef, Utxo } from "@spacebudz/lucid";
+import {
+  SettingsDatum,
+  SettingsDatumSchema,
+  SettingsRedeemer
+} from "../../types";
+import {
+  cardanoCredentialToCredential,
+  clearZeroAssets,
+  keyPairsToAddress
+} from "../../utils";
 import logger from "../../logger";
 import { settingsPolicy, settingsValidator } from "../../scripts";
 
@@ -8,14 +16,14 @@ import { settingsPolicy, settingsValidator } from "../../scripts";
  * Builds a `closeSettings` transaction. The tx is built in the context of the GitHoney address.
  * @param utxoRef The output reference passed as a parameter of the settings nft minting policy,
  * this outRef is returned in the deploySettings operation.
- * @param settingsUtxo The settings UTxO.
+ * @param settingsUtxo The settings Utxo.
  * @param lucid Lucid instance.
  * @returns The cbor of the unsigned transaction.
  */
 
 async function closeSettings(
   utxoRef: OutRef,
-  settingsUtxo: UTxO,
+  settingsUtxo: Utxo,
   lucid: Lucid
 ): Promise<string> {
   logger.info("START closeSettings");
@@ -27,31 +35,33 @@ async function closeSettings(
   const settingsTokenUnit = Object.keys(settingsUtxo.assets).find((unit) => {
     return unit !== "lovelace";
   })!;
-  const settingsDatum = await lucid.datumOf(settingsUtxo, SettingsDatum);
+  const settingsDatum = await lucid.datumOf(settingsUtxo, SettingsDatumSchema);
   const githoneyAddr = await keyPairsToAddress(
-    lucid,
-    settingsDatum.githoney_address
+    lucid.network,
+    settingsDatum.githoneyAddress
   );
-  const githoneyPkh = settingsDatum.githoney_address.paymentKey;
+  const githoneyPkh = cardanoCredentialToCredential(
+    settingsDatum.githoneyAddress.paymentCredential
+  ).hash;
 
   const githoneyPaymentAssets = clearZeroAssets({
     ...settingsUtxo.assets,
     [settingsTokenUnit]: 0n
   });
 
-  lucid.selectWalletFrom({
+  lucid.selectReadOnlyWallet({
     address: githoneyAddr
   });
 
   const tx = await lucid
     .newTx()
     .collectFrom([settingsUtxo], SettingsRedeemer.Close())
-    .mintAssets({ [settingsTokenUnit]: BigInt(-1) }, Data.void())
-    .payToAddress(githoneyAddr, githoneyPaymentAssets)
-    .addSignerKey(githoneyPkh)
-    .attachSpendingValidator(settingsValidatorScript)
-    .attachMintingPolicy(settingsMintingPolicy)
-    .complete();
+    .mint({ [settingsTokenUnit]: BigInt(-1) }, Data.void())
+    .payTo(githoneyAddr, githoneyPaymentAssets)
+    .addSigner(githoneyPkh)
+    .attachScript(settingsValidatorScript)
+    .attachScript(settingsMintingPolicy)
+    .commit();
 
   const cbor = tx.toString();
   logger.info("END closeSettings");

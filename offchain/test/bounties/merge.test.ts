@@ -1,6 +1,6 @@
 import { describe, it } from "mocha";
 import { ACCOUNT_ADMIN, emulator, lucid } from "../emulatorConfig";
-import { OutRef } from "lucid-txpipe";
+import { OutRef } from "@spacebudz/lucid";
 import { mergeBounty } from "../../src/operations/bounties/merge";
 import { deployUtxo, newAssign, newBounty, signAndSubmit } from "../utils";
 import { expect } from "chai";

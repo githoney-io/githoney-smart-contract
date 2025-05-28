@@ -1,4 +1,4 @@
-import { Lucid, toUnit, fromText } from "lucid-txpipe";
+import { Lucid, toUnit, fromText } from "@spacebudz/lucid";
 import logger from "../../logger";
 
 /**
@@ -17,7 +17,7 @@ async function payBadgesTo(
   logger.info("START payBadgeTo");
   let returnCbor = false;
   const tx = lucid.newTx();
-  lucid.selectWalletFrom({ address: ftAddress });
+  lucid.selectReadOnlyWallet({ address: ftAddress });
   for (const badge of badges) {
     const { badgeName, badgePolicy } = badge;
     logger.info(`paying badge ${badgeName} to ${badge.payAddress}`);
@@ -40,11 +40,11 @@ async function payBadgesTo(
       );
       continue;
     }
-    tx.payToAddress(badge.payAddress, { [badgeUnit]: 1n });
+    tx.payTo(badge.payAddress, { [badgeUnit]: 1n });
     returnCbor = true;
   }
 
-  const txComplete = await tx.complete();
+  const txComplete = await tx.commit();
   logger.info("END payBadgeTo");
   if (returnCbor) {
     return txComplete.toString();
