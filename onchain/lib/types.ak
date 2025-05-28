@@ -1,7 +1,6 @@
 use cardano/address.{Address, Credential}
 use cardano/assets.{AssetName, PolicyId}
 
-
 pub type GithoneyContractRedeemers {
   AddRewards
   Assign

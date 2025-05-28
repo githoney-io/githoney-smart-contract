@@ -4,9 +4,7 @@ use cardano/assets.{
   AssetName, PolicyId, Value, flatten, from_asset, from_lovelace, match, merge,
   quantity_of, reduce, zero,
 }
-use cardano/transaction.{
-  Datum, InlineDatum, Input, Output, Transaction,
-}
+use cardano/transaction.{Datum, InlineDatum, Input, Output, Transaction}
 use types.{GithoneyDatum, SettingsDatum}
 
 pub const settings_token_name: ByteArray = "settingsNFT"
@@ -42,9 +40,7 @@ pub fn is_script_utxo(input: Input) -> Bool {
   }
 }
 
-pub fn get_unique_script_input(
-  inputs: List<Input>,
-) -> Input {
+pub fn get_unique_script_input(inputs: List<Input>) -> Input {
   expect [input] =
     inputs
       |> list.filter(is_script_utxo)

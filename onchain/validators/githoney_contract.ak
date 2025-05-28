@@ -1,7 +1,7 @@
 use aiken/collection/dict
 use aiken/collection/list
 use aiken/option.{is_none, is_some}
-use cardano/address.{Script, from_script, Address}
+use cardano/address.{Address, Script, from_script}
 use cardano/assets.{
   PolicyId, flatten, from_asset_list, from_lovelace, lovelace_of, match,
   quantity_of, tokens,
@@ -229,8 +229,12 @@ validator settings {
       UpdateSettings -> {
         let script_output =
           utxo_at_paid_to_address(tx.outputs, script_input.address, 0)
+        expect [(settings_policy_output, _, 1)] =
+          script_output.value
+            |> assets.without_lovelace()
+            |> assets.flatten()
         let is_settings_policy_in_output =
-          quantity_of(script_output.value, settings_policy, settings_token_name) == 1
+          settings_policy_output == settings_policy
 
         expect InlineDatum(new_datum) = script_output.datum
         expect _settings_datum: SettingsDatum = new_datum
@@ -253,7 +257,10 @@ validator settings {
   }
 }
 
-validator settings_minting(utxo_ref: OutputReference, settings_script_addr: Address) {
+validator settings_minting(
+  utxo_ref: OutputReference,
+  settings_script_addr: Address,
+) {
   mint(_redeemer: Redeemer, settings_policy: PolicyId, tx: Transaction) {
     let (_, _, minted_quantity) = get_minting_info(tx)
 

@@ -144,10 +144,7 @@ pub fn mk_contributor_address() {
 }
 
 pub fn mk_settings_address() {
-  Address {
-    payment_credential: Script(settings_addr),
-    stake_credential: None,
-  }
+  Address { payment_credential: Script(settings_addr), stake_credential: None }
 }
 
 // ========================================
