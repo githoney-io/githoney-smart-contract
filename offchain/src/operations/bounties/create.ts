@@ -3,21 +3,22 @@ import {
   fromText,
   toUnit,
   Lucid,
-  UTxO,
+  Utxo,
   Assets,
-  fromUnit
-} from "lucid-txpipe";
+  fromUnit,
+  Addresses
+} from "@spacebudz/lucid";
 import { MIN_ADA } from "../../constants";
-import { AssetClassT, SettingsDatum, mkDatum } from "../../types";
-import { addrToWallet, keyPairsToAddress } from "../../utils";
+import { SettingsDatumSchema, mkDatum } from "../../types";
+import { bech32ToAddressType, keyPairsToAddress } from "../../utils";
 import logger from "../../logger";
 
 /**
  * Builds a `createBounty` transaction. The tx is built in the context of the maintainer wallet.
- * @param settingsUtxo The settings UTxO.
+ * @param settingsUtxo The settings Utxo.
  * @param maintainerAddr The maintainer's address.
  * @param adminAddr The admin's address.
- * @param rewards The reward assets and amount to be locked in the bounty UTxO.
+ * @param rewards The reward assets and amount to be locked in the bounty Utxo.
  * @param deadline The deadline for the bounty.
  * @param bounty_id The bounty identifier.
  * @param lucid Lucid instance.
@@ -25,7 +26,7 @@ import logger from "../../logger";
  */
 
 async function createBounty(
-  settingsUtxo: UTxO,
+  settingsUtxo: Utxo,
   maintainerAddr: string,
   adminAddr: string,
   rewards: Assets,
@@ -39,22 +40,25 @@ async function createBounty(
   if (!githoneyScript) {
     throw new Error("Githoney validator not found");
   }
-  const validatorAddress = lucid.utils.validatorToAddress(githoneyScript);
+  const validatorAddress = Addresses.scriptToAddress(
+    lucid.network,
+    githoneyScript
+  );
 
-  const mintingPolicyid = lucid.utils.mintingPolicyToId(githoneyScript);
-  const bountyIdTokenUnit = toUnit(mintingPolicyid, fromText(bounty_id));
+  const mintingPolicyid = Addresses.scriptToCredential(githoneyScript);
+  const bountyIdTokenUnit = toUnit(mintingPolicyid.hash, fromText(bounty_id));
   const mintAssets = {
     [bountyIdTokenUnit]: 1n
   };
-  const settings = await lucid.datumOf(settingsUtxo, SettingsDatum);
+  const settings = await lucid.datumOf(settingsUtxo, SettingsDatumSchema);
 
   const now = new Date();
   const tomorrow = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 1).getTime();
 
-  if (settings.reward_fee < 0n || settings.reward_fee > 10_000n) {
+  if (settings.bountyRewardFee < 0n || settings.bountyRewardFee > 10_000n) {
     throw new Error("Reward fee must be between 0 and 10000");
   }
-  if (BigInt(settings.creation_fee) < 2_000_000n) {
+  if (BigInt(settings.bountyCreationFee) < 2_000_000n) {
     throw new Error("Creation fee must be at least 2 ADA");
   }
   if (deadline < tomorrow) {
@@ -70,54 +74,53 @@ async function createBounty(
     ...rewardsWithLovelace,
     ...mintAssets
   };
-  const maintainerWallet = addrToWallet(maintainerAddr, lucid);
-  const adminWallet = addrToWallet(adminAddr, lucid);
+  const maintainerWallet = bech32ToAddressType(maintainerAddr);
+  const adminWallet = bech32ToAddressType(adminAddr);
   const githoneyAddr = await keyPairsToAddress(
-    lucid,
-    settings.githoney_address
+    lucid.network,
+    settings.githoneyAddress
   );
 
   logger.info(`Maintainer Address ${maintainerAddr}`);
   logger.info(`Admin Address ${adminAddr}`);
   logger.info(`Githoney Address ${githoneyAddr}`);
   // New tx to pay to the contract the minAda and mint the admin, githoney, developer and mantainer tokens
-  lucid.selectWalletFrom({ address: maintainerAddr });
+  lucid.selectReadOnlyWallet({ address: maintainerAddr });
 
-  const rewardsValue = Object.entries(rewardsWithLovelace).map(
-    ([key, value]) => {
-      const unit = fromUnit(key);
-      const asset: AssetClassT = {
-        policy_id: unit.policyId === "lovelace" ? "" : unit.policyId,
-        asset_name: unit.assetName || ""
-      };
-      return {
-        asset,
-        amount: value
-      };
+  const rewardsValue = new Map();
+
+  Object.entries(rewardsWithLovelace).forEach(([key, value]) => {
+    const unit = fromUnit(key);
+    const policyId = unit.policyId === "lovelace" ? "" : unit.policyId;
+    const assetName = unit.assetName || "";
+
+    if (!rewardsValue.has(policyId)) {
+      rewardsValue.set(policyId, new Map());
     }
-  );
-
-  const bountyDatum = mkDatum({
-    admin: adminWallet,
-    maintainer: maintainerWallet,
-    contributor: null,
-    bounty_reward_fee: settings.reward_fee,
-    deadline,
-    merged: false,
-    initial_value: rewardsValue
+    rewardsValue.get(policyId)!.set(assetName, value);
   });
 
-  lucid.selectWalletFrom({ address: maintainerAddr });
+  const bountyDatum = mkDatum({
+    adminPaymentCredential: adminWallet.paymentCredential,
+    maintainerAddress: maintainerWallet,
+    contributorAddress: null,
+    bountyRewardFee: settings.bountyRewardFee,
+    deadline,
+    merged: false,
+    initialValue: rewardsValue
+  });
+
+  lucid.selectReadOnlyWallet({ address: maintainerAddr });
   const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
 
   const tx = await lucid
     .newTx()
     .readFrom([settingsUtxo])
     .validTo(sixHoursFromNow.getTime())
-    .payToContract(validatorAddress, { inline: bountyDatum }, utxoAssets)
-    .payToAddress(githoneyAddr, { lovelace: settings.creation_fee })
-    .mintAssets(mintAssets, Data.void())
-    .complete();
+    .payToContract(validatorAddress, { Inline: bountyDatum }, utxoAssets)
+    .payTo(githoneyAddr, { lovelace: settings.bountyCreationFee })
+    .mint(mintAssets, Data.void())
+    .commit();
 
   const cbor = tx.toString();
   logger.info("END createBounty");

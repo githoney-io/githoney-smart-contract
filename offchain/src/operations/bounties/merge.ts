@@ -1,12 +1,13 @@
 import { MIN_ADA } from "../../constants";
 import {
   GithoneyDatum,
-  GithoneyDatumT,
+  GithoneyDatumSchema,
   GithoneyValidatorRedeemer,
   SettingsDatum,
+  SettingsDatumSchema,
   mkDatum
 } from "../../types";
-import { OutRef, Lucid, Assets, UTxO } from "lucid-txpipe";
+import { OutRef, Lucid, Assets, Utxo, Addresses } from "@spacebudz/lucid";
 import {
   keyPairsToAddress,
   clearZeroAssets,
@@ -16,14 +17,15 @@ import logger from "../../logger";
 
 /**
  * Builds a `mergeBounty` transaction. The tx is built in the context of the admin wallet.
- * @param settingsUtxo The settings UTxO.
- * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param settingsUtxo The settings Utxo.
+ * @param utxoRef The reference of the last transaction output that contains the bounty Utxo.
  * @param lucid Lucid instance.
  * @returns The cbor of the unsigned transaction.
  */
 
 async function mergeBounty(
-  settingsUtxo: UTxO,
+  adminAddress: string,
+  settingsUtxo: Utxo,
   utxoRef: OutRef,
   lucid: Lucid
 ): Promise<string> {
@@ -32,24 +34,27 @@ async function mergeBounty(
   if (!githoneyScript) {
     throw new Error("Githoney validator not found");
   }
-  const validatorAddress = lucid.utils.validatorToAddress(githoneyScript);
+  const validatorAddress = Addresses.scriptToAddress(
+    lucid.network,
+    githoneyScript
+  );
 
   const [contractUtxo] = await lucid.utxosByOutRef([utxoRef]);
-  const bountyDatum: GithoneyDatumT = await lucid.datumOf(
+  const bountyDatum: GithoneyDatum = await lucid.datumOf(
     contractUtxo,
-    GithoneyDatum
+    GithoneyDatumSchema
   );
 
   if (
-    bountyDatum.bounty_reward_fee < 0n ||
-    bountyDatum.bounty_reward_fee > 10_000n
+    bountyDatum.bountyRewardFee < 0n ||
+    bountyDatum.bountyRewardFee > 10_000n
   ) {
     throw new Error("Reward fee must be between 0 and 10000");
   }
   if (bountyDatum.merged) {
     throw new Error("Bounty already merged");
   }
-  if (!bountyDatum.contributor) {
+  if (!bountyDatum.contributorAddress) {
     throw new Error("Bounty doesn't have a contributor");
   }
   if (bountyDatum.deadline < Date.now()) {
@@ -57,15 +62,17 @@ async function mergeBounty(
   }
 
   const newBountyDatum: string = mkDatum({ ...bountyDatum, merged: true });
-  const maintainerAddr = await keyPairsToAddress(lucid, bountyDatum.maintainer);
-  const adminAddr = await keyPairsToAddress(lucid, bountyDatum.admin);
-  const settings = await lucid.datumOf(settingsUtxo, SettingsDatum);
+  const maintainerAddr = await keyPairsToAddress(
+    lucid.network,
+    bountyDatum.maintainerAddress
+  );
+  const settings = await lucid.datumOf(settingsUtxo, SettingsDatumSchema);
   const githoneyAddr = await keyPairsToAddress(
-    lucid,
-    settings.githoney_address
+    lucid.network,
+    settings.githoneyAddress
   );
 
-  const mintingPolicyid = lucid.utils.mintingPolicyToId(githoneyScript);
+  const mintingPolicyid = Addresses.scriptToCredential(githoneyScript).hash;
   const bountyIdTokenUnit = extractBountyIdTokenUnit(
     contractUtxo.assets,
     mintingPolicyid
@@ -73,26 +80,31 @@ async function mergeBounty(
 
   const { githoneyFee, scriptValue } = calculateRewardsFeeAndScriptValue(
     contractUtxo.assets,
-    bountyDatum.bounty_reward_fee,
+    bountyDatum.bountyRewardFee,
     bountyIdTokenUnit
   );
 
-  lucid.selectWalletFrom({ address: adminAddr });
-  const adminPkh =
-    lucid.utils.getAddressDetails(adminAddr).paymentCredential?.hash!;
+  lucid.selectReadOnlyWallet({ address: adminAddress });
+  const adminPkh = Addresses.inspect(adminAddress).payment?.hash!;
   const now = new Date();
   const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
-
+  console.dir(settingsUtxo, { depth: 5 });
+  console.dir(contractUtxo, { depth: 5 });
+  console.log("validatorAddress", validatorAddress);
+  console.log("maintainerAddr", maintainerAddr);
+  console.log("githoneyAddr", githoneyAddr);
+  console.log("adminAddress", adminAddress);
+  console.dir(bountyDatum, { depth: 5 });
   const tx = await lucid
     .newTx()
     .readFrom([settingsUtxo])
     .validTo(sixHoursFromNow.getTime())
     .collectFrom([contractUtxo], GithoneyValidatorRedeemer.Merge())
-    .payToContract(validatorAddress, { inline: newBountyDatum }, scriptValue)
-    .payToAddress(githoneyAddr, githoneyFee)
-    .payToAddress(maintainerAddr, { lovelace: MIN_ADA })
-    .addSignerKey(adminPkh)
-    .complete();
+    .payToContract(validatorAddress, { Inline: newBountyDatum }, scriptValue)
+    .payTo(githoneyAddr, githoneyFee)
+    .payTo(maintainerAddr, { lovelace: MIN_ADA })
+    .addSigner(adminPkh)
+    .commit();
   const cbor = tx.toString();
   logger.info("END mergeBounty");
   logger.info(`Merge Bounty: ${cbor}`);

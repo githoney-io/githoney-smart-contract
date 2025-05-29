@@ -99,7 +99,7 @@ test without_settings_token_in_input() fail {
   )
 }
 
-test without_settings_token_in_output() {
+test without_settings_token_in_output() fail {
   let ctx = mk_settings_transaction(UpdateSettings)
   expect Some(script_input) = head(ctx.inputs)
   let datum: SettingsDatum = to_settings_datum(script_input.output.datum)

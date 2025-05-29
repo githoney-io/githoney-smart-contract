@@ -9,9 +9,8 @@ import {
   newMerge,
   signAndSubmit
 } from "./utils";
-import logger from "../src/logger";
-import { OutRef } from "lucid-txpipe";
-import { addrToWallet } from "../src/utils";
+import { OutRef } from "@spacebudz/lucid";
+import { bech32ToAddressType } from "../src/utils";
 import { updateSettings } from "../src";
 
 describe("Reward bounds", async () => {
@@ -19,7 +18,7 @@ describe("Reward bounds", async () => {
     const { settingsUtxo } = await deployUtxo(lucid);
 
     const settings = {
-      githoneyWallet: addrToWallet(ACCOUNT_GITHONEY.address, lucid),
+      githoneyWallet: bech32ToAddressType(ACCOUNT_GITHONEY.address),
       creationFee: 2000000n,
       rewardFee: 0n
     };
@@ -47,7 +46,7 @@ describe("Reward bounds", async () => {
     const { settingsUtxo } = await deployUtxo(lucid);
 
     const settings = {
-      githoneyWallet: addrToWallet(ACCOUNT_GITHONEY.address, lucid),
+      githoneyWallet: bech32ToAddressType(ACCOUNT_GITHONEY.address),
       creationFee: 2000000n,
       rewardFee: 10000n
     };

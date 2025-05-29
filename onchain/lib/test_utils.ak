@@ -225,11 +225,13 @@ pub fn mk_mp_transaction() {
         |> assets.add(mocks.token_a_policy, mocks.token_a_name, 10_000),
     )
 
+  let value =
+    assets.from_lovelace(mocks.mk_settings_datum().bounty_creation_fee)
   let out_githoney_address =
     Output {
       address: mocks.mk_githoney_address(),
-      value: assets.from_lovelace(mocks.mk_settings_datum().bounty_creation_fee),
-      datum: NoDatum,
+      value,
+      datum: mocks.mk_script_datum(value),
       reference_script: None,
     }
 

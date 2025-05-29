@@ -13,7 +13,7 @@ import {
   ACCOUNT_0,
   lucid
 } from "../emulatorConfig";
-import { OutRef } from "lucid-txpipe";
+import { OutRef } from "@spacebudz/lucid";
 import { expect } from "chai";
 import logger from "../../src/logger";
 

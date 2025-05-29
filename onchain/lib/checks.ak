@@ -1,18 +1,19 @@
 use aiken/collection/list
+use aiken/crypto.{VerificationKeyHash}
 use aiken/interval.{Finite}
 use aiken/option.{is_none, is_some}
 use cardano/address.{Address, Credential, VerificationKey}
-use cardano/assets.{
-  PolicyId, Value, from_asset, from_lovelace, is_zero, merge, negate,
-  quantity_of,
-}
-use cardano/transaction.{Output, Transaction}
+use cardano/assets.{PolicyId, Value, add, from_lovelace, quantity_of}
+use cardano/transaction.{Output, Transaction, ValidityRange}
 use types.{GithoneyDatum, SettingsDatum}
-use utils.{min_ada, settings_token_name, to_settings_datum}
+use utils.{min_ada, settings_token_name, to_settings_datum, value_greater_than}
 
-pub fn is_signed_by(transaction: Transaction, verification_key: Credential) {
+pub fn is_signed_by(
+  extra_signatories: List<VerificationKeyHash>,
+  verification_key: Credential,
+) {
   expect VerificationKey(vk) = verification_key
-  list.has(transaction.extra_signatories, vk)
+  list.has(extra_signatories, vk)
 }
 
 pub fn is_utxo_value_valid(
@@ -20,17 +21,8 @@ pub fn is_utxo_value_valid(
   bounty_id: ByteArray,
   value: Value,
 ) {
-  let is_bounty_id_token_in_output =
-    quantity_of(value, policy_id, bounty_id) == 1
-  let there_are_some_reward =
-    from_lovelace(min_ada)
-      |> merge(from_asset(policy_id, bounty_id, 1))
-      |> negate
-      |> merge(value)
-      |> is_zero
-      |> not
-
-  is_bounty_id_token_in_output? && there_are_some_reward?
+  let min_value = from_lovelace(min_ada) |> add(policy_id, bounty_id, 1)
+  value_greater_than(value, min_value)
 }
 
 pub fn is_utxo_datum_valid(
@@ -38,21 +30,15 @@ pub fn is_utxo_datum_valid(
   tx: Transaction,
   datum: GithoneyDatum,
 ) {
-  (datum.merged == False)? && is_tx_before_deadline(tx, datum.deadline)? && is_none(
-    datum.contributor_address,
-  )? && (datum.bounty_reward_fee == reward_fee)?
+  (datum.merged == False)? && is_tx_before_deadline(
+    tx.validity_range,
+    datum.deadline,
+  )? && is_none(datum.contributor_address)? && (datum.bounty_reward_fee == reward_fee)?
 }
 
-pub fn is_tx_before_deadline(tx: Transaction, deadline: Int) {
-  when tx.validity_range.upper_bound.bound_type is {
+pub fn is_tx_before_deadline(validity_range: ValidityRange, deadline: Int) {
+  when validity_range.upper_bound.bound_type is {
     Finite(tx_upper_bound) -> deadline >= tx_upper_bound
-    _ -> False
-  }
-}
-
-pub fn is_tx_after_deadline(tx: Transaction, deadline: Int) {
-  when tx.validity_range.lower_bound.bound_type is {
-    Finite(tx_lower_bound) -> deadline <= tx_lower_bound
     _ -> False
   }
 }

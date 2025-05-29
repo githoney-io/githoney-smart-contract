@@ -1,15 +1,11 @@
-use aiken/collection/dict
 use aiken/collection/list
-use aiken/option
 use cardano/address.{Address, Script}
 use cardano/assets.{
-  AssetName, PolicyId, Value, flatten, from_asset, from_lovelace, merge,
-  quantity_of, reduce, tokens, zero,
+  AssetName, PolicyId, Value, flatten, from_asset, from_lovelace, match, merge,
+  quantity_of, reduce, zero,
 }
-use cardano/transaction.{
-  Datum, InlineDatum, Input, Output, OutputReference, Transaction,
-}
-use types.{GithoneyDatum, SettingsDatum, TokenInfo}
+use cardano/transaction.{Datum, InlineDatum, Input, Output, Transaction}
+use types.{GithoneyDatum, SettingsDatum}
 
 pub const settings_token_name: ByteArray = "settingsNFT"
 
@@ -44,72 +40,63 @@ pub fn is_script_utxo(input: Input) -> Bool {
   }
 }
 
-/// Returns the portfolio UTxO in the outputs of the transaction.
-pub fn get_script_output(tx: Transaction) -> Output {
-  expect [utxo] = tx.outputs |> list.filter(is_output_script_utxo)
-  utxo
-}
-
-/// Verifies if an output UTxO belongs to a script.
-pub fn is_output_script_utxo(output: Output) -> Bool {
-  when output.address.payment_credential is {
-    Script(_) -> True
-    _ -> False
-  }
-}
-
-pub fn get_unique_script_input(
-  output_reference: OutputReference,
-  inputs: List<Input>,
-) -> Input {
+pub fn get_unique_script_input(inputs: List<Input>) -> Input {
   expect [input] =
     inputs
       |> list.filter(is_script_utxo)
-  if input.output_reference == output_reference {
-    input
-  } else {
-    fail @"The input does not coincide with the output reference"
-  }
-}
-
-pub fn get_input_with_asset(
-  inputs: List<Input>,
-  policy_id: PolicyId,
-  asset_name: AssetName,
-) {
-  expect [input] =
-    list.filter(
-      inputs,
-      fn(inp) {
-        let quantity =
-          tokens(inp.output.value, policy_id)
-            |> dict.get(key: asset_name)
-            |> option.or_else(0)
-        quantity > 0
-      },
-    )
   input
 }
 
-pub fn value_grater_than(v1: Value, v2: Value) {
-  let assets = merge(v1, v2)
+pub fn value_greater_than(v1: Value, v2: Value) {
+  let are_different = match(v1, v2, ==) |> not
+  let greater_or_equal = value_greater_than_or_equal(v1, v2)
+
+  greater_or_equal? && are_different?
+}
+
+pub fn value_greater_than_or_equal(v1: Value, v2: Value) {
   reduce(
-    assets,
-    False,
-    fn(policy_id, token_name, _, acc) {
+    v2,
+    True,
+    fn(policy_id, token_name, quantity, acc) {
       let v1_quantity = quantity_of(v1, policy_id, token_name)
-      let v2_quantity = quantity_of(v2, policy_id, token_name)
-      if v1_quantity < v2_quantity {
-        False
+      if v1_quantity < quantity {
+        acc && False
       } else {
-        acc || v1_quantity > v2_quantity
+        acc && True
       }
     },
   )
 }
 
-pub fn value_grater_than_or_equal(v1: Value, v2: Value) {
-  v1 == v2 || value_grater_than(v1, v2)
+test test_greater_than_with_more_policies() {
+  let v1 =
+    merge(
+      from_asset("policy2", "token2", 2),
+      from_asset("policy1", "token1", 1),
+    )
+  let v2 = from_asset("policy1", "token1", 1)
+  True == value_greater_than(v1, v2)
+}
+
+test test_greater_than_with_higher_quantities() {
+  let v1 = from_asset("policy3", "token3", 2)
+  let v2 = from_asset("policy3", "token3", 1)
+  True == value_greater_than(v1, v2)
+}
+
+test test_greater_than_with_incomparable_values() {
+  let v1 =
+    merge(
+      from_asset("policy2", "token2", 2),
+      from_asset("policy1", "token1", 1),
+    )
+  let v2 =
+    merge(
+      from_asset("policy2", "token2", 2),
+      from_asset("policy3", "token3", 1),
+    )
+  False == value_greater_than(v1, v2)
 }
 
 pub fn merge_payments_parts(
@@ -143,19 +130,4 @@ pub fn merge_payments_parts(
           },
         )
   (script_part, fee_part)
-}
-
-pub fn tokens_to_value(tokens: List<TokenInfo>) -> Value {
-  list.reduce(
-    tokens,
-    zero,
-    fn(acc, token) {
-      assets.add(
-        acc,
-        token.asset.policy_id,
-        token.asset.asset_name,
-        token.amount,
-      )
-    },
-  )
 }

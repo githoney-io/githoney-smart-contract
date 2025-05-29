@@ -4,16 +4,21 @@ import {
   OutRef,
   toUnit,
   Assets,
-  UTxO,
+  Utxo,
   Lucid,
   Constr,
   fromUnit,
   toText,
-  PolicyId
-} from "lucid-txpipe";
-import { Metadata, mkBadgeDatum, SettingsDatum } from "../../types";
+  Addresses
+} from "@spacebudz/lucid";
+import {
+  Metadata,
+  mkBadgeDatum,
+  SettingsDatum,
+  SettingsDatumSchema
+} from "../../types";
 import logger from "../../logger";
-import { keyPairsToAddress } from "../../utils";
+import { cardanoCredentialToCredential, keyPairsToAddress } from "../../utils";
 import { badgesPolicy, badgesValidator, settingsPolicy } from "../../scripts";
 
 export interface MetadataWithPolicy {
@@ -25,17 +30,17 @@ export interface MetadataWithPolicy {
  * Builds a `deployBadges` transaction. The tx is built in the context of the GitHoney address,
  * checks if the badge is already minted, and deploys the badge if it is not.
  * In the case of updating the metadata, the badge utxo is consumed and the NFT reutilized.
- * @param settingsUtxo The settings UTxO.
+ * @param settingsUtxo The settings Utxo.
  * @param settingsNftOutRef The output reference passed as a parameter of the settings nft minting policy,
  * @param ftBadgeAmount The amount of FT tokens to be minted for each badge.
- * @param ftAddress The address where the FT tokens should be payed.
+ * @param ftAddress The address where the FT tokens should be paid.
  * @param metadatas The metadata of the badges to be deployed.
  * @param lucid Lucid instance.
  * @returns The cbor of the unsigned transaction.
  */
 
 async function deployBadges(
-  settingsUtxo: UTxO,
+  settingsUtxo: Utxo,
   settingsNftOutRef: OutRef,
   ftBadgeAmount: bigint,
   ftAddress: string,
@@ -43,10 +48,10 @@ async function deployBadges(
   lucid: Lucid
 ): Promise<{ cbor: string; newMetadatas: MetadataWithPolicy[] }> {
   logger.info("START deployBadges");
-  const settings = await lucid.datumOf(settingsUtxo, SettingsDatum);
+  const settings = await lucid.datumOf(settingsUtxo, SettingsDatumSchema);
   const githoneyAddr = await keyPairsToAddress(
-    lucid,
-    settings.githoney_address
+    lucid.network,
+    settings.githoneyAddress
   );
   logger.info(`Deploying badges from ${githoneyAddr}`);
   const utxo = (await lucid.utxosAt(githoneyAddr))[0];
@@ -54,15 +59,18 @@ async function deployBadges(
     txHash: utxo.txHash,
     outputIndex: utxo.outputIndex
   };
-  const settingsMintingPolicy = settingsPolicy(settingsNftOutRef);
-  const settingsNftPolicy = await lucid.utils.mintingPolicyToId(
+  const settingsMintingPolicy = settingsPolicy(settingsNftOutRef, lucid);
+  const settingsNftPolicy = await Addresses.scriptToCredential(
     settingsMintingPolicy
   );
-  const badgesScript = badgesValidator(settingsNftPolicy);
-  const scriptAddr = await lucid.utils.validatorToAddress(badgesScript);
+  const badgesScript = badgesValidator(settingsNftPolicy.hash);
+  const scriptAddr = await Addresses.scriptToAddress(
+    lucid.network,
+    badgesScript
+  );
   const utxosAtScript = await lucid.utxosAt(scriptAddr);
 
-  lucid.selectWalletFrom({ address: githoneyAddr });
+  lucid.selectReadOnlyWallet({ address: githoneyAddr });
   const tx = lucid
     .newTx()
     .collectFrom([utxo])
@@ -70,7 +78,7 @@ async function deployBadges(
 
   let i = 0n;
   const ftAssets: Assets = {};
-  const utxosToCollect: UTxO[] = [];
+  const utxosToCollect: Utxo[] = [];
   const newMetadatas: MetadataWithPolicy[] = [];
   for (const meta of metadatas) {
     logger.info("-------------------------------------------------");
@@ -90,7 +98,7 @@ async function deployBadges(
     } else {
       logger.error(`Badge not minted ${JSON.stringify(meta)}`);
     }
-    let utxos: UTxO[] = [];
+    let utxos: Utxo[] = [];
     if (meta.policyId) {
       logger.info(
         `Updating metadata of badge ${meta.metadata.name} policy ${meta.policyId}`
@@ -101,9 +109,9 @@ async function deployBadges(
       if (utxos.length === 1) {
         utxosToCollect.push(utxos[0]);
         logger.info("Collecting utxo to update metadata");
-        tx.payToAddressWithData(
+        tx.payToWithData(
           scriptAddr,
-          { inline: mkBadgeDatum(meta.metadata, 1n) },
+          { Inline: mkBadgeDatum(meta.metadata, 1n) },
           { [nftUnit]: 1n }
         );
       }
@@ -112,7 +120,7 @@ async function deployBadges(
       const policyScript = badgesPolicy(outRef, i);
       i++;
 
-      const mintingPolicyid = lucid.utils.mintingPolicyToId(policyScript);
+      const mintingPolicyid = Addresses.scriptToCredential(policyScript).hash;
       const referenceNFTUnit = toUnit(
         mintingPolicyid,
         fromText(meta.metadata.name),
@@ -122,29 +130,29 @@ async function deployBadges(
       ftAssets[ftUnit] = ftBadgeAmount;
 
       const datum = mkBadgeDatum(meta.metadata, 1n);
-      tx.payToAddressWithData(
+      tx.payToWithData(
         scriptAddr,
-        { inline: datum },
+        { Inline: datum },
         { [referenceNFTUnit]: 1n }
       )
-        .payToAddress(ftAddress, { [ftUnit]: ftBadgeAmount })
-        .attachMintingPolicy(policyScript)
-        .mintAssets(
-          { [referenceNFTUnit]: 1n, [ftUnit]: ftBadgeAmount },
-          Data.void()
-        );
+        .payTo(ftAddress, { [ftUnit]: ftBadgeAmount })
+        .attachScript(policyScript)
+        .mint({ [referenceNFTUnit]: 1n, [ftUnit]: ftBadgeAmount }, Data.void());
       newMetadatas.push({ metadata: meta.metadata, policyId: mintingPolicyid });
     }
   }
   if (utxosToCollect.length > 0) {
+    const githoneyPaymentHash = cardanoCredentialToCredential(
+      settings.githoneyAddress.paymentCredential
+    ).hash;
     logger.info("Collecting utxos from script");
     tx.readFrom([settingsUtxo])
-      .attachSpendingValidator(badgesScript)
+      .attachScript(badgesScript)
       .collectFrom(utxosToCollect, Data.void())
-      .addSignerKey(settings.githoney_address.paymentKey);
+      .addSigner(githoneyPaymentHash);
   }
 
-  const txComplete = await tx.complete();
+  const txComplete = await tx.commit();
   let cbor: string = "";
   if (Object.keys(ftAssets).length === 0 && utxosToCollect.length === 0) {
     logger.info("All badges already minted");
@@ -159,7 +167,7 @@ async function deployBadges(
 
 async function isReferenceNftMinted(
   lucid: Lucid,
-  utxos: UTxO[],
+  utxos: Utxo[],
   meta: MetadataWithPolicy
 ): Promise<{ res: boolean; referenceNftPolicyId: string | undefined }> {
   for (const utxo of utxos) {
@@ -172,7 +180,7 @@ async function isReferenceNftMinted(
           meta.policyId
         );
         const datum = (await lucid.datumOf(utxo)) as Constr<Data>;
-        const datumJson = Data.toJson(datum.fields[0]);
+        const datumJson = Data.toMetadata(datum.fields[0]);
         if (
           referenceNftPolicyId &&
           datumJson.name === meta.metadata.name &&
@@ -193,7 +201,7 @@ async function isReferenceNftMinted(
 async function hasReferenceNft(
   assets: Assets,
   name: string,
-  policyId?: PolicyId
+  policyId?: string
 ): Promise<string | undefined> {
   for (const [unit, amount] of Object.entries(assets)) {
     const asset = fromUnit(unit);

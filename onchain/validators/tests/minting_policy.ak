@@ -27,12 +27,40 @@ test no_reward_assets() {
   let tx = test_utils.mk_mp_transaction()
 
   expect Some(outputs) = list.tail(tx.outputs)
+  let wrong_value =
+    assets.from_lovelace(min_ada)
+      |> assets.add(mocks.bounty_id_policy, mocks.bounty_id_name, 1)
   let wrong_bounty = {
     expect Some(bounty_utxo) = list.head(tx.outputs)
     Output {
       ..bounty_utxo,
-      value: assets.from_lovelace(min_ada)
-        |> assets.add(mocks.bounty_id_policy, mocks.bounty_id_name, 1),
+      datum: mocks.mk_script_datum(wrong_value),
+      value: wrong_value,
+    }
+  }
+  let wrong_tx = Transaction { ..tx, outputs: list.push(outputs, wrong_bounty) }
+  !githoney_contract.githoney.mint(
+    mocks.settings_nft_policy,
+    None,
+    "",
+    wrong_tx,
+  )
+}
+
+test no_min_ada() {
+  let tx = test_utils.mk_mp_transaction()
+
+  expect Some(outputs) = list.tail(tx.outputs)
+  let wrong_value =
+    assets.from_lovelace(1_000_000)
+      |> assets.add(mocks.bounty_id_policy, mocks.bounty_id_name, 1)
+      |> assets.add(mocks.token_a_policy, mocks.token_a_name, 1)
+  let wrong_bounty = {
+    expect Some(bounty_utxo) = list.head(tx.outputs)
+    Output {
+      ..bounty_utxo,
+      datum: mocks.mk_script_datum(wrong_value),
+      value: wrong_value,
     }
   }
   let wrong_tx = Transaction { ..tx, outputs: list.push(outputs, wrong_bounty) }

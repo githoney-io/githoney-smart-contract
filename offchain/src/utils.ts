@@ -1,46 +1,87 @@
 import { creationFee, rewardFee } from "./constants";
-import { WalletT } from "./types";
+import { Address } from "./types";
 import dotenv from "dotenv";
-import { Address, Assets, Lucid, Utils, fromUnit } from "lucid-txpipe";
+import {
+  Addresses,
+  Assets,
+  Credential,
+  Lucid,
+  Network,
+  fromUnit
+} from "@spacebudz/lucid";
+import {
+  CardanoAddressPaymentCredential,
+  CardanoAddressStakeCredential
+} from "./plutus";
 
 dotenv.config();
 
-function validatorSettings(lucid: Lucid, githoneyAddr: string) {
-  const gitHoneyCredentials = lucid.utils.getAddressDetails(githoneyAddr);
-  const gitHoneyWallet: WalletT = {
-    paymentKey: gitHoneyCredentials.paymentCredential!.hash,
-    stakeKey: gitHoneyCredentials.stakeCredential?.hash || null
-  };
-
+function validatorSettings(githoneyAddr: string) {
+  console.log("validatorSettings", githoneyAddr);
   return {
-    githoneyWallet: gitHoneyWallet,
-    creationFee: BigInt(creationFee),
-    rewardFee: BigInt(rewardFee)
+    githoneyAddress: bech32ToAddressType(githoneyAddr),
+    creationFee: creationFee,
+    rewardFee: rewardFee
   };
 }
 
-function addrToWallet(address: string, lucid: Lucid): WalletT {
-  const details = lucid.utils.getAddressDetails(address);
+function bech32ToAddressType(addr: string): Address {
+  const addressDetails = Addresses.inspect(addr);
+  if (!addressDetails.payment) {
+    throw new Error("Invalid address");
+  }
   return {
-    paymentKey: details.paymentCredential!.hash,
-    stakeKey: details.stakeCredential?.hash || null
+    paymentCredential: {
+      VerificationKey: [addressDetails.payment.hash]
+    },
+    stakeCredential: addressDetails.delegation
+      ? {
+          Inline: [
+            {
+              VerificationKey: [addressDetails.delegation.hash]
+            }
+          ]
+        }
+      : null
   };
+}
+
+function cardanoCredentialToCredential(
+  credential: CardanoAddressPaymentCredential
+): Credential {
+  let hash: string;
+  if ("VerificationKey" in credential) {
+    hash = (credential.VerificationKey as [string])[0];
+  } else {
+    hash = (
+      (credential as unknown as { Script: [string] }).Script as [string]
+    )[0];
+  }
+  return Addresses.keyHashToCredential(hash);
+}
+
+function cardanoStakingCredToCredential(
+  credential: CardanoAddressStakeCredential
+) {
+  if ("Inline" in credential) {
+    return cardanoCredentialToCredential(credential.Inline[0]);
+  } else {
+    throw new Error("Invalid credential");
+  }
 }
 
 /**
- * Converts a keys pair to its corresponding address.
- * @param keyPairs payment and (optional) stake key.
- * @returns Address in bech32 representation.
+ * Obtiene el hash del paymentCredential, sea VerificationKey o Script.
+ * @param paymentCredential Credential de pago.
+ * @returns El hash como string.
  */
-async function keyPairsToAddress(
-  lucid: Lucid,
-  keyPairs: { paymentKey: string; stakeKey: string | null }
-): Promise<Address> {
-  const utils = new Utils(lucid);
-  const { paymentKey, stakeKey } = keyPairs;
-  return utils.credentialToAddress(
-    utils.keyHashToCredential(paymentKey),
-    stakeKey ? utils.keyHashToCredential(stakeKey) : undefined
+function keyPairsToAddress(network: Network, cardanoAddress: Address): string {
+  return Addresses.credentialToAddress(
+    network,
+    cardanoCredentialToCredential(cardanoAddress.paymentCredential),
+    cardanoAddress.stakeCredential
+      ? cardanoStakingCredToCredential(cardanoAddress.stakeCredential)
+      : undefined
   );
 }
 
@@ -69,8 +110,10 @@ function extractBountyIdTokenUnit(
 
 export {
   validatorSettings,
-  addrToWallet,
+  bech32ToAddressType,
   keyPairsToAddress,
   clearZeroAssets,
-  extractBountyIdTokenUnit
+  extractBountyIdTokenUnit,
+  cardanoCredentialToCredential,
+  cardanoStakingCredToCredential
 };

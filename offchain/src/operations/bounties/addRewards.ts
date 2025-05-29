@@ -1,15 +1,15 @@
-import { Assets, Lucid, OutRef, UTxO } from "lucid-txpipe";
+import { Addresses, Assets, Lucid, OutRef, Utxo } from "@spacebudz/lucid";
 import {
   GithoneyDatum,
-  GithoneyDatumT,
+  GithoneyDatumSchema,
   GithoneyValidatorRedeemer
 } from "../../types";
 import logger from "../../logger";
 
 /**
  * Builds an `addReward` transaction. The tx is built in the context of any wallet.
- * @param settingsUtxo The settings UTxO.
- * @param utxoRef The reference of the last transaction output that contains the bounty UTxO.
+ * @param settingsUtxo The settings Utxo.
+ * @param utxoRef The reference of the last transaction output that contains the bounty Utxo.
  * @param address The address of the current wallet.
  * @param rewards The reward assets and amount to be added.
  * @param lucid Lucid instance.
@@ -17,7 +17,7 @@ import logger from "../../logger";
  */
 
 async function addRewards(
-  settingsUtxo: UTxO,
+  settingsUtxo: Utxo,
   utxoRef: OutRef,
   address: string,
   rewards: Assets,
@@ -29,9 +29,15 @@ async function addRewards(
   if (!githoneyScript) {
     throw new Error("Githoney validator not found");
   }
-  const validatorAddress = lucid.utils.validatorToAddress(githoneyScript);
+  const validatorAddress = Addresses.scriptToAddress(
+    lucid.network,
+    githoneyScript
+  );
   const [utxo] = await lucid.utxosByOutRef([utxoRef]);
-  const oldDatum: GithoneyDatumT = await lucid.datumOf(utxo, GithoneyDatum);
+  const oldDatum: GithoneyDatum = await lucid.datumOf(
+    utxo,
+    GithoneyDatumSchema
+  );
 
   if (oldDatum.merged) {
     throw new Error("Bounty already merged");
@@ -47,7 +53,7 @@ async function addRewards(
     throw new Error("Too many assets, max 15");
   }
 
-  lucid.selectWalletFrom({ address: address });
+  lucid.selectReadOnlyWallet({ address: address });
   const now = new Date();
   const sixHoursFromNow = new Date(now.getTime() + 6 * 60 * 60 * 1000);
 
@@ -56,8 +62,8 @@ async function addRewards(
     .readFrom([settingsUtxo])
     .validTo(sixHoursFromNow.getTime())
     .collectFrom([utxo], GithoneyValidatorRedeemer.AddRewards())
-    .payToContract(validatorAddress, { inline: utxo.datum! }, newAssets)
-    .complete();
+    .payToContract(validatorAddress, { Inline: utxo.datum! }, newAssets)
+    .commit();
 
   const cbor = tx.toString();
   logger.info("END addRewards");

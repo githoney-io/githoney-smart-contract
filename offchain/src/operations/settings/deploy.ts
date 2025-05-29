@@ -3,7 +3,14 @@ import {
   settingsValidator,
   settingsPolicy
 } from "../../scripts";
-import { Data, Lucid, OutRef, fromText, toUnit } from "lucid-txpipe";
+import {
+  Addresses,
+  Data,
+  Lucid,
+  OutRef,
+  fromText,
+  toUnit
+} from "@spacebudz/lucid";
 import { validatorSettings } from "../../utils";
 import logger from "../../logger";
 import { settingsTokenName } from "../../constants";
@@ -22,7 +29,8 @@ async function deploySettings(
 ): Promise<{ cbor: string; outRef: OutRef }> {
   logger.info("START deploy");
   const settingsValidatorScript = settingsValidator();
-  const settingsValidatorAddress = lucid.utils.validatorToAddress(
+  const settingsValidatorAddress = Addresses.scriptToAddress(
+    lucid.network,
     settingsValidatorScript
   );
   const utxo = (await lucid.utxosAt(githoneyAddr))[0];
@@ -30,28 +38,31 @@ async function deploySettings(
     txHash: utxo.txHash,
     outputIndex: utxo.outputIndex
   };
-  const settingsMintingPolicy = settingsPolicy(outRef);
+  const settingsMintingPolicy = settingsPolicy(outRef, lucid);
 
-  const settingsPolicyId = lucid.utils.mintingPolicyToId(settingsMintingPolicy);
-  logger.info(`settingsPolicyId: ${settingsPolicyId}`);
-  const settingsNFTUnit = toUnit(settingsPolicyId, fromText(settingsTokenName));
+  const settingsPolicyId = Addresses.scriptToCredential(settingsMintingPolicy);
+  logger.info(`settingsPolicyId: ${settingsPolicyId.hash}`);
+  const settingsNFTUnit = toUnit(
+    settingsPolicyId.hash,
+    fromText(settingsTokenName)
+  );
 
-  const settingsDatum = mkSettingsDatum(validatorSettings(lucid, githoneyAddr));
-  const gitHoneyValidator = githoneyValidator(settingsPolicyId);
+  const settingsDatum = mkSettingsDatum(validatorSettings(githoneyAddr));
+  const gitHoneyValidator = githoneyValidator(settingsPolicyId.hash);
 
-  lucid.selectWalletFrom({ address: githoneyAddr });
+  lucid.selectReadOnlyWallet({ address: githoneyAddr });
 
   const tx = await lucid
     .newTx()
     .collectFrom([utxo])
     .payToContract(
       settingsValidatorAddress,
-      { scriptRef: gitHoneyValidator, inline: settingsDatum },
+      { scriptRef: gitHoneyValidator, Inline: settingsDatum },
       { [settingsNFTUnit]: 1n }
     )
-    .mintAssets({ [settingsNFTUnit]: 1n }, Data.void())
-    .attachMintingPolicy(settingsMintingPolicy)
-    .complete();
+    .mint({ [settingsNFTUnit]: 1n }, Data.void())
+    .attachScript(settingsMintingPolicy)
+    .commit();
 
   const cbor = tx.toString();
   logger.info("END deploy");

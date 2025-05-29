@@ -1,5 +1,5 @@
 import { describe, it } from "mocha";
-import { Assets, fromText, OutRef, toUnit } from "lucid-txpipe";
+import { Assets, fromText, OutRef, toUnit } from "@spacebudz/lucid";
 import {
   deployUtxo,
   newAssign,

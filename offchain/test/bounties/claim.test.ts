@@ -5,7 +5,7 @@ import {
   ACCOUNT_0,
   lucid
 } from "../emulatorConfig";
-import { OutRef } from "lucid-txpipe";
+import { OutRef } from "@spacebudz/lucid";
 import { expect } from "chai";
 import { claimBounty } from "../../src/operations/bounties/claim";
 import {
@@ -55,7 +55,7 @@ describe("Claim tests", async () => {
     } catch (e) {
       const error = e as Error;
       logger.error(error.message);
-      expect(error.message).to.equal("This UTxO does not have a datum hash.");
+      expect(error.message).to.equal("This Utxo does not have a datum hash.");
     }
   });
 

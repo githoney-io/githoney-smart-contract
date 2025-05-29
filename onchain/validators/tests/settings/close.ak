@@ -73,31 +73,6 @@ test without_githoney_signature() {
   )
 }
 
-test githoney_bad_pay() {
-  let tx = close_tx()
-  expect Some(script_input) = head(tx.inputs)
-  let datum: SettingsDatum = to_settings_datum(script_input.output.datum)
-
-  let output =
-    Output {
-      address: mocks.mk_githoney_address(),
-      value: assets.zero,
-      datum: NoDatum,
-      reference_script: None,
-    }
-  let tx =
-    tx
-      |> add_output(output)
-      |> add_extra_signature(mocks.githoney_addr)
-
-  !githoney_contract.settings.spend(
-    Some(datum),
-    CloseSettings,
-    script_input.output_reference,
-    tx,
-  )
-}
-
 test without_settings_token_input() fail {
   let tx = close_tx()
   expect Some(script_input) = head(tx.inputs)

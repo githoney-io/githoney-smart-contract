@@ -10,6 +10,7 @@ test success() {
 
   githoney_contract.settings_minting.mint(
     mocks.mk_settings_out_ref(),
+    mocks.mk_settings_address(),
     None,
     mocks.settings_nft_policy,
     tx,
@@ -26,6 +27,7 @@ test wrong_datum() fail {
 
   githoney_contract.settings_minting.mint(
     mocks.mk_settings_out_ref(),
+    mocks.mk_settings_address(),
     None,
     mocks.settings_nft_policy,
     wrong_tx,
@@ -47,6 +49,7 @@ test wrong_minted_amount() fail {
     }
   githoney_contract.settings_minting.mint(
     mocks.mk_settings_out_ref(),
+    mocks.mk_settings_address(),
     None,
     mocks.settings_nft_policy,
     wrong_tx,
@@ -67,6 +70,7 @@ test wrong_burned_amount() {
     }
   !githoney_contract.settings_minting.mint(
     mocks.mk_settings_out_ref(),
+    mocks.mk_settings_address(),
     None,
     mocks.settings_nft_policy,
     wrong_tx,
@@ -79,6 +83,7 @@ test utxo_not_present_in_inputs() {
   let wrong_tx = Transaction { ..tx, inputs: [] }
   !githoney_contract.settings_minting.mint(
     mocks.mk_settings_out_ref(),
+    mocks.mk_settings_address(),
     None,
     mocks.settings_nft_policy,
     wrong_tx,
@@ -93,6 +98,7 @@ test without_settings_token_in_output() {
   let wrong_tx = Transaction { ..tx, outputs: [wrong_output] }
   !githoney_contract.settings_minting.mint(
     mocks.mk_settings_out_ref(),
+    mocks.mk_settings_address(),
     None,
     mocks.settings_nft_policy,
     wrong_tx,
