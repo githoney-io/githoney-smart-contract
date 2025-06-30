@@ -1,5 +1,10 @@
-party Sender;
-party Receiver;
+party User;
+party Contributor;
+party Admin;
+party GitHoneyAddr;
+party Maintainer;
+
+policy GitHoney = 0x0;
 
 type GithoneyContractRedeemers {
     AddRewards,
@@ -64,13 +69,43 @@ tx createBounty(
     mintingPolicyid: Bytes,
 ) {
 
-    validity {
-        until_slot: deadline,
-        since_slot: 1751306068,
+    input maintainer_input {
+        from: Maintainer,
+        min_amount: Ada(10000000),  // + AnyAsset(),
     }
 
     mint {
         amount: AnyAsset(mintingPolicyid, bounty_id, 1),
         redeemer: (),
+    }
+
+    output bounty_utxo {
+        to: GitHoney,
+        amount: Ada(5000000) + AnyAsset(mintingPolicyid, bounty_id, 1) + rewards,
+        datum: GithoneyDatum {
+            admin_payment_credential: adminAddr,
+            maintainer_address: maintainerAddr,
+            contributor_address: Option, // None
+            bounty_reward_fee: 1, // settings.bountyRewardFee,
+            deadline: deadline,
+            merged: false,
+            // initial_value: // TODO,
+        },
+
+    }
+
+    output githoney_wallet{
+        to: GitHoneyAddr,
+        amount: fees,
+    }
+
+    output maintainer_output {
+        to: Maintainer,
+        amount: maintainer_input - fees - Ada(5000000), // - AnyAsset(),
+    }
+
+    validity {
+        until_slot: deadline,
+        since_slot: 1751306068,
     }
 }
