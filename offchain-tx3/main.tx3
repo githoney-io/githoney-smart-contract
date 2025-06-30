@@ -1,0 +1,76 @@
+party Sender;
+party Receiver;
+
+type GithoneyContractRedeemers {
+    AddRewards,
+    Assign,
+    Merge,
+    Close,
+    Claim,
+}
+
+type SettingsRedeemers {
+  UpdateSettings,
+  CloseSettings,
+}
+
+type SettingsDatum {
+  githoney_address: Address,
+  bounty_creation_fee: Int,
+  bounty_reward_fee: Int,
+}
+
+type Option {
+    Some {
+        address: Address,
+    },
+    None,
+}
+
+
+// REVIEW
+type ValuePair {
+    key: Bytes,
+    value: Int,
+}
+
+// REVIEW
+type Pairs {
+    key: Bytes,
+    value: ValuePair,
+}
+
+
+type GithoneyDatum {
+  admin_payment_credential: Bytes,
+  maintainer_address: Address,
+  contributor_address: Option,
+//  contributor_address: Option<Address>,
+  bounty_reward_fee: Int,
+  deadline: Int,
+  merged: Bool,
+  initial_value: Pairs,
+//   initial_value: Pairs<PolicyId, Pairs<AssetName, Int>>,
+}
+
+
+tx createBounty(
+    settingsUtxo: UtxoRef, // FIXME: should be a Utxo
+    maintainerAddr: Bytes,
+    adminAddr: Bytes,
+    rewards: List<AnyAsset>,
+    deadline: Int,
+    bounty_id: Bytes,
+    mintingPolicyid: Bytes,
+) {
+
+    validity {
+        until_slot: deadline,
+        since_slot: 1751306068,
+    }
+
+    mint {
+        amount: AnyAsset(mintingPolicyid, bounty_id, 1),
+        redeemer: (),
+    }
+}

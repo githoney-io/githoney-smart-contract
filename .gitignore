@@ -147,3 +147,6 @@ dist
 
 # SvelteKit build / generate output
 .svelte-kit
+
+# Dependency directories
+**/node_modules/
