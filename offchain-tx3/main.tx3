@@ -4,7 +4,7 @@ party Admin;
 party GitHoneyAddr;
 party Maintainer;
 
-policy GitHoney = 0x0;
+policy GitHoney = 0x0; // Deployed validator script
 
 type GithoneyContractRedeemers {
     AddRewards,
@@ -58,6 +58,42 @@ type GithoneyDatum {
 //   initial_value: Pairs<PolicyId, Pairs<AssetName, Int>>,
 }
 
+tx deploySettings(
+  githoneyAddress: Address,
+  bountyCreationFee: Int,
+  bountyRewardFee: Int,
+  settingsPolicyId: Bytes,
+  settingsTokenName: Bytes,
+) {
+
+    input githoney_wallet {
+        from: GitHoneyAddr,
+        min_amount: Ada(20000000),
+    }
+
+    mint {
+        amount: AnyAsset(settingsPolicyId, settingsTokenName, 1),
+        redeemer: (),
+    }
+
+    output change {
+        to: GitHoneyAddr,
+        amount: githoney_wallet - fees,
+    }
+
+    output settings_utxo {
+        to: GitHoney,
+        amount: fees + AnyAsset(settingsPolicyId, settingsTokenName, 1),
+        datum: SettingsDatum {
+            githoney_address: githoneyAddress,
+            bounty_creation_fee: bountyCreationFee,
+            bounty_reward_fee: bountyRewardFee,
+        },
+    }
+}
+
+
+// REVIEW
 
 tx createBounty(
     settingsUtxo: UtxoRef, // FIXME: should be a Utxo
@@ -65,8 +101,8 @@ tx createBounty(
     adminAddr: Bytes,
     rewards: List<AnyAsset>,
     deadline: Int,
-    bounty_id: Bytes,
-    mintingPolicyid: Bytes,
+    bountyId: Bytes,
+    mintingPolicyId: Bytes,
 ) {
 
     input maintainer_input {
@@ -75,18 +111,18 @@ tx createBounty(
     }
 
     mint {
-        amount: AnyAsset(mintingPolicyid, bounty_id, 1),
+        amount: AnyAsset(mintingPolicyId, bountyId, 1),
         redeemer: (),
     }
 
     output bounty_utxo {
         to: GitHoney,
-        amount: Ada(5000000) + AnyAsset(mintingPolicyid, bounty_id, 1) + rewards,
+        amount: Ada(5000000) + AnyAsset(mintingPolicyId, bountyId, 1) + rewards,
         datum: GithoneyDatum {
             admin_payment_credential: adminAddr,
             maintainer_address: maintainerAddr,
-            contributor_address: Option, // None
-            bounty_reward_fee: 1, // settings.bountyRewardFee,
+            contributor_address: Option::None {},
+            bounty_reward_fee: settingsUtxo.bounty_reward_fee, // REVIEW
             deadline: deadline,
             merged: false,
             // initial_value: // TODO,
