@@ -4,7 +4,7 @@ party Admin;
 party GitHoneyAddr;
 party Maintainer;
 
-policy GitHoney = 0x0; // Deployed validator script
+policy GitHoney = 0xf8f51d21a8815a7ea5d463d23daf3c0aa11369685dede63fb4a50b3b; // Deployed validator script
 
 type GithoneyContractRedeemers {
     AddRewards,
@@ -54,16 +54,17 @@ type GithoneyDatum {
   bounty_reward_fee: Int,
   deadline: Int,
   merged: Bool,
-  initial_value: Pairs,
+//   initial_value: List<Bytes, List<Bytes, Int>>,
 //   initial_value: Pairs<PolicyId, Pairs<AssetName, Int>>,
 }
 
 tx deploySettings(
-  githoneyAddress: Address,
-  bountyCreationFee: Int,
-  bountyRewardFee: Int,
-  settingsPolicyId: Bytes,
-  settingsTokenName: Bytes,
+    githoneyAddress: Address,
+    bountyCreationFee: Int,
+    bountyRewardFee: Int,
+    settingsPolicyId: Bytes,
+    settingsTokenName: Bytes,
+    collateralRef: UtxoRef,
 ) {
 
     input githoney_wallet {
@@ -96,14 +97,18 @@ tx deploySettings(
 // REVIEW
 
 tx createBounty(
-    settingsUtxo: UtxoRef, // FIXME: should be a Utxo
+    settingsRef: UtxoRef,
     maintainerAddr: Bytes,
     adminAddr: Bytes,
     rewards: List<AnyAsset>,
-    deadline: Int,
+    byDeadline: Int,
     bountyId: Bytes,
     mintingPolicyId: Bytes,
+    collateralRef: UtxoRef,
 ) {
+    reference contract {
+        ref: settingsRef,
+    }
 
     input maintainer_input {
         from: Maintainer,
@@ -122,8 +127,8 @@ tx createBounty(
             admin_payment_credential: adminAddr,
             maintainer_address: maintainerAddr,
             contributor_address: Option::None {},
-            bounty_reward_fee: settingsUtxo.bounty_reward_fee, // REVIEW
-            deadline: deadline,
+            bounty_reward_fee: 0, // FIXME
+            deadline: byDeadline,
             merged: false,
             // initial_value: // TODO,
         },
@@ -141,7 +146,7 @@ tx createBounty(
     }
 
     validity {
-        until_slot: deadline,
+        until_slot: byDeadline,
         since_slot: 1751306068,
     }
 }
