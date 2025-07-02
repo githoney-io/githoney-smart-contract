@@ -32,127 +32,12 @@ type Option {
     None,
 }
 
-
-// REVIEW
-type ValuePair {
-    key: Bytes,
-    value: Int,
-}
-
-// REVIEW
-type Pairs {
-    key: Bytes,
-    value: ValuePair,
-}
-
-
 type GithoneyDatum {
     admin_payment_credential: Bytes,
     maintainer_address: Address,
     contributor_address: Option,
-    //  contributor_address: Option<Address>,
     bounty_reward_fee: Int,
     deadline: Int,
     merged: Bool,
-//   initial_value: List<Bytes, List<Bytes, Int>>,
 //   initial_value: Pairs<PolicyId, Pairs<AssetName, Int>>,
-}
-
-tx deploySettings(
-    githoneyAddress: Address,
-    bountyCreationFee: Int,
-    bountyRewardFee: Int,
-    settingsPolicyId: Bytes,
-    settingsTokenName: Bytes,
-    collateralRef: UtxoRef,
-) {
-
-    input githoney_wallet {
-        from: GitHoneyAddr,
-        min_amount: Ada(20000000),
-    }
-
-    mint {
-        amount: AnyAsset(settingsPolicyId, settingsTokenName, 1),
-        redeemer: (),
-    }
-
-    output change {
-        to: GitHoneyAddr,
-        amount: githoney_wallet - fees,
-    }
-
-    output settings_utxo {
-        to: GitHoney,
-        amount: fees + AnyAsset(settingsPolicyId, settingsTokenName, 1),
-        datum: SettingsDatum {
-            githoney_address: githoneyAddress,
-            bounty_creation_fee: bountyCreationFee,
-            bounty_reward_fee: bountyRewardFee,
-        },
-    }
-}
-
-
-// REVIEW
-
-tx createBounty(
-    settingsRef: UtxoRef,
-    maintainerAddr: Bytes,
-    adminAddr: Bytes,
-    rewards: List<AnyAsset>,
-    since: Int,
-    until: Int,
-    bountyId: Bytes,
-    mintingPolicyId: Bytes,
-    collateralRef: UtxoRef,
-    // Since the settingsutxo datum cannot be accessed,
-    // they are passed as parameters.
-    githoneyAddress: Address,
-    bountyRewardFee: Int,
-    bountyCreationFee: Int,
-) {
-    reference contract {
-        ref: settingsRef,
-    }
-
-    input maintainer_input {
-        from: Maintainer,
-        min_amount: Ada(10000000),  // + AnyAsset(),
-    }
-
-    mint {
-        amount: AnyAsset(mintingPolicyId, bountyId, 1),
-        redeemer: (),
-    }
-
-    output bounty_utxo {
-        to: GitHoney,
-        amount: Ada(5000000) + AnyAsset(mintingPolicyId, bountyId, 1) + rewards,
-        datum: GithoneyDatum {
-            admin_payment_credential: adminAddr,
-            maintainer_address: maintainerAddr,
-            contributor_address: Option::None {},
-            bounty_reward_fee: bountyRewardFee,
-            deadline: until,
-            merged: false,
-            // initial_value: // TODO,
-        },
-
-    }
-
-    output githoney_wallet{
-        to: GitHoneyAddr,
-        amount: bountyCreationFee,
-    }
-
-    output maintainer_output {
-        to: Maintainer,
-        amount: maintainer_input - bountyCreationFee - fees, // - AnyAsset(),
-    }
-
-    validity {
-        until_slot: until,
-        since_slot: since,
-    }
 }
