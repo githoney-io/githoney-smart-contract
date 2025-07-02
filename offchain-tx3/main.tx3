@@ -15,14 +15,14 @@ type GithoneyContractRedeemers {
 }
 
 type SettingsRedeemers {
-  UpdateSettings,
-  CloseSettings,
+    UpdateSettings,
+    CloseSettings,
 }
 
 type SettingsDatum {
-  githoney_address: Address,
-  bounty_creation_fee: Int,
-  bounty_reward_fee: Int,
+    githoney_address: Address,
+    bounty_creation_fee: Int,
+    bounty_reward_fee: Int,
 }
 
 type Option {
@@ -47,13 +47,13 @@ type Pairs {
 
 
 type GithoneyDatum {
-  admin_payment_credential: Bytes,
-  maintainer_address: Address,
-  contributor_address: Option,
-//  contributor_address: Option<Address>,
-  bounty_reward_fee: Int,
-  deadline: Int,
-  merged: Bool,
+    admin_payment_credential: Bytes,
+    maintainer_address: Address,
+    contributor_address: Option,
+    //  contributor_address: Option<Address>,
+    bounty_reward_fee: Int,
+    deadline: Int,
+    merged: Bool,
 //   initial_value: List<Bytes, List<Bytes, Int>>,
 //   initial_value: Pairs<PolicyId, Pairs<AssetName, Int>>,
 }
@@ -101,10 +101,16 @@ tx createBounty(
     maintainerAddr: Bytes,
     adminAddr: Bytes,
     rewards: List<AnyAsset>,
-    byDeadline: Int,
+    since: Int,
+    until: Int,
     bountyId: Bytes,
     mintingPolicyId: Bytes,
     collateralRef: UtxoRef,
+    // Since the settingsutxo datum cannot be accessed,
+    // they are passed as parameters.
+    githoneyAddress: Address,
+    bountyRewardFee: Int,
+    bountyCreationFee: Int,
 ) {
     reference contract {
         ref: settingsRef,
@@ -127,8 +133,8 @@ tx createBounty(
             admin_payment_credential: adminAddr,
             maintainer_address: maintainerAddr,
             contributor_address: Option::None {},
-            bounty_reward_fee: 0, // FIXME
-            deadline: byDeadline,
+            bounty_reward_fee: bountyRewardFee,
+            deadline: until,
             merged: false,
             // initial_value: // TODO,
         },
@@ -137,16 +143,16 @@ tx createBounty(
 
     output githoney_wallet{
         to: GitHoneyAddr,
-        amount: fees,
+        amount: bountyCreationFee,
     }
 
     output maintainer_output {
         to: Maintainer,
-        amount: maintainer_input - fees - Ada(5000000), // - AnyAsset(),
+        amount: maintainer_input - bountyCreationFee - fees, // - AnyAsset(),
     }
 
     validity {
-        until_slot: byDeadline,
-        since_slot: 1751306068,
+        until_slot: until,
+        since_slot: since,
     }
 }
