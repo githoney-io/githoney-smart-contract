@@ -3,8 +3,12 @@ party Contributor;
 party Admin;
 party GitHoneyAddr;
 party Maintainer;
+party Script;
 
-policy GitHoney = 0xf8f51d21a8815a7ea5d463d23daf3c0aa11369685dede63fb4a50b3b; // Deployed validator script
+type Credentials {
+    payment_credential: Bytes,
+    staking_credential: Bytes,
+}
 
 type GithoneyContractRedeemers {
     AddRewards,
@@ -20,21 +24,21 @@ type SettingsRedeemers {
 }
 
 type SettingsDatum {
-    githoney_address: Address,
+    githoney_address: Credentials,
     bounty_creation_fee: Int,
     bounty_reward_fee: Int,
 }
 
 type Option {
     Some {
-        address: Address,
+        address: Credentials,
     },
     None,
 }
 
 type GithoneyDatum {
     admin_payment_credential: Bytes,
-    maintainer_address: Address,
+    maintainer_address: Credentials,
     contributor_address: Option,
     bounty_reward_fee: Int,
     deadline: Int,
@@ -42,8 +46,8 @@ type GithoneyDatum {
 //   initial_value: Pairs<PolicyId, Pairs<AssetName, Int>>,
 }
 
-tx deploySettings(
-    githoneyAddress: Address,
+tx deploy(
+    githoneyAddress: Credentials,
     bountyCreationFee: Int,
     bountyRewardFee: Int,
     settingsPolicyId: Bytes,
@@ -54,6 +58,10 @@ tx deploySettings(
     input githoney_wallet {
         from: GitHoneyAddr,
         min_amount: Ada(20000000),
+    }
+
+    collateral {
+        ref: collateralRef,
     }
 
     mint {
@@ -67,7 +75,7 @@ tx deploySettings(
     }
 
     output settings_utxo {
-        to: GitHoney,
+        to: Script,
         amount: fees + AnyAsset(settingsPolicyId, settingsTokenName, 1),
         datum: SettingsDatum {
             githoney_address: githoneyAddress,
