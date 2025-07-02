@@ -3,6 +3,7 @@ cd onchain/
 deno run -A https://deno.land/x/lucid/blueprint.ts || { echo "Deno script failed"; exit 1; }
 if [ -f "plutus.ts" ]; then
     mv plutus.ts "$I_PWD/offchain/src/plutus.ts"
+    cp "$I_PWD/offchain/src/plutus.ts" "$I_PWD/tx3-offchain/plutus.ts"
 else
     echo "plutus.ts not found!"
     exit 1
