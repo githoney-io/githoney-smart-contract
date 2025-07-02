@@ -41,3 +41,38 @@ type GithoneyDatum {
     merged: Bool,
 //   initial_value: Pairs<PolicyId, Pairs<AssetName, Int>>,
 }
+
+tx deploySettings(
+    githoneyAddress: Address,
+    bountyCreationFee: Int,
+    bountyRewardFee: Int,
+    settingsPolicyId: Bytes,
+    settingsTokenName: Bytes,
+    collateralRef: UtxoRef,
+) {
+
+    input githoney_wallet {
+        from: GitHoneyAddr,
+        min_amount: Ada(20000000),
+    }
+
+    mint {
+        amount: AnyAsset(settingsPolicyId, settingsTokenName, 1),
+        redeemer: (),
+    }
+
+    output change {
+        to: GitHoneyAddr,
+        amount: githoney_wallet - fees,
+    }
+
+    output settings_utxo {
+        to: GitHoney,
+        amount: fees + AnyAsset(settingsPolicyId, settingsTokenName, 1),
+        datum: SettingsDatum {
+            githoney_address: githoneyAddress,
+            bounty_creation_fee: bountyCreationFee,
+            bounty_reward_fee: bountyRewardFee,
+        },
+    }
+}
