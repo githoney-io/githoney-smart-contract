@@ -70,6 +70,10 @@ tx create(
         ref: settingsRef,
     }
 
+    collateral {
+        ref: collateralRef,
+    }
+
     input maintainer_input {
         from: Maintainer,
         min_amount: Ada(10000000) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
