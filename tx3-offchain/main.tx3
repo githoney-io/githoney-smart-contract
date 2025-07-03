@@ -47,7 +47,8 @@ type GithoneyDatum {
 }
 
 tx deploy(
-    githoneyAddress: Credentials,
+    githoneyPaymentCredential: Bytes,
+    githoneyStakingCredential: Bytes,
     bountyCreationFee: Int,
     bountyRewardFee: Int,
     settingsPolicyId: Bytes,
@@ -78,7 +79,10 @@ tx deploy(
         to: Script,
         amount: fees + AnyAsset(settingsPolicyId, settingsTokenName, 1),
         datum: SettingsDatum {
-            githoney_address: githoneyAddress,
+            githoney_address: Credentials {
+                payment_credential: githoneyPaymentCredential,
+                staking_credential: githoneyStakingCredential,
+            },
             bounty_creation_fee: bountyCreationFee,
             bounty_reward_fee: bountyRewardFee,
         },
