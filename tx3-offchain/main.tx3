@@ -38,21 +38,24 @@ type Option {
 
 type GithoneyDatum {
     admin_payment_credential: Bytes,
-    maintainer_address: Address,
+    maintainer_address: Credentials,
     contributor_address: Option,
     bounty_reward_fee: Int,
     deadline: Int,
     merged: Bool,
-//   initial_value: Pairs<PolicyId, Pairs<AssetName, Int>>,
+    initial_value: Tuple<Bytes, Tuple<Bytes, Int>>,
 }
 
-// REVIEW
 
-tx createBounty(
+tx create(
     settingsRef: UtxoRef,
-    maintainerAddr: Bytes,
+    maintainerPaymentCredential: Bytes,
+    maintainerStakeCredential: Bytes,
     adminAddr: Bytes,
-    rewards: List<AnyAsset>,
+    //NOTE - Since you cannot iterate over lists, we use a fixed asset.
+    rewardPolicyId: Bytes,
+    rewardAssetName: Bytes,
+    rewardAmount: Int,
     since: Int,
     until: Int,
     bountyId: Bytes,
@@ -60,7 +63,6 @@ tx createBounty(
     collateralRef: UtxoRef,
     // Since the settingsutxo datum cannot be accessed,
     // they are passed as parameters.
-    githoneyAddress: Address,
     bountyRewardFee: Int,
     bountyCreationFee: Int,
 ) {
@@ -70,7 +72,7 @@ tx createBounty(
 
     input maintainer_input {
         from: Maintainer,
-        min_amount: Ada(10000000),  // + AnyAsset(),
+        min_amount: Ada(10000000) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
     }
 
     mint {
@@ -79,16 +81,25 @@ tx createBounty(
     }
 
     output bounty_utxo {
-        to: GitHoney,
-        amount: Ada(5000000) + AnyAsset(mintingPolicyId, bountyId, 1) + rewards,
+        to: Script,
+        amount: Ada(5000000) + AnyAsset(mintingPolicyId, bountyId, 1) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
         datum: GithoneyDatum {
             admin_payment_credential: adminAddr,
-            maintainer_address: maintainerAddr,
+            maintainer_address: Credentials {
+                payment_credential: maintainerPaymentCredential,
+                staking_credential: maintainerStakeCredential,
+            },
             contributor_address: Option::None {},
             bounty_reward_fee: bountyRewardFee,
             deadline: until,
             merged: false,
-            // initial_value: // TODO,
+            initial_value: (
+                rewardPolicyId,
+                (
+                    rewardAssetName,
+                    rewardAmount
+                )
+            ),
         },
 
     }
@@ -100,7 +111,7 @@ tx createBounty(
 
     output maintainer_output {
         to: Maintainer,
-        amount: maintainer_input - bountyCreationFee - fees, // - AnyAsset(),
+        amount: maintainer_input - bountyCreationFee - fees - AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
     }
 
     validity {
