@@ -1,5 +1,5 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, paymentCredentialOf } from "@spacebudz/lucid";
+import { paymentCredentialOf } from "@spacebudz/lucid";
 import { creationFee, rewardFee, settingsTokenName } from "../../constants.ts";
 import { GithoneyContractSettingsSpend } from "../../plutus.ts";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
@@ -22,7 +22,15 @@ async function deploySettings(githoneyAddr: string): Promise<{
 
   const { tx } = await protocol.deployTx({
     script: scriptAddress,
-    githoneyaddr: Addresses.inspect(githoneyAddr).address,
+    githoneyaddr: githoneyAddr,
+    githoneypaymentcredential: Buffer.from(
+      "04054a94bdd5bfc6ef3c2c9421f5fdefe9fb2162898995f358f44878",
+      "hex",
+    ),
+    githoneystakingcredential: Buffer.from(
+      "43377fbca23f27764edec97359a493f621a4f82e473043fe419df3bd",
+      "hex",
+    ),
     bountycreationfee: Number(creationFee),
     bountyrewardfee: Number(rewardFee),
     settingspolicyid: Buffer.from(policyId, "hex"),

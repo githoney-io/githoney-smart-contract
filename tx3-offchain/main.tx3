@@ -36,16 +36,7 @@ type Option {
     None,
 }
 
-type GithoneyDatum {
-    admin_payment_credential: Bytes,
-    maintainer_address: Credentials,
-    contributor_address: Option,
-    bounty_reward_fee: Int,
-    deadline: Int,
-    merged: Bool,
-//   initial_value: Pairs<PolicyId, Pairs<AssetName, Int>>,
-}
-
+// TODO - Is not possible to create UTXOs with reference scripts.
 tx deploy(
     githoneyPaymentCredential: Bytes,
     githoneyStakingCredential: Bytes,
