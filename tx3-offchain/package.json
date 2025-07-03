@@ -1,0 +1,19 @@
+{
+  "name": "tx3-offchain",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "tx3-deploy": "npx tsx --experimental-wasm-modules test/deploy.ts"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "tsx": "^4.19.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@spacebudz/lucid": "npm:@jsr/spacebudz__lucid@^0.20.11",
+    "dotenv": "^17.0.1"
+  }
+}

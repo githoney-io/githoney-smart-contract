@@ -1,0 +1,37 @@
+party User;
+party Contributor;
+party Admin;
+party GitHoneyAddr;
+party Maintainer;
+party Script;
+
+type Credentials {
+    payment_credential: Bytes,
+    staking_credential: Bytes,
+}
+
+type GithoneyContractRedeemers {
+    AddRewards,
+    Assign,
+    Merge,
+    Close,
+    Claim,
+}
+
+type SettingsRedeemers {
+    UpdateSettings,
+    CloseSettings,
+}
+
+type SettingsDatum {
+    githoney_address: Credentials,
+    bounty_creation_fee: Int,
+    bounty_reward_fee: Int,
+}
+
+type Option {
+    Some {
+        address: Credentials,
+    },
+    None,
+}
