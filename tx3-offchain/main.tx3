@@ -176,3 +176,71 @@ tx create(
         since_slot: since,
     }
 }
+
+tx add(
+    settingsRef: UtxoRef,
+    bountyRef: UtxoRef,
+    rewardPolicyId: Bytes,
+    rewardAssetName: Bytes,
+    rewardAmount: Int,
+    since: Int,
+    until: Int,
+    collateralRef: UtxoRef,
+    bountyRewardFee: Int,
+    bountyCreationFee: Int,
+) {
+    reference contract {
+        ref: settingsRef,
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    input user_input {
+        from: User,
+        min_amount: Ada(10000000) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+    }
+
+    input current {
+        from: Script,
+        ref: bountyRef,
+        datum_is: GithoneyDatum,
+        redeemer: GithoneyContractRedeemers::AddRewards {},
+    }
+
+    output bounty_utxo {
+        to: Script,
+        amount: current + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+        datum: GithoneyDatum {
+            admin_payment_credential: current.admin_payment_credential,
+            maintainer_address: current.maintainer_address,
+            contributor_address: current.contributor_address,
+            bounty_reward_fee: current.bounty_reward_fee,
+            deadline: current.deadline,
+            merged: current.merged,
+            // REVIEW - list cannot be concatenated
+            initial_value: [
+                (
+                    rewardPolicyId,
+                    [
+                        (
+                            rewardAssetName,
+                            rewardAmount
+                        )
+                    ]
+                )
+            ],
+        },
+    }
+
+    output user_output {
+        to: User,
+        amount: user_input - fees - AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+    }
+
+    validity {
+        until_slot: until,
+        since_slot: since,
+    }
+}
