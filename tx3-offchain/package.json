@@ -3,7 +3,7 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "tx3-deploy": "npx tsx --experimental-wasm-modules test/deploy.ts"
+    "tx3-create": "npx tsx --experimental-wasm-modules test/create.ts"
   },
   "devDependencies": {
     "bun-types": "latest",

@@ -43,7 +43,7 @@ type GithoneyDatum {
     bounty_reward_fee: Int,
     deadline: Int,
     merged: Bool,
-    initial_value: Tuple<Bytes, Tuple<Bytes, Int>>,
+    initial_value: List<Tuple<Bytes, List<Tuple<Bytes, Int>>>>,
 }
 
 
@@ -97,25 +97,29 @@ tx create(
             bounty_reward_fee: bountyRewardFee,
             deadline: until,
             merged: false,
-            initial_value: (
-                rewardPolicyId,
+            initial_value: [
                 (
-                    rewardAssetName,
-                    rewardAmount
+                    rewardPolicyId,
+                    [
+                        (
+                            rewardAssetName,
+                            rewardAmount
+                        )
+                    ]
                 )
-            ),
+            ],
         },
 
     }
 
     output githoney_wallet{
         to: GitHoneyAddr,
-        amount: bountyCreationFee,
+        amount: Ada(bountyCreationFee),
     }
 
     output maintainer_output {
         to: Maintainer,
-        amount: maintainer_input - bountyCreationFee - fees - AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+        amount: maintainer_input - Ada(bountyCreationFee) - fees - AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
     }
 
     validity {
