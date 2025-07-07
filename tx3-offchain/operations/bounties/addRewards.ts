@@ -1,11 +1,8 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Data, Utxo } from "@spacebudz/lucid";
-import {
-  GithoneyContractGithoneySpend,
-  GithoneyContractSettingsSpend,
-} from "../../plutus.ts";
+import { Addresses, Data, Utxo } from "@spacebudz/lucid";
+import { GithoneyContractGithoneySpend } from "../../plutus.ts";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
-import { selectUTxOs, sortUTxOs } from "../../utils/utxo.ts";
+import { sortUTxOs } from "../../utils/utxo.ts";
 
 async function addReward(
   userAddr: string,
@@ -15,12 +12,22 @@ async function addReward(
 ): Promise<{
   addRewardCbor: string;
 }> {
-  const script = new GithoneyContractSettingsSpend();
-  const scriptAddress = lucidBase.utils.scriptToAddress(script);
+  const scriptAddress = lucidBase.utils.scriptToAddress(
+    settingsUtxo.scriptRef!,
+  );
+  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
+  console.log("scriptHash:", scriptHash);
 
   const selectedUtxos = await lucidWithWallet.wallet
     .getUtxos()
-    .then((utxos) => selectUTxOs(utxos, { lovelace: 10_000_000n }))
+    .then((utxos) => {
+      console.log("Selected UTXOs:", utxos);
+      return utxos.filter(
+        (utxo) =>
+          utxo.assets["lovelace"] >= 5_000_000 &&
+          Object.keys(utxo.assets).length === 1,
+      );
+    })
     .then((utxos) => sortUTxOs(utxos, "Canonical"));
 
   const collateralref =
