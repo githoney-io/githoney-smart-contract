@@ -1,5 +1,4 @@
-import { Lucid, Blockfrost, Utxo, OutRef, Assets } from "@spacebudz/lucid";
-import { SLOT_CONFIG_NETWORK } from "@blaze-cardano/core";
+import { Lucid, Blockfrost } from "@spacebudz/lucid";
 
 import dotenv from "dotenv";
 
@@ -15,11 +14,3 @@ export const lucidBase = new Lucid({
 export const lucidWithWallet = lucidBase.selectWalletFromSeed(
   process.env.SEED as string,
 );
-
-// TODO - Use lucid instead
-
-export const toPreviewBlockSlot = (timestamp: number): number => {
-  const zeroTime = SLOT_CONFIG_NETWORK.Preprod.zeroTime;
-  const slotLength = SLOT_CONFIG_NETWORK.Preprod.slotLength;
-  return Math.floor((timestamp - zeroTime) / slotLength);
-};
