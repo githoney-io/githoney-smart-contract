@@ -39,7 +39,7 @@ async function addReward(
   const rewardPolicy = oldDatum.initialValue[0].policyId;
 
   const now = new Date().getTime();
-  const sixHoursFromNow = new Date(now + 30 * 60 * 60 * 1000).getTime();
+  const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
   const { tx } = await protocol.addTx({
     script: scriptAddress,
