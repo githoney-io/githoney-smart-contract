@@ -186,8 +186,6 @@ tx add(
     since: Int,
     until: Int,
     collateralRef: UtxoRef,
-    bountyRewardFee: Int,
-    bountyCreationFee: Int,
 ) {
     reference contract {
         ref: settingsRef,
