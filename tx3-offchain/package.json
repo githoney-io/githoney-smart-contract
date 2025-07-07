@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "deploy": "npx tsx --experimental-wasm-modules test/deploy.ts",
-    "tx3-create": "npx tsx --experimental-wasm-modules test/create.ts"
+    "tx3-create": "npx tsx --experimental-wasm-modules test/create.ts",
+    "tx3-add-reward": "npx tsx --experimental-wasm-modules test/addRewards.ts"
   },
   "devDependencies": {
     "bun-types": "latest",

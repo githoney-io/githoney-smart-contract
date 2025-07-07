@@ -1,13 +1,14 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Utxo } from "@spacebudz/lucid";
-import { GithoneyContractSettingsSpend } from "../../plutus.ts";
+import { Data, Utxo } from "@spacebudz/lucid";
+import {
+  GithoneyContractGithoneySpend,
+  GithoneyContractSettingsSpend,
+} from "../../plutus.ts";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
 import { selectUTxOs, sortUTxOs } from "../../utils/utxo.ts";
 
 async function addReward(
   userAddr: string,
-  rewardPolicy: string,
-  rewardName: string,
   rewardAmount: bigint,
   settingsUtxo: Utxo,
   bountyUtxo: Utxo,
@@ -24,6 +25,18 @@ async function addReward(
 
   const collateralref =
     selectedUtxos[0].txHash + "#" + selectedUtxos[0].outputIndex;
+
+  if (!bountyUtxo.datum) {
+    throw new Error("Bounty UTXO datum is undefined");
+  }
+
+  const oldDatum = Data.from(
+    bountyUtxo.datum,
+    GithoneyContractGithoneySpend.datum,
+  );
+
+  const rewardName = oldDatum.initialValue[0].assetName;
+  const rewardPolicy = oldDatum.initialValue[0].policyId;
 
   const now = new Date().getTime();
   const sixHoursFromNow = new Date(now + 30 * 60 * 60 * 1000).getTime();
