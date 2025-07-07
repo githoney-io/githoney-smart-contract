@@ -1,5 +1,5 @@
 import { adminAddr, githoneyAddr, maintainerAddr } from "../constants";
-import { createBounty } from "../operations/create";
+import { createBounty } from "../operations/bounties/create";
 import { lucidBase, lucidWithWallet } from "../utils/utils";
 
 const rewardPolicy = "fb279c09175731ade05f7314a9b36cf923c7a3d6873be26bbd1eeccf";

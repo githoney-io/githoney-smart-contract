@@ -1,13 +1,8 @@
-import { protocol } from "../gen/typescript/protocol.ts";
-import { paymentCredentialOf, Utxo } from "@spacebudz/lucid";
-import { creationFee, rewardFee } from "../constants.ts";
-import { GithoneyContractSettingsSpend } from "../plutus.ts";
-import {
-  lucidBase,
-  lucidWithWallet,
-  toPreviewBlockSlot,
-} from "../utils/utils.ts";
-import { selectUTxOs, sortUTxOs } from "../utils/utxo.ts";
+import { protocol } from "../../gen/typescript/protocol.ts";
+import { Addresses, Utxo } from "@spacebudz/lucid";
+import { creationFee, rewardFee } from "../../constants.ts";
+import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
+import { sortUTxOs } from "../../utils/utxo.ts";
 import { Address } from "@blaze-cardano/core";
 
 async function createBounty(
@@ -22,21 +17,31 @@ async function createBounty(
 ): Promise<{
   createCbor: string;
 }> {
-  const script = new GithoneyContractSettingsSpend();
-  const scriptAddress = lucidBase.utils.scriptToAddress(script);
-  const scriptHash = paymentCredentialOf(scriptAddress).hash;
+  const scriptAddress = lucidBase.utils.scriptToAddress(
+    settingsUtxo.scriptRef!,
+  );
+  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
+  console.log("scriptHash:", scriptHash);
 
   const selectedUtxos = await lucidWithWallet.wallet
     .getUtxos()
-    .then((utxos) => selectUTxOs(utxos, { lovelace: 10_000_000n }))
+    .then((utxos) => {
+      console.log("Selected UTXOs:", utxos);
+      return utxos.filter(
+        (utxo) =>
+          utxo.assets["lovelace"] >= 5_000_000 &&
+          Object.keys(utxo.assets).length === 1,
+      );
+    })
     .then((utxos) => sortUTxOs(utxos, "Canonical"));
 
   const collateralref =
     selectedUtxos[0].txHash + "#" + selectedUtxos[0].outputIndex;
 
-  const now = new Date().getTime();
-  const sixHoursFromNow = new Date(now + 30 * 60 * 60 * 1000).getTime();
+  const now = new Date().getTime() - 60;
+  const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
+  // TODO - using lucid instead
   const maintainerAddress = Address.fromBech32(maintainerAddr).asBase();
   const maintainerPaymentCred = maintainerAddress?.getPaymentCredential()!;
   const maintainerStakeCred = maintainerAddress?.getStakeCredential()!;
@@ -50,8 +55,8 @@ async function createBounty(
     rewardpolicyid: Buffer.from(rewardPolicy, "hex"),
     rewardassetname: Buffer.from(rewardName),
     rewardamount: Number(rewardAmount),
-    since: toPreviewBlockSlot(now),
-    until: toPreviewBlockSlot(sixHoursFromNow),
+    since: lucidBase.utils.unixTimeToSlots(now),
+    until: lucidBase.utils.unixTimeToSlots(sixHoursFromNow),
     bountyid: Buffer.from(bountyId),
     mintingpolicyid: Buffer.from(scriptHash, "hex"),
     collateralref: collateralref,
