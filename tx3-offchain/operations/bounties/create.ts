@@ -1,6 +1,6 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, Utxo } from "@spacebudz/lucid";
-import { creationFee, rewardFee } from "../../constants.ts";
+import { creationFee, MIN_ADA, rewardFee } from "../../constants.ts";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
 import { sortUTxOs } from "../../utils/utxo.ts";
 
@@ -36,7 +36,7 @@ async function createBounty(
   const collateralref =
     selectedUtxos[0].txHash + "#" + selectedUtxos[0].outputIndex;
 
-  const now = new Date().getTime() - 60;
+  const now = new Date().getTime() - 60 * 1000; // 1 minute ago
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
   const maintainerPaymentCred = Addresses.inspect(maintainerAddr).payment?.hash;
@@ -57,6 +57,7 @@ async function createBounty(
     bountyid: Buffer.from(bountyId),
     mintingpolicyid: Buffer.from(scriptHash, "hex"),
     collateralref: collateralref,
+    minada: Number(MIN_ADA),
     bountyrewardfee: Number(rewardFee),
     bountycreationfee: Number(creationFee),
     maintainer: maintainerAddr,

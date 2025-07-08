@@ -61,10 +61,12 @@ tx create(
     bountyId: Bytes,
     mintingPolicyId: Bytes,
     collateralRef: UtxoRef,
+    minAda: Int,
     // Since the settingsutxo datum cannot be accessed,
     // they are passed as parameters.
     bountyRewardFee: Int,
     bountyCreationFee: Int,
+
 ) {
     reference contract {
         ref: settingsRef,
@@ -86,7 +88,7 @@ tx create(
 
     output bounty_utxo {
         to: Script,
-        amount: Ada(5000000) + AnyAsset(mintingPolicyId, bountyId, 1) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+        amount: Ada(minAda) + AnyAsset(mintingPolicyId, bountyId, 1) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
         datum: GithoneyDatum {
             admin_payment_credential: adminAddr,
             maintainer_address: Credentials {
@@ -119,7 +121,7 @@ tx create(
 
     output maintainer_output {
         to: Maintainer,
-        amount: maintainer_input - Ada(bountyCreationFee) - fees - AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+        amount: maintainer_input - Ada(bountyCreationFee) - fees - AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount) - Ada(minAda),
     }
 
     validity {
