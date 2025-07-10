@@ -1,5 +1,5 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, Utxo } from "@spacebudz/lucid";
+import { Addresses, fromText, Utxo } from "@spacebudz/lucid";
 import { creationFee, MIN_ADA, rewardFee } from "../../constants.ts";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
 import { sortUTxOs } from "../../utils/utxo.ts";
@@ -20,7 +20,6 @@ async function createBounty(
     settingsUtxo.scriptRef!,
   );
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
-  console.log("scriptHash:", scriptHash);
 
   const selectedUtxos = await lucidWithWallet.wallet
     .getUtxos()
@@ -39,21 +38,27 @@ async function createBounty(
   const now = new Date().getTime() - 60 * 1000; // 1 minute ago
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
+  const deadline = new Date(
+    new Date().getTime() + 1000 * 60 * 60 * 24 * 2,
+  ).getTime(); // 2 days from now
+
   const maintainerPaymentCred = Addresses.inspect(maintainerAddr).payment?.hash;
   const maintainerStakeCred =
     Addresses.inspect(maintainerAddr).delegation?.hash || null;
+  const adminPaymentCred = Addresses.inspect(adminAddr).payment?.hash;
 
   const { tx } = await protocol.createTx({
     script: scriptAddress,
     githoneyaddr: githoneyAddr,
     maintainerpaymentcredential: Buffer.from(maintainerPaymentCred!, "hex"),
     maintainerstakecredential: Buffer.from(maintainerStakeCred!, "hex"),
-    adminaddr: Buffer.from(adminAddr),
+    adminpaymentcredential: Buffer.from(adminPaymentCred!, "hex"),
     rewardpolicyid: Buffer.from(rewardPolicy, "hex"),
-    rewardassetname: Buffer.from(rewardName),
+    rewardassetname: Buffer.from(fromText(rewardName), "hex"),
     rewardamount: Number(rewardAmount),
     since: lucidBase.utils.unixTimeToSlots(now),
     until: lucidBase.utils.unixTimeToSlots(sixHoursFromNow),
+    timelimit: deadline,
     bountyid: Buffer.from(bountyId),
     mintingpolicyid: Buffer.from(scriptHash, "hex"),
     collateralref: collateralref,
