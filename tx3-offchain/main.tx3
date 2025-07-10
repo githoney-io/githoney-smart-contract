@@ -6,8 +6,8 @@ party Maintainer;
 party Script;
 
 type Credentials {
-    payment_credential: Bytes,
-    staking_credential: Bytes,
+    payment_credential: CardanoCredential,
+    staking_credential: OptionAddressCardanoCredential,
 }
 
 type GithoneyContractRedeemers {
@@ -29,17 +29,44 @@ type SettingsDatum {
     bounty_reward_fee: Int,
 }
 
-type Option {
+type OptionAddress {
     Some {
         address: Credentials,
     },
     None,
 }
 
+type CardanoCredentialBytes {
+    VerificationKey {
+        VerificationKey: Bytes,
+    },
+    Script {
+        Script: Bytes,
+    },
+}
+
+type StakeCredWrapper {
+    Inline {
+        VerificationKey: CardanoCredentialBytes,
+    },
+    Pointer {
+        slotNumber: Int,
+        transactionIndex: Int,
+        certificateIndex: Int,
+    },
+}
+
+type OptionAddressCardanoCredential {
+    Some {
+        stakeCredetial: StakeCredWrapper,
+    },
+    None,
+}
+
 type GithoneyDatum {
-    admin_payment_credential: Bytes,
+    admin_payment_credential: CardanoCredential,
     maintainer_address: Credentials,
-    contributor_address: Option,
+    contributor_address: OptionAddress,
     bounty_reward_fee: Int,
     deadline: Int,
     merged: Bool,
@@ -51,13 +78,14 @@ tx create(
     settingsRef: UtxoRef,
     maintainerPaymentCredential: Bytes,
     maintainerStakeCredential: Bytes,
-    adminAddr: Bytes,
+    adminPaymentCredential: Bytes,
     //NOTE - Since you cannot iterate over lists, we use a fixed asset.
     rewardPolicyId: Bytes,
     rewardAssetName: Bytes,
     rewardAmount: Int,
     since: Int,
     until: Int,
+    timeLimit: Int,
     bountyId: Bytes,
     mintingPolicyId: Bytes,
     collateralRef: UtxoRef,
@@ -90,14 +118,24 @@ tx create(
         to: Script,
         amount: Ada(minAda) + AnyAsset(mintingPolicyId, bountyId, 1) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
         datum: GithoneyDatum {
-            admin_payment_credential: adminAddr,
-            maintainer_address: Credentials {
-                payment_credential: maintainerPaymentCredential,
-                staking_credential: maintainerStakeCredential,
+            admin_payment_credential: CardanoCredentialBytes::VerificationKey {
+                VerificationKey: adminPaymentCredential,
             },
-            contributor_address: Option::None {},
+            maintainer_address: Credentials {
+                payment_credential: CardanoCredentialBytes::VerificationKey {
+                    VerificationKey: maintainerPaymentCredential,
+                },
+                staking_credential: OptionAddressCardanoCredential::Some {
+                    stakeCredetial: StakeCredWrapper::Inline {
+                        VerificationKey: CardanoCredentialBytes::VerificationKey {
+                            VerificationKey: maintainerStakeCredential,
+                        },
+                    },
+                },
+            },
+            contributor_address: OptionAddress::None {},
             bounty_reward_fee: bountyRewardFee,
-            deadline: until,
+            deadline: timeLimit,
             merged: false,
             initial_value: [
                 (
@@ -106,6 +144,15 @@ tx create(
                         (
                             rewardAssetName,
                             rewardAmount
+                        )
+                    ]
+                ),
+                (
+                    "",
+                    [
+                        (
+                            "",
+                            minAda
                         )
                     ]
                 )
