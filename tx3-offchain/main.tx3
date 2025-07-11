@@ -291,3 +291,130 @@ tx assign(
         since_slot: since,
     }
 }
+
+// CLOSE BOUNTY
+
+tx closeBeforeContributor(
+    settingsRef: UtxoRef,
+    bountyRef: UtxoRef,
+    rewardPolicyId: Bytes,
+    rewardAssetName: Bytes,
+    rewardAmount: Int,
+    since: Int,
+    until: Int,
+    timeLimit: Int,
+    bountyId: Bytes,
+    mintingPolicyId: Bytes,
+    collateralRef: UtxoRef,
+    minAda: Int,
+
+) {
+    reference contract {
+        ref: settingsRef,
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    input admin_input {
+        from: Admin,
+        min_amount: Ada(10000000),
+    }
+
+    input current {
+        from: Script,
+        ref: bountyRef,
+        datum_is: GithoneyDatum,
+        redeemer: GithoneyContractRedeemers::Close {},
+    }
+
+    mint {
+        amount: AnyAsset(mintingPolicyId, bountyId, -1),
+        redeemer: (),
+    }
+
+    output admin_output {
+        to: Admin,
+        amount: admin_input - fees,
+    }
+
+    output maintainer_output {
+        to: Maintainer,
+        amount: Ada(minAda) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+    }
+
+    validity {
+        until_slot: until,
+        since_slot: since,
+    }
+
+    signers {
+        Admin,
+    }
+}
+
+tx closeAfterContributor(
+    settingsRef: UtxoRef,
+    bountyRef: UtxoRef,
+    rewardPolicyId: Bytes,
+    rewardAssetName: Bytes,
+    rewardAmount: Int,
+    since: Int,
+    until: Int,
+    timeLimit: Int,
+    bountyId: Bytes,
+    mintingPolicyId: Bytes,
+    collateralRef: UtxoRef,
+    minAda: Int,
+
+) {
+    reference contract {
+        ref: settingsRef,
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    input admin_input {
+        from: Admin,
+        min_amount: Ada(10000000),
+    }
+
+    input current {
+        from: Script,
+        ref: bountyRef,
+        datum_is: GithoneyDatum,
+        redeemer: GithoneyContractRedeemers::Close {},
+    }
+
+    mint {
+        amount: AnyAsset(mintingPolicyId, bountyId, -1),
+        redeemer: (),
+    }
+
+    output admin_output {
+        to: Admin,
+        amount: admin_input - fees,
+    }
+
+    output contributor_output {
+        to: Contributor,
+        amount: Ada(minAda),
+    }
+
+    output maintainer_output {
+        to: Maintainer,
+        amount: Ada(minAda) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+    }
+
+    validity {
+        until_slot: until,
+        since_slot: since,
+    }
+
+    signers {
+        Admin,
+    }
+}
