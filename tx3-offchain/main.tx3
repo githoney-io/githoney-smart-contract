@@ -228,3 +228,73 @@ tx add(
         since_slot: since,
     }
 }
+
+// ASSIGN CONTRIBUTOR
+
+tx assign(
+    settingsRef: UtxoRef,
+    bountyRef: UtxoRef,
+    contributorPaymentCredential: Bytes,
+    contributorStakeCredential: Bytes,
+    since: Int,
+    until: Int,
+    minAda: Int,
+    collateralRef: UtxoRef,
+) {
+    reference contract {
+        ref: settingsRef,
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    input contributor_input {
+        from: Contributor,
+        min_amount: Ada(10000000),
+    }
+
+    input current {
+        from: Script,
+        ref: bountyRef,
+        datum_is: GithoneyDatum,
+        redeemer: GithoneyContractRedeemers::Assign {},
+    }
+
+    output bounty_utxo {
+        to: Script,
+        amount: current + Ada(minAda), // 2 * minAda
+        datum: GithoneyDatum {
+            admin_payment_credential: current.admin_payment_credential,
+            maintainer_address: current.maintainer_address,
+            contributor_address: OptionAddress::Some {
+                address: CardanoAddress {
+                    payment_credential: CardanoCredential::VerificationKey {
+                        VerificationKey: contributorPaymentCredential,
+                    },
+                    staking_credential: OptionAddressCardanoCredential::Some {
+                        stakeCredetial: StakeCredWrapper::Inline {
+                            VerificationKey: CardanoCredential::VerificationKey {
+                                VerificationKey: contributorStakeCredential,
+                            },
+                        },
+                    },
+                },
+            },
+            bounty_reward_fee: current.bounty_reward_fee,
+            deadline: current.deadline,
+            merged: current.merged,
+            initial_value: current.initial_value,
+        },
+    }
+
+    output contributor_output {
+        to: Contributor,
+        amount: contributor_input - fees - Ada(minAda),
+    }
+
+    validity {
+        until_slot: until,
+        since_slot: since,
+    }
+}
