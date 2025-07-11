@@ -5,7 +5,7 @@ party GitHoneyAddr;
 party Maintainer;
 party Script;
 
-type Credentials {
+type CardanoAddress {
     payment_credential: CardanoCredential,
     staking_credential: OptionAddressCardanoCredential,
 }
@@ -24,19 +24,19 @@ type SettingsRedeemers {
 }
 
 type SettingsDatum {
-    githoney_address: Credentials,
+    githoney_address: CardanoAddress,
     bounty_creation_fee: Int,
     bounty_reward_fee: Int,
 }
 
 type OptionAddress {
     Some {
-        address: Credentials,
+        address: CardanoAddress,
     },
     None,
 }
 
-type CardanoCredentialBytes {
+type CardanoCredential {
     VerificationKey {
         VerificationKey: Bytes,
     },
@@ -47,7 +47,7 @@ type CardanoCredentialBytes {
 
 type StakeCredWrapper {
     Inline {
-        VerificationKey: CardanoCredentialBytes,
+        VerificationKey: CardanoCredential,
     },
     Pointer {
         slotNumber: Int,
@@ -65,7 +65,7 @@ type OptionAddressCardanoCredential {
 
 type GithoneyDatum {
     admin_payment_credential: CardanoCredential,
-    maintainer_address: Credentials,
+    maintainer_address: CardanoAddress,
     contributor_address: OptionAddress,
     bounty_reward_fee: Int,
     deadline: Int,
@@ -118,16 +118,16 @@ tx create(
         to: Script,
         amount: Ada(minAda) + AnyAsset(mintingPolicyId, bountyId, 1) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
         datum: GithoneyDatum {
-            admin_payment_credential: CardanoCredentialBytes::VerificationKey {
+            admin_payment_credential: CardanoCredential::VerificationKey {
                 VerificationKey: adminPaymentCredential,
             },
-            maintainer_address: Credentials {
-                payment_credential: CardanoCredentialBytes::VerificationKey {
+            maintainer_address: CardanoAddress {
+                payment_credential: CardanoCredential::VerificationKey {
                     VerificationKey: maintainerPaymentCredential,
                 },
                 staking_credential: OptionAddressCardanoCredential::Some {
                     stakeCredetial: StakeCredWrapper::Inline {
-                        VerificationKey: CardanoCredentialBytes::VerificationKey {
+                        VerificationKey: CardanoCredential::VerificationKey {
                             VerificationKey: maintainerStakeCredential,
                         },
                     },
