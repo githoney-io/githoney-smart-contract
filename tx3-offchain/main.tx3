@@ -5,9 +5,9 @@ party GitHoneyAddr;
 party Maintainer;
 party Script;
 
-type Credentials {
-    payment_credential: Bytes,
-    staking_credential: Bytes,
+type CardanoAddress {
+    payment_credential: CardanoCredential,
+    staking_credential: OptionAddressCardanoCredential,
 }
 
 type GithoneyContractRedeemers {
@@ -24,14 +24,155 @@ type SettingsRedeemers {
 }
 
 type SettingsDatum {
-    githoney_address: Credentials,
+    githoney_address: CardanoAddress,
     bounty_creation_fee: Int,
     bounty_reward_fee: Int,
 }
 
-type Option {
+type OptionAddress {
     Some {
-        address: Credentials,
+        address: CardanoAddress,
     },
     None,
+}
+
+type CardanoCredential {
+    VerificationKey {
+        VerificationKey: Bytes,
+    },
+    Script {
+        Script: Bytes,
+    },
+}
+
+type StakeCredWrapper {
+    Inline {
+        VerificationKey: CardanoCredential,
+    },
+    Pointer {
+        slotNumber: Int,
+        transactionIndex: Int,
+        certificateIndex: Int,
+    },
+}
+
+type OptionAddressCardanoCredential {
+    Some {
+        stakeCredetial: StakeCredWrapper,
+    },
+    None,
+}
+
+type GithoneyDatum {
+    admin_payment_credential: CardanoCredential,
+    maintainer_address: CardanoAddress,
+    contributor_address: OptionAddress,
+    bounty_reward_fee: Int,
+    deadline: Int,
+    merged: Bool,
+    initial_value: List<Tuple<Bytes, List<Tuple<Bytes, Int>>>>,
+}
+
+
+tx create(
+    settingsRef: UtxoRef,
+    maintainerPaymentCredential: Bytes,
+    maintainerStakeCredential: Bytes,
+    adminPaymentCredential: Bytes,
+    //NOTE - Since you cannot iterate over lists, we use a fixed asset.
+    rewardPolicyId: Bytes,
+    rewardAssetName: Bytes,
+    rewardAmount: Int,
+    since: Int,
+    until: Int,
+    timeLimit: Int,
+    bountyId: Bytes,
+    mintingPolicyId: Bytes,
+    collateralRef: UtxoRef,
+    minAda: Int,
+    // Since the settingsutxo datum cannot be accessed,
+    // they are passed as parameters.
+    bountyRewardFee: Int,
+    bountyCreationFee: Int,
+
+) {
+    reference contract {
+        ref: settingsRef,
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    input maintainer_input {
+        from: Maintainer,
+        min_amount: Ada(10000000) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+    }
+
+    mint {
+        amount: AnyAsset(mintingPolicyId, bountyId, 1),
+        redeemer: (),
+    }
+
+    output bounty_utxo {
+        to: Script,
+        amount: Ada(minAda) + AnyAsset(mintingPolicyId, bountyId, 1) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+        datum: GithoneyDatum {
+            admin_payment_credential: CardanoCredential::VerificationKey {
+                VerificationKey: adminPaymentCredential,
+            },
+            maintainer_address: CardanoAddress {
+                payment_credential: CardanoCredential::VerificationKey {
+                    VerificationKey: maintainerPaymentCredential,
+                },
+                staking_credential: OptionAddressCardanoCredential::Some {
+                    stakeCredetial: StakeCredWrapper::Inline {
+                        VerificationKey: CardanoCredential::VerificationKey {
+                            VerificationKey: maintainerStakeCredential,
+                        },
+                    },
+                },
+            },
+            contributor_address: OptionAddress::None {},
+            bounty_reward_fee: bountyRewardFee,
+            deadline: timeLimit,
+            merged: false,
+            initial_value: [
+                (
+                    rewardPolicyId,
+                    [
+                        (
+                            rewardAssetName,
+                            rewardAmount
+                        )
+                    ]
+                ),
+                (
+                    "",
+                    [
+                        (
+                            "",
+                            minAda
+                        )
+                    ]
+                )
+            ],
+        },
+
+    }
+
+    output githoney_wallet{
+        to: GitHoneyAddr,
+        amount: Ada(bountyCreationFee),
+    }
+
+    output maintainer_output {
+        to: Maintainer,
+        amount: maintainer_input - Ada(bountyCreationFee) - fees - AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount) - Ada(minAda),
+    }
+
+    validity {
+        until_slot: until,
+        since_slot: since,
+    }
 }
