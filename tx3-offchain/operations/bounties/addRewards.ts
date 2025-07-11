@@ -3,6 +3,7 @@ import { Addresses, Data, Utxo } from "@spacebudz/lucid";
 import { GithoneyContractGithoneySpend } from "../../plutus.ts";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
 import { sortUTxOs } from "../../utils/utxo.ts";
+import { MIN_ADA } from "../../constants.ts";
 
 async function addReward(
   userAddr: string,
@@ -58,6 +59,7 @@ async function addReward(
     rewardamount: Number(rewardAmount),
     since: lucidBase.utils.unixTimeToSlots(now),
     until: lucidBase.utils.unixTimeToSlots(sixHoursFromNow),
+    minada: Number(MIN_ADA),
     collateralref: collateralref,
   });
 
