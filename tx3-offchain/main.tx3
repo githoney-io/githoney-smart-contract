@@ -158,7 +158,6 @@ tx create(
                 )
             ],
         },
-
     }
 
     output githoney_wallet{
@@ -185,6 +184,7 @@ tx add(
     rewardAmount: Int,
     since: Int,
     until: Int,
+    minAda: Int,
     collateralRef: UtxoRef,
 ) {
     reference contract {
@@ -225,6 +225,15 @@ tx add(
                         (
                             rewardAssetName,
                             rewardAmount
+                        )
+                    ]
+                ),
+                (
+                    "",
+                    [
+                        (
+                            "",
+                            minAda
                         )
                     ]
                 )
