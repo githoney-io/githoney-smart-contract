@@ -1,5 +1,5 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, Data, Utxo } from "@spacebudz/lucid";
+import { Data, Utxo } from "@spacebudz/lucid";
 import { GithoneyContractGithoneySpend } from "../../plutus.ts";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
 import { sortUTxOs } from "../../utils/utxo.ts";
@@ -16,8 +16,6 @@ async function addReward(
   const scriptAddress = lucidBase.utils.scriptToAddress(
     settingsUtxo.scriptRef!,
   );
-  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
-  console.log("scriptHash:", scriptHash);
 
   const selectedUtxos = await lucidWithWallet.wallet
     .getUtxos()

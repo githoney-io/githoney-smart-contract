@@ -106,7 +106,7 @@ tx create(
 
     input maintainer_input {
         from: Maintainer,
-        min_amount: Ada(10000000) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+        min_amount: Ada(5000000) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
     }
 
     mint {
@@ -197,7 +197,7 @@ tx add(
 
     input user_input {
         from: User,
-        min_amount: Ada(10000000) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+        min_amount: Ada(5000000) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
     }
 
     input current {
