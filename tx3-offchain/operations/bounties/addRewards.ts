@@ -22,7 +22,6 @@ async function addReward(
   const selectedUtxos = await lucidWithWallet.wallet
     .getUtxos()
     .then((utxos) => {
-      console.log("Selected UTXOs:", utxos);
       return utxos.filter(
         (utxo) =>
           utxo.assets["lovelace"] >= 5_000_000 &&
@@ -43,8 +42,20 @@ async function addReward(
     GithoneyContractGithoneySpend.datum,
   );
 
-  const rewardName = oldDatum.initialValue[0].assetName;
-  const rewardPolicy = oldDatum.initialValue[0].policyId;
+  let rewardName: string = "";
+  let rewardPolicy: string = "";
+
+  for (const [policyId, assets] of oldDatum.initialValue.entries()) {
+    if (policyId !== "") {
+      // Skip lovelace
+      rewardPolicy = policyId;
+      const assetNames = Array.from(assets.keys());
+      if (assetNames.length > 0) {
+        rewardName = assetNames[0];
+        break;
+      }
+    }
+  }
 
   const now = new Date().getTime() - 60;
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
@@ -55,7 +66,7 @@ async function addReward(
     settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
     bountyref: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
     rewardpolicyid: Buffer.from(rewardPolicy, "hex"),
-    rewardassetname: Buffer.from(rewardName),
+    rewardassetname: Buffer.from(rewardName, "hex"),
     rewardamount: Number(rewardAmount),
     since: lucidBase.utils.unixTimeToSlots(now),
     until: lucidBase.utils.unixTimeToSlots(sixHoursFromNow),
