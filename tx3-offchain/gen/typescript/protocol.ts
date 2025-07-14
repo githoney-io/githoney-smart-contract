@@ -202,7 +202,6 @@ export class Client {
       args,
     });
   }
-
   async submit(params: SubmitParams): Promise<void> {
     await this.#client.submit(params);
   }
