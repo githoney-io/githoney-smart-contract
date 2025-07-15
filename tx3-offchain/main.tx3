@@ -70,7 +70,7 @@ type GithoneyDatum {
     bounty_reward_fee: Int,
     deadline: Int,
     merged: Bool,
-    initial_value: List<Tuple<Bytes, List<Tuple<Bytes, Int>>>>,
+    initial_value: Map<Bytes, Map<Bytes, Int>>,
 }
 
 
@@ -137,26 +137,14 @@ tx create(
             bounty_reward_fee: bountyRewardFee,
             deadline: timeLimit,
             merged: false,
-            initial_value: [
-                (
-                    rewardPolicyId,
-                    [
-                        (
-                            rewardAssetName,
-                            rewardAmount
-                        )
-                    ]
-                ),
-                (
-                    "",
-                    [
-                        (
-                            "",
-                            minAda
-                        )
-                    ]
-                )
-            ],
+            initial_value: {
+                rewardPolicyId: {
+                    rewardAssetName: rewardAmount,
+                },
+                "": {
+                    "": minAda,
+                },
+            },
         },
     }
 
@@ -217,27 +205,14 @@ tx add(
             bounty_reward_fee: current.bounty_reward_fee,
             deadline: current.deadline,
             merged: current.merged,
-            // REVIEW - list cannot be concatenated
-            initial_value: [
-                (
-                    rewardPolicyId,
-                    [
-                        (
-                            rewardAssetName,
-                            rewardAmount
-                        )
-                    ]
-                ),
-                (
-                    "",
-                    [
-                        (
-                            "",
-                            minAda
-                        )
-                    ]
-                )
-            ],
+            initial_value: {
+                rewardPolicyId: {
+                    rewardAssetName: rewardAmount,
+                },
+                "": {
+                    "": minAda,
+                },
+            },
         },
     }
 
