@@ -75,26 +75,25 @@ type GithoneyDatum {
 
 
 tx create(
-    settingsRef: UtxoRef,
-    maintainerPaymentCredential: Bytes,
-    maintainerStakeCredential: Bytes,
     adminPaymentCredential: Bytes,
-    //NOTE - Since you cannot iterate over lists, we use a fixed asset.
-    rewardPolicyId: Bytes,
-    rewardAssetName: Bytes,
-    rewardAmount: Int,
-    since: Int,
-    until: Int,
-    timeLimit: Int,
-    bountyId: Bytes,
-    mintingPolicyId: Bytes,
-    collateralRef: UtxoRef,
-    minAda: Int,
     // Since the settingsutxo datum cannot be accessed,
     // they are passed as parameters.
-    bountyRewardFee: Int,
     bountyCreationFee: Int,
-
+    bountyId: Bytes,
+    bountyRewardFee: Int,
+    collateralRef: UtxoRef,
+    maintainerPaymentCredential: Bytes,
+    maintainerStakeCredential: Bytes,
+    minAda: Int,
+    //NOTE - Since you cannot iterate over lists, we use a fixed asset.
+    mintingPolicyId: Bytes,
+    rewardAmount: Int,
+    rewardAssetName: Bytes,
+    rewardPolicyId: Bytes,
+    settingsRef: UtxoRef,
+    since: Int,
+    timeLimit: Int,
+    until: Int,
 ) {
     reference contract {
         ref: settingsRef,
@@ -165,15 +164,15 @@ tx create(
 }
 
 tx add(
-    settingsRef: UtxoRef,
     bountyRef: UtxoRef,
-    rewardPolicyId: Bytes,
-    rewardAssetName: Bytes,
+    collateralRef: UtxoRef,
+    minAda: Int,
     rewardAmount: Int,
+    rewardAssetName: Bytes,
+    rewardPolicyId: Bytes,
+    settingsRef: UtxoRef,
     since: Int,
     until: Int,
-    minAda: Int,
-    collateralRef: UtxoRef,
 ) {
     reference contract {
         ref: settingsRef,
