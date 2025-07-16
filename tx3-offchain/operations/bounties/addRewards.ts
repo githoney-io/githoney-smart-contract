@@ -2,7 +2,7 @@ import { protocol } from "../../gen/typescript/protocol.ts";
 import { OutRef, Utxo } from "@spacebudz/lucid";
 import { GithoneyContractGithoneySpend } from "../../plutus.ts";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
-import { sortUTxOs } from "../../utils/utxo.ts";
+import { collateralOutRef } from "../../utils/utxo.ts";
 
 async function addReward(
   rewardAmount: bigint,
@@ -16,16 +16,7 @@ async function addReward(
     settingsUtxo.scriptRef!,
   );
 
-  const selectedUtxos = await lucidWithWallet.wallet
-    .getUtxos()
-    .then((utxos) => {
-      return utxos.filter(
-        (utxo) =>
-          utxo.assets["lovelace"] >= 5_000_000 &&
-          Object.keys(utxo.assets).length === 1,
-      );
-    })
-    .then((utxos) => sortUTxOs(utxos, "Canonical"));
+  const selectedUtxos = await collateralOutRef(lucidWithWallet);
 
   const collateralref =
     selectedUtxos[0].txHash + "#" + selectedUtxos[0].outputIndex;

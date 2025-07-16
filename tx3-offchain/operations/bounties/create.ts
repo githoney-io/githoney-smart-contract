@@ -2,7 +2,7 @@ import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, fromText, Utxo } from "@spacebudz/lucid";
 import { creationFee, MIN_ADA, rewardFee } from "../../constants.ts";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
-import { sortUTxOs } from "../../utils/utxo.ts";
+import { collateralOutRef } from "../../utils/utxo.ts";
 
 async function createBounty(
   githoneyAddr: string,
@@ -21,16 +21,7 @@ async function createBounty(
   );
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
 
-  const selectedUtxos = await lucidWithWallet.wallet
-    .getUtxos()
-    .then((utxos) => {
-      return utxos.filter(
-        (utxo) =>
-          utxo.assets["lovelace"] >= 5_000_000 &&
-          Object.keys(utxo.assets).length === 1,
-      );
-    })
-    .then((utxos) => sortUTxOs(utxos, "Canonical"));
+  const selectedUtxos = await collateralOutRef(lucidWithWallet);
 
   const collateralref =
     selectedUtxos[0].txHash + "#" + selectedUtxos[0].outputIndex;

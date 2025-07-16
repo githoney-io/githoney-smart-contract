@@ -1,7 +1,7 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, OutRef, Utxo } from "@spacebudz/lucid";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
-import { sortUTxOs } from "../../utils/utxo.ts";
+import { collateralOutRef } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
 import { GithoneyContractGithoneySpend } from "../../plutus.ts";
 
@@ -16,16 +16,7 @@ async function assignContributor(
     settingsUtxo.scriptRef!,
   );
 
-  const selectedUtxos = await lucidWithWallet.wallet
-    .getUtxos()
-    .then((utxos) => {
-      return utxos.filter(
-        (utxo) =>
-          utxo.assets["lovelace"] >= 5_000_000 &&
-          Object.keys(utxo.assets).length === 1,
-      );
-    })
-    .then((utxos) => sortUTxOs(utxos, "Canonical"));
+  const selectedUtxos = await collateralOutRef(lucidWithWallet);
 
   const collateralref =
     selectedUtxos[0].txHash + "#" + selectedUtxos[0].outputIndex;
