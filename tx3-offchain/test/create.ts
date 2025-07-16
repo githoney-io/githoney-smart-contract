@@ -9,7 +9,7 @@ const bountyId = "bountyTX3";
 
 const [settingsUtxo] = await lucidBase.utxosByOutRef([
   {
-    txHash: "9edc3087527514724b297475f84a8ab316faab1950ce1882715cf4bf88b20b64",
+    txHash: "cbb68dabcb9f6ee9fb038d9505be33c7a450f1cffa8d7cf4f9757ca39d787ec1",
     outputIndex: 0,
   },
 ]);
