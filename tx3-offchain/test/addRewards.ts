@@ -2,17 +2,17 @@ import { OutRef } from "@spacebudz/lucid";
 import { addReward } from "../operations/bounties/addRewards";
 import { lucidBase, signAndSubmit } from "../utils/utils";
 
-const rewardAmount = 1_000n;
+const rewardAmount = 500n;
 
 const [settingsUtxo] = await lucidBase.utxosByOutRef([
   {
-    txHash: "d05c0710320cb81acebd199fea94471a6c0b559617b6ca061dace021fbb59b3d",
+    txHash: "cbb68dabcb9f6ee9fb038d9505be33c7a450f1cffa8d7cf4f9757ca39d787ec1",
     outputIndex: 0,
   },
 ]);
 
 const bountyRef: OutRef = {
-  txHash: "0260d9510cf2557a80113e3159a1863d1e8156e5641333a396843218c4c0c533",
+  txHash: "d87fc25a938aeef9ce0f6773bad4fccc34f42a93aed24b72fdb78e20568bf174",
   outputIndex: 0,
 };
 
