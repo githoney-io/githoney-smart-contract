@@ -232,14 +232,14 @@ tx add(
 // ASSIGN CONTRIBUTOR
 
 tx assign(
-    settingsRef: UtxoRef,
     bountyRef: UtxoRef,
+    collateralRef: UtxoRef,
     contributorPaymentCredential: Bytes,
     contributorStakeCredential: Bytes,
+    minAda: Int,
+    settingsRef: UtxoRef,
     since: Int,
     until: Int,
-    minAda: Int,
-    collateralRef: UtxoRef,
 ) {
     reference contract {
         ref: settingsRef,
@@ -251,7 +251,7 @@ tx assign(
 
     input contributor_input {
         from: Contributor,
-        min_amount: Ada(10000000),
+        min_amount: Ada(5000000),
     }
 
     input current {

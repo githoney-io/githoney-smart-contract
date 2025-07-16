@@ -15,13 +15,10 @@ async function assignContributor(
   const scriptAddress = lucidBase.utils.scriptToAddress(
     settingsUtxo.scriptRef!,
   );
-  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
-  console.log("scriptHash:", scriptHash);
 
   const selectedUtxos = await lucidWithWallet.wallet
     .getUtxos()
     .then((utxos) => {
-      console.log("Selected UTXOs:", utxos);
       return utxos.filter(
         (utxo) =>
           utxo.assets["lovelace"] >= 5_000_000 &&
