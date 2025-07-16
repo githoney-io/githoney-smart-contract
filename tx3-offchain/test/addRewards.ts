@@ -1,15 +1,11 @@
 import { OutRef } from "@spacebudz/lucid";
 import { addReward } from "../operations/bounties/addRewards";
 import { lucidBase, signAndSubmit } from "../utils/utils";
+import { settingsRef } from "../constants";
 
 const rewardAmount = 500n;
 
-const [settingsUtxo] = await lucidBase.utxosByOutRef([
-  {
-    txHash: "cbb68dabcb9f6ee9fb038d9505be33c7a450f1cffa8d7cf4f9757ca39d787ec1",
-    outputIndex: 0,
-  },
-]);
+const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 
 const bountyRef: OutRef = {
   txHash: "d87fc25a938aeef9ce0f6773bad4fccc34f42a93aed24b72fdb78e20568bf174",

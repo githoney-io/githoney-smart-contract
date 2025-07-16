@@ -1,4 +1,9 @@
-import { adminAddr, githoneyAddr, maintainerAddr } from "../constants";
+import {
+  adminAddr,
+  githoneyAddr,
+  maintainerAddr,
+  settingsRef,
+} from "../constants";
 import { createBounty } from "../operations/bounties/create";
 import { lucidBase, signAndSubmit } from "../utils/utils";
 
@@ -7,12 +12,7 @@ const rewardName = "tokenD";
 const rewardAmount = 1_000n;
 const bountyId = "bountyTX3";
 
-const [settingsUtxo] = await lucidBase.utxosByOutRef([
-  {
-    txHash: "cbb68dabcb9f6ee9fb038d9505be33c7a450f1cffa8d7cf4f9757ca39d787ec1",
-    outputIndex: 0,
-  },
-]);
+const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 
 const { createCbor } = await createBounty(
   githoneyAddr,
