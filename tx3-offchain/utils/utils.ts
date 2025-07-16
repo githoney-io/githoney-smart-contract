@@ -1,6 +1,19 @@
-import { Lucid, Blockfrost } from "@spacebudz/lucid";
+import {
+  Lucid,
+  Blockfrost,
+  Addresses,
+  Network,
+  Credential,
+  Assets,
+  fromUnit,
+} from "@spacebudz/lucid";
 
 import dotenv from "dotenv";
+import {
+  CardanoAddressAddress,
+  CardanoAddressPaymentCredential,
+  CardanoAddressStakeCredential,
+} from "../plutus";
 
 dotenv.config();
 
@@ -26,3 +39,58 @@ export const signAndSubmit = async (cbor: string): Promise<string> => {
 
   return txHash;
 };
+
+function cardanoCredentialToCredential(
+  credential: CardanoAddressPaymentCredential,
+): Credential {
+  let hash: string;
+  if ("VerificationKey" in credential) {
+    hash = (credential.VerificationKey as [string])[0];
+  } else {
+    hash = (
+      (credential as unknown as { Script: [string] }).Script as [string]
+    )[0];
+  }
+  return Addresses.keyHashToCredential(hash);
+}
+
+function cardanoStakingCredToCredential(
+  credential: CardanoAddressStakeCredential,
+) {
+  if ("Inline" in credential) {
+    return cardanoCredentialToCredential(credential.Inline[0]);
+  } else {
+    throw new Error("Invalid credential");
+  }
+}
+
+/**
+ * Gets the hash of the paymentCredential, whether VerificationKey or Script.
+ * @param paymentCredential Payment credential.
+ * @returns The hash as string.
+ */
+export function keyPairsToAddress(
+  network: Network,
+  cardanoAddress: CardanoAddressAddress,
+): string {
+  return Addresses.credentialToAddress(
+    network,
+    cardanoCredentialToCredential(cardanoAddress.paymentCredential),
+    cardanoAddress.stakeCredential
+      ? cardanoStakingCredToCredential(cardanoAddress.stakeCredential)
+      : undefined,
+  );
+}
+
+export function extractBountyIdTokenUnit(
+  assets: Assets,
+  mintingPolicyid: string,
+): string {
+  let bountyIdTokenUnit = "";
+  Object.keys(assets).forEach((unit) => {
+    if (mintingPolicyid === fromUnit(unit).policyId) {
+      bountyIdTokenUnit = unit;
+    }
+  });
+  return bountyIdTokenUnit;
+}

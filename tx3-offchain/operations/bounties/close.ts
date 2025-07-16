@@ -1,6 +1,10 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, Assets, fromUnit, OutRef, Utxo } from "@spacebudz/lucid";
-import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
+import {
+  keyPairsToAddress,
+  lucidBase,
+  lucidWithWallet,
+} from "../../utils/utils.ts";
 import { sortUTxOs } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
 import { GithoneyContractGithoneySpend } from "../../plutus.ts";
@@ -20,8 +24,7 @@ function extractBountyIdTokenUnit(
 
 async function closeBounty(
   adminAddr: string,
-  contributorAddr: string,
-  maintainerAddr: string,
+  refundings: { [key: string]: Assets },
   settingsUtxo: Utxo,
   utxoRef: OutRef,
 ): Promise<{
@@ -78,9 +81,18 @@ async function closeBounty(
     throw new Error("No reward unit found in bounty UTXO");
   }
 
+  const maintainerAddr = keyPairsToAddress(
+    lucidBase.network,
+    bountyDatum.maintainerAddress,
+  );
+
   let tx;
 
   if (bountyDatum.contributorAddress) {
+    const contributorAddr = keyPairsToAddress(
+      lucidBase.network,
+      bountyDatum.contributorAddress,
+    );
     tx = await protocol.closeAfterContributorTx({
       script: scriptAddress,
       contributor: contributorAddr,

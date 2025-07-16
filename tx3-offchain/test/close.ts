@@ -1,5 +1,5 @@
-import { OutRef } from "@spacebudz/lucid";
-import { adminAddr, maintainerAddr, settingsRef } from "../constants";
+import { Assets, OutRef } from "@spacebudz/lucid";
+import { adminAddr, settingsRef } from "../constants";
 import { closeBounty } from "../operations/bounties/close";
 import { lucidBase, signAndSubmit } from "../utils/utils";
 
@@ -10,13 +10,11 @@ const bountyRef: OutRef = {
   outputIndex: 0,
 };
 
-const contributorAddr =
-  "addr_test1qqzq2j55hh2ml3h08skfgg04lhh7n7epv2ycn90ntr6ys7zrxalmeg3lyamyahkfwdv6fylkyxj0stj8xpplusva7w7s40czuq";
+const refundings: { [key: string]: Assets } = {};
 
 const { closeCbor } = await closeBounty(
   adminAddr,
-  contributorAddr,
-  maintainerAddr,
+  refundings,
   settingsUtxo,
   bountyRef,
 );
