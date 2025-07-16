@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { OutRef } from "@spacebudz/lucid";
 
 dotenv.config();
 
@@ -10,6 +11,10 @@ const rewardFee = BigInt(process.env.REWARD_FEE!);
 const githoneyAddr = process.env.GITHONEY_ADDRESS!;
 const maintainerAddr = process.env.MAINTAINER_ADDRESS!;
 const adminAddr = process.env.ADMIN_ADDRESS!;
+const settingsRef: OutRef = {
+  txHash: process.env.SETTINGS_TX_HASH!,
+  outputIndex: 0,
+};
 
 export {
   MIN_ADA,
@@ -19,4 +24,5 @@ export {
   settingsTokenName,
   maintainerAddr,
   adminAddr,
+  settingsRef,
 };

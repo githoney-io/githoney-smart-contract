@@ -1,16 +1,16 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { OutRef, Utxo } from "@spacebudz/lucid";
-import { GithoneyContractGithoneySpend } from "../../plutus.ts";
+import { Addresses, OutRef, Utxo } from "@spacebudz/lucid";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
+import { MIN_ADA } from "../../constants.ts";
+import { GithoneyContractGithoneySpend } from "../../plutus.ts";
 
-async function addReward(
-  rewardAmount: bigint,
+async function assignContributor(
+  contributorAddr: string,
   settingsUtxo: Utxo,
-  userAddr: string,
   utxoRef: OutRef,
 ): Promise<{
-  addRewardCbor: string;
+  assignCbor: string;
 }> {
   const scriptAddress = lucidBase.utils.scriptToAddress(
     settingsUtxo.scriptRef!,
@@ -34,41 +34,34 @@ async function addReward(
   if (oldDatum.deadline < Date.now()) {
     throw new Error("Bounty deadline passed");
   }
-
-  let rewardName: string = "";
-  let rewardPolicy: string = "";
-
-  for (const [policyId, assets] of oldDatum.initialValue.entries()) {
-    if (policyId !== "") {
-      // Skip lovelace
-      rewardPolicy = policyId;
-      const assetNames = Array.from(assets.keys());
-      if (assetNames.length > 0) {
-        rewardName = assetNames[0];
-        break;
-      }
-    }
+  if (oldDatum.contributorAddress) {
+    throw new Error("Bounty already has a contributor");
   }
+
+  const contributorPaymentCred =
+    Addresses.inspect(contributorAddr).payment?.hash;
+  const contributorStakeCred =
+    Addresses.inspect(contributorAddr).delegation?.hash || null;
 
   const now = new Date().getTime() - 60 * 1000;
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
-  const { tx } = await protocol.addTx({
+  const { tx } = await protocol.assignTx({
     bountyref: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
     collateralref: collateralref,
-    rewardamount: Number(rewardAmount),
-    rewardassetname: Buffer.from(rewardName, "hex"),
-    rewardpolicyid: Buffer.from(rewardPolicy, "hex"),
+    contributor: contributorAddr,
+    contributorpaymentcredential: Buffer.from(contributorPaymentCred!, "hex"),
+    contributorstakecredential: Buffer.from(contributorStakeCred!, "hex"),
+    minada: Number(MIN_ADA),
     script: scriptAddress,
     settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
     since: lucidBase.utils.unixTimeToSlots(now),
     until: lucidBase.utils.unixTimeToSlots(sixHoursFromNow),
-    user: userAddr,
   });
 
   return {
-    addRewardCbor: tx,
+    assignCbor: tx,
   };
 }
 
-export { addReward };
+export { assignContributor };

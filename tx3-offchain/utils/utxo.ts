@@ -1,43 +1,4 @@
-import { Assets, Utxo } from "@spacebudz/lucid";
-
-/**
- * Returns a list of UTxOs whose total assets are equal to or greater than the asset value provided
- * @param utxos list of available utxos
- * @param totalAssets minimum total assets required
- * @param includeUTxOsWithScriptRef Whether to include UTxOs with scriptRef or not. default = false
- */
-export const selectUTxOs = (
-  utxos: Utxo[],
-  totalAssets: Assets,
-  includeUtxosWithScriptRef: boolean = false,
-) => {
-  const selectedUtxos: Utxo[] = [];
-  let isSelected = false;
-  const assetsRequired = new Map<string, bigint>(Object.entries(totalAssets));
-  for (const utxo of utxos) {
-    if (!includeUtxosWithScriptRef && utxo.scriptRef) continue;
-    isSelected = false;
-    for (const [unit, amount] of assetsRequired) {
-      if (unit in utxo.assets) {
-        const utxoAmount = utxo.assets[unit];
-        if (utxoAmount >= amount) {
-          assetsRequired.delete(unit);
-        } else {
-          assetsRequired.set(unit, amount - utxoAmount);
-        }
-        isSelected = true;
-      }
-    }
-    if (isSelected) {
-      selectedUtxos.push(utxo);
-    }
-    if (assetsRequired.size == 0) {
-      break;
-    }
-  }
-  if (assetsRequired.size > 0) return [];
-  return selectedUtxos;
-};
+import { Lucid, Utxo } from "@spacebudz/lucid";
 
 /**
  * Union type for specifying sorting order in function "sortUTxOs"
@@ -107,4 +68,17 @@ const canonical = (a: Utxo, b: Utxo) => {
   } else {
     return a.outputIndex - b.outputIndex;
   }
+};
+
+export const collateralOutRef = async (lucid: Lucid): Promise<Utxo[]> => {
+  return await lucid.wallet
+    .getUtxos()
+    .then((utxos) => {
+      return utxos.filter(
+        (utxo) =>
+          utxo.assets["lovelace"] >= 5_000_000 &&
+          Object.keys(utxo.assets).length === 1,
+      );
+    })
+    .then((utxos) => sortUTxOs(utxos, "Canonical"));
 };
