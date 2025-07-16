@@ -1,13 +1,14 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, Utxo } from "@spacebudz/lucid";
+import { Addresses, OutRef, Utxo } from "@spacebudz/lucid";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
 import { sortUTxOs } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
+import { GithoneyContractGithoneySpend } from "../../plutus.ts";
 
 async function assignContributor(
   contributorAddr: string,
   settingsUtxo: Utxo,
-  bountyUtxo: Utxo,
+  utxoRef: OutRef,
 ): Promise<{
   assignCbor: string;
 }> {
@@ -32,8 +33,21 @@ async function assignContributor(
   const collateralref =
     selectedUtxos[0].txHash + "#" + selectedUtxos[0].outputIndex;
 
-  if (!bountyUtxo.datum) {
-    throw new Error("Bounty UTXO datum is undefined");
+  const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
+
+  const oldDatum = await lucidBase.datumOf(
+    bountyUtxo,
+    GithoneyContractGithoneySpend.datum,
+  );
+
+  if (oldDatum.merged) {
+    throw new Error("Bounty already merged");
+  }
+  if (oldDatum.deadline < Date.now()) {
+    throw new Error("Bounty deadline passed");
+  }
+  if (oldDatum.contributorAddress) {
+    throw new Error("Bounty already has a contributor");
   }
 
   const contributorPaymentCred =
@@ -45,16 +59,16 @@ async function assignContributor(
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
   const { tx } = await protocol.assignTx({
-    script: scriptAddress,
+    bountyref: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
+    collateralref: collateralref,
     contributor: contributorAddr,
     contributorpaymentcredential: Buffer.from(contributorPaymentCred!, "hex"),
     contributorstakecredential: Buffer.from(contributorStakeCred!, "hex"),
+    minada: Number(MIN_ADA),
+    script: scriptAddress,
     settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-    bountyref: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
     since: lucidBase.utils.unixTimeToSlots(now),
     until: lucidBase.utils.unixTimeToSlots(sixHoursFromNow),
-    minada: Number(MIN_ADA),
-    collateralref: collateralref,
   });
 
   return {
