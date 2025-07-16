@@ -52,7 +52,7 @@ async function assignContributor(
   const contributorStakeCred =
     Addresses.inspect(contributorAddr).delegation?.hash || null;
 
-  const now = new Date().getTime() - 60;
+  const now = new Date().getTime() - 60 * 1000;
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
   const { tx } = await protocol.assignTx({
