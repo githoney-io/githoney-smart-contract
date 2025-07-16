@@ -1,15 +1,15 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Data, Utxo } from "@spacebudz/lucid";
+import { OutRef, Utxo } from "@spacebudz/lucid";
 import { GithoneyContractGithoneySpend } from "../../plutus.ts";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
 import { sortUTxOs } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
 
 async function addReward(
-  userAddr: string,
   rewardAmount: bigint,
   settingsUtxo: Utxo,
-  bountyUtxo: Utxo,
+  userAddr: string,
+  utxoRef: OutRef,
 ): Promise<{
   addRewardCbor: string;
 }> {
@@ -31,14 +31,19 @@ async function addReward(
   const collateralref =
     selectedUtxos[0].txHash + "#" + selectedUtxos[0].outputIndex;
 
-  if (!bountyUtxo.datum) {
-    throw new Error("Bounty UTXO datum is undefined");
-  }
+  const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
 
-  const oldDatum = Data.from(
-    bountyUtxo.datum,
+  const oldDatum = await lucidBase.datumOf(
+    bountyUtxo,
     GithoneyContractGithoneySpend.datum,
   );
+
+  if (oldDatum.merged) {
+    throw new Error("Bounty already merged");
+  }
+  if (oldDatum.deadline < Date.now()) {
+    throw new Error("Bounty deadline passed");
+  }
 
   let rewardName: string = "";
   let rewardPolicy: string = "";
