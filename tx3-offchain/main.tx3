@@ -207,14 +207,7 @@ tx add(
             bounty_reward_fee: current.bounty_reward_fee,
             deadline: current.deadline,
             merged: current.merged,
-            initial_value: {
-                rewardPolicyId: {
-                    rewardAssetName: rewardAmount,
-                },
-                "": {
-                    "": minAda,
-                },
-            },
+            initial_value: current.initial_value,
         },
     }
 

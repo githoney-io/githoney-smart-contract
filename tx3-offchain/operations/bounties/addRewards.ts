@@ -3,7 +3,6 @@ import { OutRef, Utxo } from "@spacebudz/lucid";
 import { GithoneyContractGithoneySpend } from "../../plutus.ts";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
 import { sortUTxOs } from "../../utils/utxo.ts";
-import { MIN_ADA } from "../../constants.ts";
 
 async function addReward(
   rewardAmount: bigint,
@@ -66,7 +65,6 @@ async function addReward(
   const { tx } = await protocol.addTx({
     bountyref: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
     collateralref: collateralref,
-    minada: Number(MIN_ADA),
     rewardamount: Number(rewardAmount),
     rewardassetname: Buffer.from(rewardName, "hex"),
     rewardpolicyid: Buffer.from(rewardPolicy, "hex"),
