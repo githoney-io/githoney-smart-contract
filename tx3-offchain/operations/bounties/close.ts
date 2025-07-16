@@ -1,5 +1,5 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, Assets, Data, fromUnit, Utxo } from "@spacebudz/lucid";
+import { Addresses, Assets, fromUnit, OutRef, Utxo } from "@spacebudz/lucid";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
 import { sortUTxOs } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
@@ -20,10 +20,10 @@ function extractBountyIdTokenUnit(
 
 async function closeBounty(
   adminAddr: string,
-  maintainerAddr: string,
   contributorAddr: string,
+  maintainerAddr: string,
   settingsUtxo: Utxo,
-  bountyUtxo: Utxo,
+  utxoRef: OutRef,
 ): Promise<{
   closeCbor: string;
 }> {
@@ -31,12 +31,10 @@ async function closeBounty(
     settingsUtxo.scriptRef!,
   );
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
-  console.log("scriptHash:", scriptHash);
 
   const selectedUtxos = await lucidWithWallet.wallet
     .getUtxos()
     .then((utxos) => {
-      console.log("Selected UTXOs:", utxos);
       return utxos.filter(
         (utxo) =>
           utxo.assets["lovelace"] >= 5_000_000 &&
@@ -48,17 +46,19 @@ async function closeBounty(
   const collateralref =
     selectedUtxos[0].txHash + "#" + selectedUtxos[0].outputIndex;
 
-  if (!bountyUtxo.datum) {
-    throw new Error("Bounty UTXO datum is undefined");
+  const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
+
+  const bountyDatum = await lucidBase.datumOf(
+    bountyUtxo,
+    GithoneyContractGithoneySpend.datum,
+  );
+
+  if (bountyDatum.merged) {
+    throw new Error("Bounty already merged");
   }
 
   const now = new Date().getTime() - 60;
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
-
-  const datum = Data.from(
-    bountyUtxo.datum,
-    GithoneyContractGithoneySpend.datum,
-  );
 
   const bountyIdTokenUnit = extractBountyIdTokenUnit(
     bountyUtxo.assets,
@@ -80,7 +80,7 @@ async function closeBounty(
 
   let tx;
 
-  if (datum.contributorAddress) {
+  if (bountyDatum.contributorAddress) {
     tx = await protocol.closeAfterContributorTx({
       script: scriptAddress,
       contributor: contributorAddr,
