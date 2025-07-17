@@ -94,3 +94,25 @@ export function extractBountyIdTokenUnit(
   });
   return bountyIdTokenUnit;
 }
+
+export function getRewardAsset(
+  assets: Assets,
+  scriptHash: string,
+): { rewardPolicy: string; rewardName: string; rewardAmount: bigint } {
+  const unit = Object.keys(assets).find((unit) => {
+    return (
+      fromUnit(unit).policyId !== scriptHash &&
+      fromUnit(unit).policyId !== "lovelace"
+    );
+  });
+
+  if (!unit) {
+    throw new Error("No reward asset found");
+  }
+
+  return {
+    rewardPolicy: fromUnit(unit).policyId,
+    rewardName: fromUnit(unit).name || "",
+    rewardAmount: assets[unit],
+  };
+}

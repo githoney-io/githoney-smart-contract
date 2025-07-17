@@ -1,7 +1,11 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { OutRef, Utxo } from "@spacebudz/lucid";
+import { Addresses, OutRef, Utxo } from "@spacebudz/lucid";
 import { GithoneyContractGithoneySpend } from "../../plutus.ts";
-import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
+import {
+  getRewardAsset,
+  lucidBase,
+  lucidWithWallet,
+} from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
 
 async function addReward(
@@ -15,6 +19,8 @@ async function addReward(
   const scriptAddress = lucidBase.utils.scriptToAddress(
     settingsUtxo.scriptRef!,
   );
+
+  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
 
   const selectedUtxos = await collateralOutRef(lucidWithWallet);
 
@@ -35,20 +41,10 @@ async function addReward(
     throw new Error("Bounty deadline passed");
   }
 
-  let rewardName: string = "";
-  let rewardPolicy: string = "";
-
-  for (const [policyId, assets] of oldDatum.initialValue.entries()) {
-    if (policyId !== "") {
-      // Skip lovelace
-      rewardPolicy = policyId;
-      const assetNames = Array.from(assets.keys());
-      if (assetNames.length > 0) {
-        rewardName = assetNames[0];
-        break;
-      }
-    }
-  }
+  const { rewardPolicy, rewardName } = getRewardAsset(
+    bountyUtxo.assets,
+    scriptHash,
+  );
 
   const now = new Date().getTime() - 60 * 1000;
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
