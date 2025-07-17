@@ -30,9 +30,9 @@ export const lucidWithWallet = lucidBase.selectWalletFromSeed(
 
 export const cExplorerTxURL = "https://preprod.cexplorer.io/tx/";
 
-export const signAndSubmit = async (cbor: string): Promise<string> => {
+export const signAndSubmit = async (cbor: any): Promise<string> => {
   lucidBase.selectWalletFromSeed(process.env.SEED as string);
-  const tx = await lucidWithWallet.fromTx(cbor);
+  const tx = await lucidWithWallet.fromTx(cbor.tx);
   const signedTx = await tx.sign().commit();
   const txHash = await signedTx.submit();
   console.log("Submitted transaction. View it at: " + cExplorerTxURL + txHash);
