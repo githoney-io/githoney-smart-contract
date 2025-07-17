@@ -10,14 +10,19 @@ const bountyRef: OutRef = {
   outputIndex: 0,
 };
 
-const refundings: { [key: string]: Assets } = {};
+const rewardUnit =
+  "fb279c09175731ade05f7314a9b36cf923c7a3d6873be26bbd1eeccf.746f6b656e44";
 
-const { closeCbor } = await closeBounty(
-  adminAddr,
-  refundings,
-  settingsUtxo,
-  bountyRef,
-);
+const sponsorAddr =
+  "addr_test1qqzq2j55hh2ml3h08skfgg04lhh7n7epv2ycn90ntr6ys7zrxalmeg3lyamyahkfwdv6fylkyxj0stj8xpplusva7w7s40czuq";
+
+const refundings: { [key: string]: Assets } = {
+  [sponsorAddr]: {
+    [rewardUnit]: 50n,
+  },
+};
+
+const { closeCbor } = await closeBounty(adminAddr, {}, settingsUtxo, bountyRef);
 console.log("Close bounty transaction CBOR:", closeCbor);
 
 await signAndSubmit(closeCbor);

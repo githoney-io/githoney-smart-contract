@@ -6,7 +6,8 @@
     "deploy": "npx tsx --experimental-wasm-modules test/deploy.ts",
     "tx3-create": "npx tsx --experimental-wasm-modules test/create.ts",
     "tx3-add-reward": "npx tsx --experimental-wasm-modules test/addRewards.ts",
-    "tx3-assign": "npx tsx --experimental-wasm-modules test/assignContributor.ts"
+    "tx3-assign": "npx tsx --experimental-wasm-modules test/assignContributor.ts",
+    "tx3-close": "npx tsx --experimental-wasm-modules test/close.ts"
   },
   "devDependencies": {
     "bun-types": "latest",

@@ -1,6 +1,8 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, Assets, fromUnit, OutRef, Utxo } from "@spacebudz/lucid";
 import {
+  extractBountyIdTokenUnit,
+  getRewardAsset,
   keyPairsToAddress,
   lucidBase,
   lucidWithWallet,
@@ -8,19 +10,6 @@ import {
 import { sortUTxOs } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
 import { GithoneyContractGithoneySpend } from "../../plutus.ts";
-
-function extractBountyIdTokenUnit(
-  assets: Assets,
-  mintingPolicyid: string,
-): string {
-  let bountyIdTokenUnit = "";
-  Object.keys(assets).forEach((unit) => {
-    if (mintingPolicyid === fromUnit(unit).policyId) {
-      bountyIdTokenUnit = unit;
-    }
-  });
-  return bountyIdTokenUnit;
-}
 
 async function closeBounty(
   adminAddr: string,
@@ -59,6 +48,16 @@ async function closeBounty(
   if (bountyDatum.merged) {
     throw new Error("Bounty already merged");
   }
+  // TODO - check if refundings are valid and implement the logic of payment
+
+  // const sponsorAddr = Object.keys(refundings)[0];
+
+  // const refundingAssets = Object.values(refundings)[0];
+  // console.log("refundings assets", refundingAssets);
+
+  // const [refundingPolicy, refundingName] =
+  //   Object.keys(refundingAssets)[0].split(".");
+  // const refundingAmount = Object.values(refundingAssets)[0];
 
   const now = new Date().getTime() - 60;
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
@@ -68,18 +67,10 @@ async function closeBounty(
     scriptHash,
   );
 
-  const rewardUnit = Object.keys(bountyUtxo.assets).find((unit) => {
-    if (
-      fromUnit(unit).policyId !== scriptHash &&
-      fromUnit(unit).policyId !== "lovelace"
-    ) {
-      return unit;
-    }
-  });
-
-  if (!rewardUnit) {
-    throw new Error("No reward unit found in bounty UTXO");
-  }
+  const { rewardPolicy, rewardName, rewardAmount } = getRewardAsset(
+    bountyUtxo.assets,
+    scriptHash,
+  );
 
   const maintainerAddr = keyPairsToAddress(
     lucidBase.network,
@@ -106,9 +97,9 @@ async function closeBounty(
       collateralref: collateralref,
       bountyid: Buffer.from(fromUnit(bountyIdTokenUnit).name!),
       mintingpolicyid: Buffer.from(fromUnit(bountyIdTokenUnit).policyId),
-      rewardpolicyid: Buffer.from(fromUnit(rewardUnit).policyId),
-      rewardassetname: Buffer.from(fromUnit(rewardUnit).name!),
-      rewardamount: Number(bountyUtxo.assets[rewardUnit]),
+      rewardpolicyid: Buffer.from(rewardPolicy),
+      rewardassetname: Buffer.from(rewardName),
+      rewardamount: Number(rewardAmount),
     });
   } else {
     tx = await protocol.closeBeforeContributorTx({
@@ -123,9 +114,9 @@ async function closeBounty(
       collateralref: collateralref,
       bountyid: Buffer.from(fromUnit(bountyIdTokenUnit).name!),
       mintingpolicyid: Buffer.from(fromUnit(bountyIdTokenUnit).policyId),
-      rewardpolicyid: Buffer.from(fromUnit(rewardUnit).policyId),
-      rewardassetname: Buffer.from(fromUnit(rewardUnit).name!),
-      rewardamount: Number(bountyUtxo.assets[rewardUnit]),
+      rewardpolicyid: Buffer.from(rewardPolicy),
+      rewardassetname: Buffer.from(rewardName),
+      rewardamount: Number(rewardAmount),
     });
   }
   return {
