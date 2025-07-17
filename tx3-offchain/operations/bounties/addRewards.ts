@@ -50,16 +50,25 @@ async function addReward(
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
   const { tx } = await protocol.addTx({
-    bountyref: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
-    collateralref: collateralref,
-    rewardamount: Number(rewardAmount),
-    rewardassetname: Buffer.from(rewardName, "hex"),
-    rewardpolicyid: Buffer.from(rewardPolicy, "hex"),
-    script: scriptAddress,
-    settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-    since: lucidBase.utils.unixTimeToSlots(now),
-    until: lucidBase.utils.unixTimeToSlots(sixHoursFromNow),
-    user: userAddr,
+    bountyref: {
+      value: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
+      type: "String",
+    },
+    collateralref: { value: collateralref, type: "String" },
+    rewardamount: { value: BigInt(rewardAmount), type: "Int" },
+    rewardassetname: { value: Buffer.from(rewardName, "hex"), type: "Bytes" },
+    rewardpolicyid: { value: Buffer.from(rewardPolicy, "hex"), type: "Bytes" },
+    script: { value: scriptAddress, type: "String" },
+    settingsref: {
+      value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
+      type: "String",
+    },
+    since: { value: BigInt(lucidBase.utils.unixTimeToSlots(now)), type: "Int" },
+    until: {
+      value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
+      type: "Int",
+    },
+    user: { value: userAddr, type: "String" },
   });
 
   return {

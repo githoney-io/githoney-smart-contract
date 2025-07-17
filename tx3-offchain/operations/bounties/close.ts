@@ -85,38 +85,80 @@ async function closeBounty(
       bountyDatum.contributorAddress,
     );
     tx = await protocol.closeAfterContributorTx({
-      script: scriptAddress,
-      contributor: contributorAddr,
-      admin: adminAddr,
-      maintainer: maintainerAddr,
-      settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-      bountyref: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
-      since: lucidBase.utils.unixTimeToSlots(now),
-      until: lucidBase.utils.unixTimeToSlots(sixHoursFromNow),
-      minada: Number(MIN_ADA),
-      collateralref: collateralref,
-      bountyid: Buffer.from(fromUnit(bountyIdTokenUnit).name!),
-      mintingpolicyid: Buffer.from(fromUnit(bountyIdTokenUnit).policyId),
-      rewardpolicyid: Buffer.from(rewardPolicy),
-      rewardassetname: Buffer.from(rewardName),
-      rewardamount: Number(rewardAmount),
+      script: { value: scriptAddress, type: "String" },
+      contributor: { value: contributorAddr, type: "String" },
+      admin: { value: adminAddr, type: "String" },
+      maintainer: { value: maintainerAddr, type: "String" },
+      settingsref: {
+        value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
+        type: "String",
+      },
+      bountyref: {
+        value: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
+        type: "String",
+      },
+      since: {
+        value: BigInt(lucidBase.utils.unixTimeToSlots(now)),
+        type: "Int",
+      },
+      until: {
+        value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
+        type: "Int",
+      },
+      minada: { value: BigInt(MIN_ADA), type: "Int" },
+      collateralref: { value: collateralref, type: "String" },
+      bountyid: {
+        value: Buffer.from(fromUnit(bountyIdTokenUnit).name!, "hex"),
+        type: "Bytes",
+      },
+      mintingpolicyid: {
+        value: Buffer.from(fromUnit(bountyIdTokenUnit).policyId, "hex"),
+        type: "Bytes",
+      },
+      rewardpolicyid: {
+        value: Buffer.from(rewardPolicy, "hex"),
+        type: "Bytes",
+      },
+      rewardassetname: { value: Buffer.from(rewardName, "hex"), type: "Bytes" },
+      rewardamount: { value: BigInt(rewardAmount), type: "Int" },
     });
   } else {
     tx = await protocol.closeBeforeContributorTx({
-      script: scriptAddress,
-      admin: adminAddr,
-      maintainer: maintainerAddr,
-      settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-      bountyref: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
-      since: lucidBase.utils.unixTimeToSlots(now),
-      until: lucidBase.utils.unixTimeToSlots(sixHoursFromNow),
-      minada: Number(MIN_ADA),
-      collateralref: collateralref,
-      bountyid: Buffer.from(fromUnit(bountyIdTokenUnit).name!),
-      mintingpolicyid: Buffer.from(fromUnit(bountyIdTokenUnit).policyId),
-      rewardpolicyid: Buffer.from(rewardPolicy),
-      rewardassetname: Buffer.from(rewardName),
-      rewardamount: Number(rewardAmount),
+      script: { value: scriptAddress, type: "String" },
+      admin: { value: adminAddr, type: "String" },
+      maintainer: { value: maintainerAddr, type: "String" },
+      settingsref: {
+        value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
+        type: "String",
+      },
+      bountyref: {
+        value: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
+        type: "String",
+      },
+      since: {
+        value: BigInt(lucidBase.utils.unixTimeToSlots(now)),
+        type: "Int",
+      },
+      until: {
+        value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
+        type: "Int",
+      },
+      minada: { value: BigInt(MIN_ADA), type: "Int" },
+      collateralref: { value: collateralref, type: "String" },
+      bountyid: {
+        value: Buffer.from(fromUnit(bountyIdTokenUnit).name!, "hex"),
+        type: "Bytes",
+      },
+      mintingpolicyid: {
+        value: Buffer.from(fromUnit(bountyIdTokenUnit).policyId, "hex"),
+        type: "Bytes",
+      },
+      rewardpolicyid: {
+        value: Buffer.from(rewardPolicy, "hex"),
+        type: "Bytes",
+      },
+      rewardassetname: { value: Buffer.from(rewardName, "hex"), type: "Bytes" },
+      rewardamount: { value: BigInt(rewardAmount), type: "Int" },
     });
   }
   return {
