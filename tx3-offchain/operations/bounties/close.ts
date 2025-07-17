@@ -59,7 +59,7 @@ async function closeBounty(
   //   Object.keys(refundingAssets)[0].split(".");
   // const refundingAmount = Object.values(refundingAssets)[0];
 
-  const now = new Date().getTime() - 60;
+  const now = new Date().getTime() - 60 * 1000;
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
   const bountyIdTokenUnit = extractBountyIdTokenUnit(

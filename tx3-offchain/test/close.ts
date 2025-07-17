@@ -5,7 +5,12 @@ import { lucidBase, signAndSubmit } from "../utils/utils";
 
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 
-const bountyRef: OutRef = {
+const bountyRefBefore: OutRef = {
+  txHash: "",
+  outputIndex: 0,
+};
+
+const bountyRefAfter: OutRef = {
   txHash: "bb50f470becc7f2a90c421e2369260e8fefc6530cf8d1f25c91292970633f02c",
   outputIndex: 0,
 };
@@ -22,7 +27,23 @@ const refundings: { [key: string]: Assets } = {
   },
 };
 
-const { closeCbor } = await closeBounty(adminAddr, {}, settingsUtxo, bountyRef);
-console.log("Close bounty transaction CBOR:", closeCbor);
+console.log("Closing before contributor has been assigned...");
+const closeBefore = await closeBounty(
+  adminAddr,
+  {},
+  settingsUtxo,
+  bountyRefBefore,
+);
+console.log("Close bounty transaction CBOR:", closeBefore.closeCbor);
+await signAndSubmit(closeBefore.closeCbor);
 
-await signAndSubmit(closeCbor);
+console.log("Closing after contributor has been assigned...");
+const closeAfter = await closeBounty(
+  adminAddr,
+  {},
+  settingsUtxo,
+  bountyRefAfter,
+);
+console.log("Close bounty transaction CBOR:", closeAfter.closeCbor);
+
+await signAndSubmit(closeAfter.closeCbor);
