@@ -84,7 +84,7 @@ async function closeBounty(
       lucidBase.network,
       bountyDatum.contributorAddress,
     );
-    tx = await protocol.closeAfterContributorTx({
+    ({ tx } = await protocol.closeAfterContributorTx({
       script: { value: scriptAddress, type: "String" },
       contributor: { value: contributorAddr, type: "String" },
       admin: { value: adminAddr, type: "String" },
@@ -121,9 +121,9 @@ async function closeBounty(
       },
       rewardassetname: { value: Buffer.from(rewardName, "hex"), type: "Bytes" },
       rewardamount: { value: BigInt(rewardAmount), type: "Int" },
-    });
+    }));
   } else {
-    tx = await protocol.closeBeforeContributorTx({
+    ({ tx } = await protocol.closeBeforeContributorTx({
       script: { value: scriptAddress, type: "String" },
       admin: { value: adminAddr, type: "String" },
       maintainer: { value: maintainerAddr, type: "String" },
@@ -159,7 +159,7 @@ async function closeBounty(
       },
       rewardassetname: { value: Buffer.from(rewardName, "hex"), type: "Bytes" },
       rewardamount: { value: BigInt(rewardAmount), type: "Int" },
-    });
+    }));
   }
   return {
     closeCbor: tx,
