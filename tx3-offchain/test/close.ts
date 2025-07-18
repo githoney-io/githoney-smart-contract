@@ -11,7 +11,7 @@ const bountyRefBefore: OutRef = {
 };
 
 const bountyRefAfter: OutRef = {
-  txHash: "bb50f470becc7f2a90c421e2369260e8fefc6530cf8d1f25c91292970633f02c",
+  txHash: "9986183b14b57dea35a6f7cec0b052a9966b32dfe22935da3ad2966288642639",
   outputIndex: 0,
 };
 
@@ -23,7 +23,7 @@ const sponsorAddr =
 
 const refundings: { [key: string]: Assets } = {
   [sponsorAddr]: {
-    [rewardUnit]: 50n,
+    [rewardUnit]: 500n,
   },
 };
 
@@ -34,7 +34,10 @@ const closeBefore = await closeBounty(
   settingsUtxo,
   bountyRefBefore,
 );
-console.log("Close bounty transaction CBOR:", closeBefore.closeCbor);
+console.log(
+  "Close bounty before contributor transaction CBOR:",
+  closeBefore.closeCbor,
+);
 await signAndSubmit(closeBefore.closeCbor);
 
 console.log("Closing after contributor has been assigned...");
@@ -44,6 +47,9 @@ const closeAfter = await closeBounty(
   settingsUtxo,
   bountyRefAfter,
 );
-console.log("Close bounty transaction CBOR:", closeAfter.closeCbor);
+console.log(
+  "Close bounty after contributor transaction CBOR:",
+  closeAfter.closeCbor,
+);
 
 await signAndSubmit(closeAfter.closeCbor);

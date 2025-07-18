@@ -6,7 +6,7 @@ import { settingsRef } from "../constants";
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 
 const bountyRef: OutRef = {
-  txHash: "f31d63382bdfb0d4d19849e51b43d1390c412e1c34afec1aa65de68188d322ce",
+  txHash: "5836ea948180d3591a892f232926e16552e51c09c8e645953266a10c0a6cb355",
   outputIndex: 0,
 };
 
