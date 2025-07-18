@@ -1,5 +1,12 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, Assets, fromUnit, OutRef, Utxo } from "@spacebudz/lucid";
+import {
+  Addresses,
+  Assets,
+  fromUnit,
+  OutRef,
+  toUnit,
+  Utxo,
+} from "@spacebudz/lucid";
 import {
   extractBountyIdTokenUnit,
   getRewardAsset,
@@ -9,7 +16,28 @@ import {
 } from "../../utils/utils.ts";
 import { sortUTxOs } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
-import { GithoneyContractGithoneySpend } from "../../plutus.ts";
+import {
+  GithoneyContractGithoneySpend,
+  PairsCardanoAssetsPolicyIdPairsCardanoAssetsAssetNameInt,
+} from "../../plutus.ts";
+
+type InitialValue = PairsCardanoAssetsPolicyIdPairsCardanoAssetsAssetNameInt;
+
+const initialValueToAssets = (initialValue: InitialValue): Assets => {
+  let initialAssets: Assets = {};
+  for (const [policy, tokens] of initialValue.entries()) {
+    for (const [assetName, amount] of tokens.entries()) {
+      let unit;
+      if (policy === "") {
+        unit = "lovelace";
+      } else {
+        unit = toUnit(policy, assetName);
+      }
+      initialAssets[unit] = amount;
+    }
+  }
+  return initialAssets;
+};
 
 async function closeBounty(
   adminAddr: string,
@@ -67,10 +95,12 @@ async function closeBounty(
     scriptHash,
   );
 
-  const { rewardPolicy, rewardName, rewardAmount } = getRewardAsset(
+  const { rewardPolicy, rewardName } = getRewardAsset(
     bountyUtxo.assets,
     scriptHash,
   );
+  const initialAssets = initialValueToAssets(bountyDatum.initialValue);
+  const rewardAmount = initialAssets[toUnit(rewardPolicy, rewardName)];
 
   const maintainerAddr = keyPairsToAddress(
     lucidBase.network,
