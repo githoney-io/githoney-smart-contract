@@ -47,16 +47,31 @@ async function assignContributor(
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
   const { tx } = await protocol.assignTx({
-    bountyref: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
-    collateralref: collateralref,
-    contributor: contributorAddr,
-    contributorpaymentcredential: Buffer.from(contributorPaymentCred!, "hex"),
-    contributorstakecredential: Buffer.from(contributorStakeCred!, "hex"),
-    minada: Number(MIN_ADA),
-    script: scriptAddress,
-    settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-    since: lucidBase.utils.unixTimeToSlots(now),
-    until: lucidBase.utils.unixTimeToSlots(sixHoursFromNow),
+    bountyref: {
+      value: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
+      type: "String",
+    },
+    collateralref: { value: collateralref, type: "String" },
+    contributor: { value: contributorAddr, type: "String" },
+    contributorpaymentcredential: {
+      value: Buffer.from(contributorPaymentCred!, "hex"),
+      type: "Bytes",
+    },
+    contributorstakecredential: {
+      value: Buffer.from(contributorStakeCred!, "hex"),
+      type: "Bytes",
+    },
+    minada: { value: BigInt(MIN_ADA), type: "Int" },
+    script: { value: scriptAddress, type: "String" },
+    settingsref: {
+      value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
+      type: "String",
+    },
+    since: { value: BigInt(lucidBase.utils.unixTimeToSlots(now)), type: "Int" },
+    until: {
+      value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
+      type: "Int",
+    },
   });
 
   return {

@@ -1,7 +1,11 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { OutRef, Utxo } from "@spacebudz/lucid";
+import { Addresses, OutRef, Utxo } from "@spacebudz/lucid";
 import { GithoneyContractGithoneySpend } from "../../plutus.ts";
-import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
+import {
+  getRewardAsset,
+  lucidBase,
+  lucidWithWallet,
+} from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
 
 async function addReward(
@@ -15,6 +19,8 @@ async function addReward(
   const scriptAddress = lucidBase.utils.scriptToAddress(
     settingsUtxo.scriptRef!,
   );
+
+  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
 
   const selectedUtxos = await collateralOutRef(lucidWithWallet);
 
@@ -35,35 +41,34 @@ async function addReward(
     throw new Error("Bounty deadline passed");
   }
 
-  let rewardName: string = "";
-  let rewardPolicy: string = "";
-
-  for (const [policyId, assets] of oldDatum.initialValue.entries()) {
-    if (policyId !== "") {
-      // Skip lovelace
-      rewardPolicy = policyId;
-      const assetNames = Array.from(assets.keys());
-      if (assetNames.length > 0) {
-        rewardName = assetNames[0];
-        break;
-      }
-    }
-  }
+  const { rewardPolicy, rewardName } = getRewardAsset(
+    bountyUtxo.assets,
+    scriptHash,
+  );
 
   const now = new Date().getTime() - 60 * 1000;
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
   const { tx } = await protocol.addTx({
-    bountyref: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
-    collateralref: collateralref,
-    rewardamount: Number(rewardAmount),
-    rewardassetname: Buffer.from(rewardName, "hex"),
-    rewardpolicyid: Buffer.from(rewardPolicy, "hex"),
-    script: scriptAddress,
-    settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-    since: lucidBase.utils.unixTimeToSlots(now),
-    until: lucidBase.utils.unixTimeToSlots(sixHoursFromNow),
-    user: userAddr,
+    bountyref: {
+      value: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
+      type: "String",
+    },
+    collateralref: { value: collateralref, type: "String" },
+    rewardamount: { value: BigInt(rewardAmount), type: "Int" },
+    rewardassetname: { value: Buffer.from(rewardName, "hex"), type: "Bytes" },
+    rewardpolicyid: { value: Buffer.from(rewardPolicy, "hex"), type: "Bytes" },
+    script: { value: scriptAddress, type: "String" },
+    settingsref: {
+      value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
+      type: "String",
+    },
+    since: { value: BigInt(lucidBase.utils.unixTimeToSlots(now)), type: "Int" },
+    until: {
+      value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
+      type: "Int",
+    },
+    user: { value: userAddr, type: "String" },
   });
 
   return {
