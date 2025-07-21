@@ -14,7 +14,7 @@ import {
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
-import { sortUTxOs } from "../../utils/utxo.ts";
+import { collateralOutRef } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
 import {
   GithoneyContractGithoneySpend,
@@ -52,16 +52,7 @@ async function closeBounty(
   );
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
 
-  const selectedUtxos = await lucidWithWallet.wallet
-    .getUtxos()
-    .then((utxos) => {
-      return utxos.filter(
-        (utxo) =>
-          utxo.assets["lovelace"] >= 5_000_000 &&
-          Object.keys(utxo.assets).length === 1,
-      );
-    })
-    .then((utxos) => sortUTxOs(utxos, "Canonical"));
+  const selectedUtxos = await collateralOutRef(lucidWithWallet);
 
   const collateralref =
     selectedUtxos[0].txHash + "#" + selectedUtxos[0].outputIndex;
