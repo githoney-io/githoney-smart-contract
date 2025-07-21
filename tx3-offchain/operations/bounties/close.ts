@@ -78,15 +78,6 @@ async function closeBounty(
   }
   // TODO - check if refundings are valid and implement the logic of payment
 
-  // const sponsorAddr = Object.keys(refundings)[0];
-
-  // const refundingAssets = Object.values(refundings)[0];
-  // console.log("refundings assets", refundingAssets);
-
-  // const [refundingPolicy, refundingName] =
-  //   Object.keys(refundingAssets)[0].split(".");
-  // const refundingAmount = Object.values(refundingAssets)[0];
-
   const now = new Date().getTime() - 60 * 1000;
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
