@@ -56,12 +56,10 @@ async function mergeBounty(
     bountyDatum.maintainerAddress,
   );
 
-  const now = new Date().getTime() - 60;
+  const now = new Date().getTime() - 60 * 1000;
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
-  // REVIEW - check the amount calculation
   const githoneyFee = (bountyUtxo.assets[rewardUnit] * rewardFee) / 10_000n;
-  console.log("Githoney Fee:", githoneyFee);
 
   const { tx } = await protocol.mergeTx({
     admin: { value: adminAddr, type: "String" },
@@ -75,7 +73,7 @@ async function mergeBounty(
     maintainer: { value: maintainerAddr, type: "String" },
     minada: { value: BigInt(MIN_ADA), type: "Int" },
     rewardpolicyid: { value: Buffer.from(rewardPolicy, "hex"), type: "Bytes" },
-    rewardassetname: { value: Buffer.from(rewardName), type: "Bytes" },
+    rewardassetname: { value: Buffer.from(rewardName, "hex"), type: "Bytes" },
     script: { value: scriptAddress, type: "String" },
     settingsref: {
       value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
