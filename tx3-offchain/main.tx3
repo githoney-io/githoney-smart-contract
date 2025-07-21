@@ -1,9 +1,9 @@
-party User;
 party Contributor;
 party Admin;
 party GitHoneyAddr;
 party Maintainer;
 party Script;
+party Sponsor;
 
 type CardanoAddress {
     payment_credential: CardanoCredential,
@@ -365,8 +365,8 @@ tx add(
         ref: collateralRef,
     }
 
-    input user_input {
-        from: User,
+    input sponsor_input {
+        from: Sponsor,
         min_amount: Ada(5000000) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
     }
 
@@ -391,9 +391,9 @@ tx add(
         },
     }
 
-    output user_output {
-        to: User,
-        amount: user_input - fees - AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+    output sponsor_output {
+        to: Sponsor,
+        amount: sponsor_input - fees - AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
     }
 
     validity {
@@ -475,19 +475,18 @@ tx assign(
 // CLOSE BOUNTY
 
 tx closeBeforeContributor(
-    settingsRef: UtxoRef,
-    bountyRef: UtxoRef,
-    rewardPolicyId: Bytes,
-    rewardAssetName: Bytes,
-    rewardAmount: Int,
-    since: Int,
-    until: Int,
-    timeLimit: Int,
     bountyId: Bytes,
-    mintingPolicyId: Bytes,
+    bountyRef: UtxoRef,
     collateralRef: UtxoRef,
     minAda: Int,
-
+    mintingPolicyId: Bytes,
+    rewardAmount: Int,
+    rewardAssetName: Bytes,
+    rewardPolicyId: Bytes,
+    settingsRef: UtxoRef,
+    since: Int,
+    timeLimit: Int,
+    until: Int,
 ) {
     reference contract {
         ref: settingsRef,
@@ -587,6 +586,78 @@ tx closeAfterContributor(
     output admin_output {
         to: Admin,
         amount: admin_input - fees,
+    }
+
+    validity {
+        until_slot: until,
+        since_slot: since,
+    }
+
+    signers {
+        Admin,
+    }
+}
+
+tx closeAfterContributorWithReward(
+    bountyId: Bytes,
+    bountyRef: UtxoRef,
+    collateralRef: UtxoRef,
+    minAda: Int,
+    mintingPolicyId: Bytes,
+    rewardAmount: Int,
+    rewardAssetName: Bytes,
+    rewardPolicyId: Bytes,
+    settingsRef: UtxoRef,
+    since: Int,
+    refundingsAmount: Int,
+    refundingsAssetName: Bytes,
+    refundingsPolicyId: Bytes,
+    timeLimit: Int,
+    until: Int,
+) {
+    reference contract {
+        ref: settingsRef,
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    input admin_input {
+        from: Admin,
+        min_amount: Ada(10000000),
+    }
+
+    input current {
+        from: Script,
+        ref: bountyRef,
+        datum_is: GithoneyDatum,
+        redeemer: GithoneyContractRedeemers::Close {},
+    }
+
+    mint {
+        amount: AnyAsset(mintingPolicyId, bountyId, -1),
+        redeemer: (),
+    }
+
+    output maintainer_output {
+        to: Maintainer,
+        amount: Ada(minAda) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+    }
+
+    output contributor_output {
+        to: Contributor,
+        amount: Ada(minAda),
+    }
+
+    output admin_output {
+        to: Admin,
+        amount: admin_input - fees - Ada(1500000),
+    }
+
+    output sponsor_output {
+        to: Sponsor,
+        amount: AnyAsset(refundingsPolicyId, refundingsAssetName, refundingsAmount) + Ada(1500000),
     }
 
     validity {
