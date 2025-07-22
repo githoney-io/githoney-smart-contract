@@ -155,6 +155,29 @@ export const MERGE_IR = {
   version: "v1alpha7",
 };
 
+export type ClaimParams = {
+  bountyid: ArgValue;
+  bountyref: ArgValue;
+  collateralref: ArgValue;
+  contributor: ArgValue;
+  minada: ArgValue;
+  mintingpolicyid: ArgValue;
+  rewardamount: ArgValue;
+  rewardassetname: ArgValue;
+  rewardpolicyid: ArgValue;
+  script: ArgValue;
+  settingsref: ArgValue;
+  since: ArgValue;
+  until: ArgValue;
+};
+
+export const CLAIM_IR = {
+  bytecode:
+    "0e03010e010b73657474696e6773726566070211636f6e7472696275746f725f696e7075740e0211636f6e7472696275746f725f696e7075740e010b636f6e7472696275746f72050d01000006fc8096980000000763757272656e740e020763757272656e740e010673637269707405000e0109626f756e747972656607040400010e010b636f6e7472696275746f7205000f020f010f0111010e0211636f6e7472696275746f725f696e7075740e010b636f6e7472696275746f72050d01000006fc80969800000d0100000e01066d696e616461020d010e010e726577617264706f6c6963796964040e010f72657761726461737365746e616d65040e010c726577617264616d6f756e74020e03010e010573696e6365020e0105756e74696c02010d010e010f6d696e74696e67706f6c6963796964040e0108626f756e7479696404060104000000010e020a636f6c6c61746572616c00000e010d636f6c6c61746572616c726566070000",
+  encoding: "hex",
+  version: "v1alpha7",
+};
+
 export class Client {
   readonly #client: TRPClient;
 
@@ -202,6 +225,13 @@ export class Client {
       args,
     });
   }
+  async claimTx(args: ClaimParams): Promise<ResolveResponse> {
+    return await this.#client.resolve({
+      tir: CLAIM_IR,
+      args,
+    });
+  }
+
   async submit(params: SubmitParams): Promise<void> {
     await this.#client.submit(params);
   }
