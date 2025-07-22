@@ -22,12 +22,11 @@ async function addReward(
 
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
 
-  const selectedUtxos = await collateralOutRef(lucidWithWallet);
-
-  const collateralref =
-    selectedUtxos[0].txHash + "#" + selectedUtxos[0].outputIndex;
+  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
+  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
+  const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
 
   const oldDatum = await lucidBase.datumOf(
     bountyUtxo,
@@ -51,7 +50,7 @@ async function addReward(
 
   const { tx } = await protocol.addTx({
     bountyref: {
-      value: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
+      value: bountyRef,
       type: "String",
     },
     collateralref: { value: collateralref, type: "String" },

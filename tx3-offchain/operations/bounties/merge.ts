@@ -25,12 +25,11 @@ async function mergeBounty(
   );
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
 
-  const selectedUtxos = await collateralOutRef(lucidWithWallet);
-
-  const collateralref =
-    selectedUtxos[0].txHash + "#" + selectedUtxos[0].outputIndex;
+  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
+  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
+  const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
   const bountyDatum = await lucidBase.datumOf(
     bountyUtxo,
     GithoneyContractGithoneySpend.datum,
@@ -64,7 +63,7 @@ async function mergeBounty(
   const { tx } = await protocol.mergeTx({
     admin: { value: adminAddr, type: "String" },
     bountyref: {
-      value: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
+      value: bountyRef,
       type: "String",
     },
     collateralref: { value: collateralref, type: "String" },
