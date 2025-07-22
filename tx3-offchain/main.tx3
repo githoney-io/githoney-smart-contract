@@ -454,26 +454,9 @@ tx merge(
     }
 
 
-    output admin_output {
-        to: Admin,
-        amount: admin_input - fees,
-    }
-
-
-    output maintainer_output {
-        to: Maintainer,
-        amount: Ada(minAda),
-    }
-
-    output githoney_output {
-        to: GitHoneyAddr,
-        amount: AnyAsset(rewardPolicyId, rewardAssetName, githoneyFee),
-    }
-
     output bounty_utxo {
         to: Script,
-        // REVIEW - check the amount calculation
-        amount: current - AnyAsset(rewardPolicyId, rewardAssetName, githoneyFee),
+        amount: current - AnyAsset(rewardPolicyId, rewardAssetName, githoneyFee) - Ada(minAda),
         datum: GithoneyDatum {
             admin_payment_credential: current.admin_payment_credential,
             maintainer_address: current.maintainer_address,
@@ -484,6 +467,23 @@ tx merge(
             initial_value: current.initial_value,
         },
     }
+
+    output githoney_output {
+        to: GitHoneyAddr,
+        amount: AnyAsset(rewardPolicyId, rewardAssetName, githoneyFee) + Ada(1168010),
+    }
+
+    output maintainer_output {
+        to: Maintainer,
+        amount: Ada(minAda),
+    }
+
+    output admin_output {
+        to: Admin,
+        // NOTE: admin pays the min ada to create the githoney utxo (1168010 lovelace)
+        amount: admin_input - fees - Ada(1168010),
+    }
+
     validity {
         until_slot: until,
         since_slot: since,
