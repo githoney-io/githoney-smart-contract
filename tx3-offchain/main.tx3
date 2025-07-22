@@ -139,6 +139,64 @@ tx deploy(
     }
 }
 
+// UPDATE SETTINGS
+tx update(
+    bountyCreationFee: Int,
+    bountyRewardFee: Int,
+    collateralRef: UtxoRef,
+    githoneyPaymentCredential: Bytes,
+    githoneyStakingCredential: Bytes,
+    settingsRef: Bytes,
+) {
+
+    input current {
+        from: Script,
+        ref: settingsRef,
+        datum_is: SettingsDatum,
+        redeemer: SettingsRedeemers::UpdateSettings {},
+    }
+
+    input githoney_wallet {
+        from: GitHoneyAddr,
+        min_amount: Ada(10000000),
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    output change {
+        to: GitHoneyAddr,
+        amount: githoney_wallet - fees,
+    }
+
+    output settings_utxo {
+        to: Script,
+        amount: current,
+        datum: SettingsDatum {
+            githoney_address: CardanoAddress {
+                payment_credential: CardanoCredential::VerificationKey {
+                    VerificationKey: githoneyPaymentCredential,
+                },
+                staking_credential: OptionAddressCardanoCredential::Some {
+                    stakeCredetial: StakeCredWrapper::Inline {
+                        VerificationKey: CardanoCredential::VerificationKey {
+                            VerificationKey: githoneyStakingCredential,
+                        },
+                    },
+                },
+            },
+            bounty_creation_fee: bountyCreationFee,
+            bounty_reward_fee: bountyRewardFee,
+        },
+    }
+
+    signers {
+        GitHoneyAddr,
+    }
+}
+
+
 // BOUNTIES
 // CREATE BOUNTY
 
