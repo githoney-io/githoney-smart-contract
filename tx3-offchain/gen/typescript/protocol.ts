@@ -58,6 +58,23 @@ export const UPDATE_IR = {
   version: "v1alpha8",
 };
 
+export type CloseParams = {
+  collateralref: ArgValue;
+  githoneyaddr: ArgValue;
+  payment: ArgValue;
+  script: ArgValue;
+  settingspolicyid: ArgValue;
+  settingsref: ArgValue;
+  settingstokenname: ArgValue;
+};
+
+export const CLOSE_IR = {
+  bytecode:
+    "0e0300020f676974686f6e65795f77616c6c65740e020f676974686f6e65795f77616c6c65740e010c676974686f6e657961646472050d01000006fc002d3101000000000763757272656e740e020763757272656e740e010673637269707405000e010b73657474696e6773726566040000040100010e010c676974686f6e65796164647205000f010f0211010e020f676974686f6e65795f77616c6c65740e010c676974686f6e657961646472050d01000006fc002d31010000000e030d0100000e01077061796d656e74020000010d010e011073657474696e6773706f6c6963796964040e011173657474696e6773746f6b656e6e616d650406010400000000010e020a636f6c6c61746572616c00000e010d636f6c6c61746572616c72656607000101010e010c676974686f6e6579616464720500",
+  encoding: "hex",
+  version: "v1alpha8",
+};
+
 export type CreateParams = {
   adminpaymentcredential: ArgValue;
   bountycreationfee: ArgValue;
@@ -238,6 +255,12 @@ export class Client {
   async updateTx(args: UpdateParams): Promise<ResolveResponse> {
     return await this.#client.resolve({
       tir: UPDATE_IR,
+      args,
+    });
+  }
+  async closeTx(args: CloseParams): Promise<ResolveResponse> {
+    return await this.#client.resolve({
+      tir: CLOSE_IR,
       args,
     });
   }

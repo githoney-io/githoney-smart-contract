@@ -140,6 +140,7 @@ tx deploy(
 }
 
 // UPDATE SETTINGS
+
 tx update(
     bountyCreationFee: Int,
     bountyRewardFee: Int,
@@ -190,6 +191,49 @@ tx update(
     cardano::plutus_witness {
         version: settingsValidatorVersion,
         script: settingsValidatorScript,
+    }
+}
+
+// CLOSE SETTINGS
+
+tx close(
+    collateralRef: UtxoRef,
+    githoneyPaymentCredential: Bytes,
+    githoneyStakingCredential: Bytes,
+    payment: Int,
+    settingsPolicyId: Bytes,
+    settingsRef: Bytes,
+    settingsTokenName: Bytes,
+) {
+
+    input githoney_wallet {
+        from: GitHoneyAddr,
+        min_amount: Ada(10000000),
+    }
+
+    input current {
+        from: Script,
+        ref: settingsRef,
+        datum_is: SettingsDatum,
+        redeemer: SettingsRedeemers::CloseSettings {},
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    mint {
+        amount: AnyAsset(settingsPolicyId, settingsTokenName, -1),
+        redeemer: (),
+    }
+
+    output change {
+        to: GitHoneyAddr,
+        amount: githoney_wallet - fees + Ada(payment),
+    }
+
+    signers {
+        GitHoneyAddr,
     }
 }
 
