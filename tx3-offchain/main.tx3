@@ -73,6 +73,61 @@ type GithoneyDatum {
     initial_value: Map<Bytes, Map<Bytes, Int>>,
 }
 
+// SETTINGS
+// DEPLOY SETTINGS
+
+tx deploy(
+    githoneyPaymentCredential: Bytes,
+    githoneyStakingCredential: Bytes,
+    bountyCreationFee: Int,
+    bountyRewardFee: Int,
+    settingsPolicyId: Bytes,
+    settingsTokenName: Bytes,
+    collateralRef: UtxoRef,
+) {
+
+    input githoney_wallet {
+        from: GitHoneyAddr,
+        min_amount: Ada(10000000),
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    mint {
+        amount: AnyAsset(settingsPolicyId, settingsTokenName, 1),
+        redeemer: (),
+    }
+
+    output change {
+        to: GitHoneyAddr,
+        amount: githoney_wallet - fees,
+    }
+
+    output settings_utxo {
+        to: Script,
+        amount: fees + AnyAsset(settingsPolicyId, settingsTokenName, 1),
+        datum: SettingsDatum {
+            githoney_address: CardanoAddress {
+                payment_credential: CardanoCredential::VerificationKey {
+                    VerificationKey: githoneyPaymentCredential,
+                },
+                staking_credential: OptionAddressCardanoCredential::Some {
+                    stakeCredetial: StakeCredWrapper::Inline {
+                        VerificationKey: CardanoCredential::VerificationKey {
+                            VerificationKey: githoneyStakingCredential,
+                        },
+                    },
+                },
+            },
+            bounty_creation_fee: bountyCreationFee,
+            bounty_reward_fee: bountyRewardFee,
+        },
+    }
+}
+
+// BOUNTIES
 // CREATE BOUNTY
 
 tx create(
