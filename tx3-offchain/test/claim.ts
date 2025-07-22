@@ -1,21 +1,16 @@
+import { OutRef } from "@spacebudz/lucid";
+import { settingsRef } from "../constants";
 import { claimBounty } from "../operations/bounties/claim";
 import { lucidBase, signAndSubmit } from "../utils/utils";
 
-const [settingsUtxo] = await lucidBase.utxosByOutRef([
-  {
-    txHash: "d05c0710320cb81acebd199fea94471a6c0b559617b6ca061dace021fbb59b3d",
-    outputIndex: 0,
-  },
-]);
+const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 
-const [bountyUtxo] = await lucidBase.utxosByOutRef([
-  {
-    txHash: "0260d9510cf2557a80113e3159a1863d1e8156e5641333a396843218c4c0c533",
-    outputIndex: 0,
-  },
-]);
+const bountyRef: OutRef = {
+  txHash: "284e48cd4328c1e62304a93b6d321422003a46e65ac293411b51070ff284a7af",
+  outputIndex: 0,
+};
 
-const { claimCbor } = await claimBounty(settingsUtxo, bountyUtxo);
+const { claimCbor } = await claimBounty(settingsUtxo, bountyRef);
 console.log("Claim bounty transaction CBOR:", claimCbor);
 
 await signAndSubmit(claimCbor);
