@@ -5,7 +5,11 @@ import {
   GithoneyContractGithoneySpend,
   GithoneyContractSettingsSpend,
 } from "../../plutus.ts";
-import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
+import {
+  getScriptVersion,
+  lucidBase,
+  lucidWithWallet,
+} from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
 
 async function updateSettings(
@@ -21,14 +25,14 @@ async function updateSettings(
   const script = new GithoneyContractSettingsSpend();
   const scriptAddress = lucidBase.utils.scriptToAddress(script);
 
-  // TODO - apply params to script
-  // const settingsPolicyId = fromUnit(
-  //   Object.keys(settingsUtxo.assets).find((unit) => {
-  //     return unit !== "lovelace";
-  //   })!,
-  // ).policyId;
+  const settingsPolicyId = fromUnit(
+    Object.keys(settingsUtxo.assets).find((unit) => {
+      return unit !== "lovelace";
+    })!,
+  ).policyId;
 
-  // const gitHoneyValidator = new GithoneyContractGithoneySpend(settingsPolicyId);
+  const githoneyValidator = new GithoneyContractGithoneySpend(settingsPolicyId);
+  const scriptVersion = getScriptVersion(githoneyValidator.type);
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
@@ -77,6 +81,14 @@ async function updateSettings(
     settingsref: {
       value: settingsRef,
       type: "String",
+    },
+    githoneyscript: {
+      value: githoneyValidator.script,
+      type: "String",
+    },
+    scriptversion: {
+      value: BigInt(scriptVersion),
+      type: "Int",
     },
   });
 
