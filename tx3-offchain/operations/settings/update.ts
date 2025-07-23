@@ -7,6 +7,7 @@ import {
 } from "../../plutus.ts";
 import {
   getScriptVersion,
+  keyPairsToAddress,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
@@ -22,8 +23,11 @@ async function updateSettings(
 ): Promise<{
   updateCbor: string;
 }> {
-  const script = new GithoneyContractSettingsSpend();
-  const scriptAddress = lucidBase.utils.scriptToAddress(script);
+  const settingsValidatorScript = new GithoneyContractSettingsSpend();
+  const settingsValidatorAddress = Addresses.scriptToAddress(
+    lucidBase.network,
+    settingsValidatorScript,
+  );
 
   const settingsPolicyId = fromUnit(
     Object.keys(settingsUtxo.assets).find((unit) => {
@@ -43,9 +47,13 @@ async function updateSettings(
     GithoneyContractSettingsSpend.datum,
   );
 
-  let githoneyAddress, bountyCreationFee, bountyRewardFee;
+  const githoneyAddress = keyPairsToAddress(
+    lucidBase.network,
+    oldSettings.githoneyAddress,
+  );
+
+  let bountyCreationFee: bigint, bountyRewardFee: bigint;
   if (!settings) {
-    githoneyAddress = oldSettings.githoneyAddress;
     bountyCreationFee = creationFee;
     bountyRewardFee = rewardFee;
   } else {
@@ -55,7 +63,6 @@ async function updateSettings(
     if (settings.creationFee < 2_000_000n) {
       throw new Error("Creation fee must be at least 2 ADA");
     }
-    githoneyAddress = settings.githoneyAddress;
     bountyCreationFee = settings.creationFee;
     bountyRewardFee = settings.rewardFee;
   }
@@ -65,7 +72,7 @@ async function updateSettings(
     Addresses.inspect(githoneyAddress).delegation?.hash || null;
 
   const { tx } = await protocol.updateTx({
-    script: { value: scriptAddress, type: "String" },
+    script: { value: settingsValidatorAddress, type: "String" },
     githoneyaddr: { value: githoneyAddress, type: "String" },
     githoneypaymentcredential: {
       value: Buffer.from(githoneyPaymentCred!, "hex"),
