@@ -2,14 +2,19 @@ import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, paymentCredentialOf } from "@spacebudz/lucid";
 import { creationFee, rewardFee, settingsTokenName } from "../../constants.ts";
 import { GithoneyContractSettingsSpend } from "../../plutus.ts";
-import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
+import {
+  getScriptVersion,
+  lucidBase,
+  lucidWithWallet,
+} from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
 
 async function deploySettings(githoneyAddr: string): Promise<{
   deployCbor: string;
 }> {
-  const script = new GithoneyContractSettingsSpend();
-  const scriptAddress = lucidBase.utils.scriptToAddress(script);
+  const githoneyValidator = new GithoneyContractSettingsSpend();
+  const scriptVersion = getScriptVersion(githoneyValidator.type);
+  const scriptAddress = lucidBase.utils.scriptToAddress(githoneyValidator);
   const policyId = paymentCredentialOf(scriptAddress).hash;
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
@@ -35,6 +40,14 @@ async function deploySettings(githoneyAddr: string): Promise<{
     settingspolicyid: { value: Buffer.from(policyId, "hex"), type: "Bytes" },
     settingstokenname: { value: Buffer.from(settingsTokenName), type: "Bytes" },
     collateralref: { value: collateralref, type: "String" },
+    githoneyscript: {
+      value: githoneyValidator.script,
+      type: "String",
+    },
+    scriptversion: {
+      value: BigInt(scriptVersion),
+      type: "Int",
+    },
   });
 
   return {

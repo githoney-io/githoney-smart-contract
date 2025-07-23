@@ -77,13 +77,15 @@ type GithoneyDatum {
 // DEPLOY SETTINGS
 
 tx deploy(
-    githoneyPaymentCredential: Bytes,
-    githoneyStakingCredential: Bytes,
     bountyCreationFee: Int,
     bountyRewardFee: Int,
+    collateralRef: UtxoRef,
+    githoneyPaymentCredential: Bytes,
+    githoneyScript: Bytes,
+    githoneyStakingCredential: Bytes,
+    scriptVersion: Int,
     settingsPolicyId: Bytes,
     settingsTokenName: Bytes,
-    collateralRef: UtxoRef,
 ) {
 
     input githoney_wallet {
@@ -107,6 +109,7 @@ tx deploy(
 
     output settings_utxo {
         to: Script,
+        ref_script: { script: githoneyScript, version: scriptVersion, },
         amount: fees + AnyAsset(settingsPolicyId, settingsTokenName, 1),
         datum: SettingsDatum {
             githoney_address: CardanoAddress {
