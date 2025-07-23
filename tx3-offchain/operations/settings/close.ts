@@ -3,6 +3,7 @@ import { Addresses, fromUnit, OutRef, Utxo } from "@spacebudz/lucid";
 import { creationFee, rewardFee } from "../../constants.ts";
 import {
   GithoneyContractGithoneySpend,
+  GithoneyContractSettingsMintingMint,
   GithoneyContractSettingsSpend,
 } from "../../plutus.ts";
 import {
@@ -18,10 +19,33 @@ async function closeSettings(
 ): Promise<{
   closeCbor: string;
 }> {
-  const script = new GithoneyContractSettingsSpend();
-  const scriptAddress = lucidBase.utils.scriptToAddress(script);
+  const settingsValidatorScript = new GithoneyContractSettingsSpend();
+  const settingsValidatorAddress = Addresses.scriptToAddress(
+    lucidBase.network,
+    settingsValidatorScript,
+  );
+  const settingsValidatorCredential = Addresses.scriptToCredential(
+    settingsValidatorScript,
+  );
+  if (!settingsValidatorCredential) {
+    throw new Error(
+      "Settings validator address does not have a payment credential",
+    );
+  }
 
-  // TODO - apply params to script and use validator
+  const outRefParam = {
+    transactionId: utxoRef.txHash,
+    outputIndex: BigInt(utxoRef.outputIndex),
+  };
+
+  // TODO - how to attach this script
+  const settingsMintingPolicy = new GithoneyContractSettingsMintingMint(
+    outRefParam,
+    {
+      paymentCredential: { Script: [settingsValidatorCredential.hash] },
+      stakeCredential: null,
+    },
+  );
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
@@ -48,7 +72,7 @@ async function closeSettings(
   );
 
   const { tx } = await protocol.closeTx({
-    script: { value: scriptAddress, type: "String" },
+    script: { value: settingsValidatorAddress, type: "String" },
     githoneyaddr: { value: githoneyAddr, type: "String" },
     collateralref: { value: collateralref, type: "String" },
     settingsref: {
