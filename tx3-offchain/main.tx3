@@ -84,13 +84,16 @@ tx deploy(
     githoneyScript: Bytes,
     githoneyStakingCredential: Bytes,
     scriptVersion: Int,
+    settingsMintingPolicy: Bytes,
+    settingsMintingVersion: Int,
     settingsPolicyId: Bytes,
     settingsTokenName: Bytes,
+    utxoRef: UtxoRef,
 ) {
 
     input githoney_wallet {
         from: GitHoneyAddr,
-        min_amount: Ada(10000000),
+        ref: utxoRef,
     }
 
     collateral {
@@ -102,15 +105,11 @@ tx deploy(
         redeemer: (),
     }
 
-    output change {
-        to: GitHoneyAddr,
-        amount: githoney_wallet - fees,
-    }
-
     output settings_utxo {
         to: Script,
         ref_script: { script: githoneyScript, version: scriptVersion, },
-        amount: fees + AnyAsset(settingsPolicyId, settingsTokenName, 1),
+        // NOTE - the 40 ada is the minimum required to create the script utxo
+        amount: Ada(40113170) + AnyAsset(settingsPolicyId, settingsTokenName, 1),
         datum: SettingsDatum {
             githoney_address: CardanoAddress {
                 payment_credential: CardanoCredential::VerificationKey {
@@ -127,6 +126,16 @@ tx deploy(
             bounty_creation_fee: bountyCreationFee,
             bounty_reward_fee: bountyRewardFee,
         },
+    }
+
+    output change {
+        to: GitHoneyAddr,
+        amount: githoney_wallet - fees - Ada(40113170),
+    }
+
+     cardano::plutus_witness {
+      version: settingsMintingVersion,
+      script: settingsMintingPolicy,
     }
 }
 

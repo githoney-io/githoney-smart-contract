@@ -11,7 +11,7 @@ import {
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
-import { collateralOutRef } from "../../utils/utxo.ts";
+import { collateralOutRef, sortUTxOs } from "../../utils/utxo.ts";
 
 async function deploySettings(
   githoneyAddr: string,
@@ -30,7 +30,17 @@ async function deploySettings(
     );
   }
 
-  const utxo = (await lucidBase.utxosAt(githoneyAddr))[0];
+  const [utxo] = await lucidWithWallet.wallet
+    .getUtxos()
+    .then((utxos) => {
+      return utxos.filter(
+        (utxo) =>
+          utxo.assets["lovelace"] >= 50_000_000 &&
+          Object.keys(utxo.assets).length === 1,
+      );
+    })
+    .then((utxos) => sortUTxOs(utxos, "Canonical"));
+
   const outRef: OutRef = {
     txHash: utxo.txHash,
     outputIndex: utxo.outputIndex,
@@ -54,6 +64,7 @@ async function deploySettings(
     settingsPolicyId.hash,
   );
   const scriptVersion = getScriptVersion(githoneyValidator.type);
+  const settingsMintingVersion = getScriptVersion(settingsMintingPolicy.type);
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
@@ -75,6 +86,10 @@ async function deploySettings(
     },
     bountycreationfee: { value: BigInt(creationFee), type: "Int" },
     bountyrewardfee: { value: BigInt(rewardFee), type: "Int" },
+    settingsmintingpolicy: {
+      value: settingsMintingPolicy.script,
+      type: "String",
+    },
     settingspolicyid: {
       value: Buffer.from(settingsPolicyId.hash, "hex"),
       type: "Bytes",
@@ -88,6 +103,14 @@ async function deploySettings(
     scriptversion: {
       value: BigInt(scriptVersion),
       type: "Int",
+    },
+    settingsmintingversion: {
+      value: BigInt(settingsMintingVersion),
+      type: "Int",
+    },
+    utxoref: {
+      type: "String",
+      value: outRef.txHash + "#" + outRef.outputIndex,
     },
   });
 
