@@ -24,6 +24,9 @@ async function updateSettings(
   updateCbor: string;
 }> {
   const settingsValidatorScript = new GithoneyContractSettingsSpend();
+  const settingsValidatorVersion = getScriptVersion(
+    settingsValidatorScript.type,
+  );
   const settingsValidatorAddress = Addresses.scriptToAddress(
     lucidBase.network,
     settingsValidatorScript,
@@ -67,21 +70,9 @@ async function updateSettings(
     bountyRewardFee = settings.rewardFee;
   }
 
-  const githoneyPaymentCred = Addresses.inspect(githoneyAddress).payment?.hash;
-  const githoneyStakeCred =
-    Addresses.inspect(githoneyAddress).delegation?.hash || null;
-
   const { tx } = await protocol.updateTx({
     script: { value: settingsValidatorAddress, type: "String" },
     githoneyaddr: { value: githoneyAddress, type: "String" },
-    githoneypaymentcredential: {
-      value: Buffer.from(githoneyPaymentCred!, "hex"),
-      type: "Bytes",
-    },
-    githoneystakingcredential: {
-      value: Buffer.from(githoneyStakeCred!, "hex"),
-      type: "Bytes",
-    },
     bountycreationfee: { value: BigInt(bountyCreationFee), type: "Int" },
     bountyrewardfee: { value: BigInt(bountyRewardFee), type: "Int" },
     collateralref: { value: collateralref, type: "String" },
@@ -95,6 +86,14 @@ async function updateSettings(
     },
     scriptversion: {
       value: BigInt(scriptVersion),
+      type: "Int",
+    },
+    settingsvalidatorscript: {
+      value: settingsValidatorScript.script,
+      type: "String",
+    },
+    settingsvalidatorversion: {
+      value: BigInt(settingsValidatorVersion),
       type: "Int",
     },
   });
