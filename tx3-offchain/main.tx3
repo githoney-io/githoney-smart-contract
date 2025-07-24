@@ -418,3 +418,78 @@ tx closeAfterContributor(
         Admin,
     }
 }
+
+// MERGE BOUNTY
+
+tx merge(
+    bountyRef: UtxoRef,
+    collateralRef: UtxoRef,
+    githoneyFee: Int,
+    minAda: Int,
+    rewardAssetName: Bytes,
+    rewardPolicyId: Bytes,
+    scriptFee: Int,
+    settingsRef: UtxoRef,
+    since: Int,
+    until: Int,
+) {
+    reference contract {
+        ref: settingsRef,
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    input admin_input {
+        from: Admin,
+        min_amount: Ada(10000000),
+    }
+
+    input current {
+        from: Script,
+        ref: bountyRef,
+        datum_is: GithoneyDatum,
+        redeemer: GithoneyContractRedeemers::Merge {},
+    }
+
+
+    output bounty_utxo {
+        to: Script,
+        amount: current - AnyAsset(rewardPolicyId, rewardAssetName, githoneyFee) - Ada(minAda),
+        datum: GithoneyDatum {
+            admin_payment_credential: current.admin_payment_credential,
+            maintainer_address: current.maintainer_address,
+            contributor_address: current.contributor_address,
+            bounty_reward_fee: current.bounty_reward_fee,
+            deadline: current.deadline,
+            merged: true,
+            initial_value: current.initial_value,
+        },
+    }
+
+    output githoney_output {
+        to: GitHoneyAddr,
+        amount: AnyAsset(rewardPolicyId, rewardAssetName, githoneyFee) + Ada(1168010),
+    }
+
+    output maintainer_output {
+        to: Maintainer,
+        amount: Ada(minAda),
+    }
+
+    output admin_output {
+        to: Admin,
+        // NOTE: admin pays the min ada to create the githoney utxo (1168010 lovelace)
+        amount: admin_input - fees - Ada(1168010),
+    }
+
+    validity {
+        until_slot: until,
+        since_slot: since,
+    }
+
+    signers {
+        Admin,
+    }
+}
