@@ -62,6 +62,18 @@ const bountyRefBeforeWithRewards: OutRef = {
   outputIndex: 0,
 };
 
+const closeBeforeWithRewards = await closeBounty(
+  adminAddr,
+  refundings,
+  settingsUtxo,
+  bountyRefBeforeWithRewards,
+);
+console.log(
+  "Close bounty before contributor with rewards transaction CBOR:",
+  closeBeforeWithRewards.closeCbor,
+);
+await signAndSubmit(closeBeforeWithRewards.closeCbor);
+
 const bountyRefAfterWithRewards: OutRef = {
   txHash: "cf6376d428531462f804cc7cb5cf1bb9995564b335acc5cbe5111d775a05fe0f",
   outputIndex: 0,

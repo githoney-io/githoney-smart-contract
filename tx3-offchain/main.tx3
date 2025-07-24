@@ -533,19 +533,86 @@ tx closeBeforeContributor(
     }
 }
 
-tx closeAfterContributor(
-    settingsRef: UtxoRef,
-    bountyRef: UtxoRef,
-    rewardPolicyId: Bytes,
-    rewardAssetName: Bytes,
-    rewardAmount: Int,
-    since: Int,
-    until: Int,
-    timeLimit: Int,
+tx closeBeforeContributorWithReward(
     bountyId: Bytes,
-    mintingPolicyId: Bytes,
+    bountyRef: UtxoRef,
     collateralRef: UtxoRef,
     minAda: Int,
+    mintingPolicyId: Bytes,
+    rewardAmount: Int,
+    rewardAssetName: Bytes,
+    rewardPolicyId: Bytes,
+    settingsRef: UtxoRef,
+    since: Int,
+    refundingsAmount: Int,
+    refundingsAssetName: Bytes,
+    refundingsPolicyId: Bytes,
+    timeLimit: Int,
+    until: Int,
+) {
+    reference contract {
+        ref: settingsRef,
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    input admin_input {
+        from: Admin,
+        min_amount: Ada(10000000),
+    }
+
+    input current {
+        from: Script,
+        ref: bountyRef,
+        datum_is: GithoneyDatum,
+        redeemer: GithoneyContractRedeemers::Close {},
+    }
+
+    mint {
+        amount: AnyAsset(mintingPolicyId, bountyId, -1),
+        redeemer: (),
+    }
+
+    output maintainer_output {
+        to: Maintainer,
+        amount: Ada(minAda) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+    }
+
+    output admin_output {
+        to: Admin,
+        amount: admin_input - fees - Ada(1500000),
+    }
+
+    output sponsor_output {
+        to: Sponsor,
+        amount: AnyAsset(refundingsPolicyId, refundingsAssetName, refundingsAmount) + Ada(1500000),
+    }
+
+    validity {
+        until_slot: until,
+        since_slot: since,
+    }
+
+    signers {
+        Admin,
+    }
+}
+
+tx closeAfterContributor(
+    bountyId: Bytes,
+    bountyRef: UtxoRef,
+    collateralRef: UtxoRef,
+    minAda: Int,
+    mintingPolicyId: Bytes,
+    rewardAmount: Int,
+    rewardAssetName: Bytes,
+    rewardPolicyId: Bytes,
+    settingsRef: UtxoRef,
+    since: Int,
+    timeLimit: Int,
+    until: Int,
 
 ) {
     reference contract {
