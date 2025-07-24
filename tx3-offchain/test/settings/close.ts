@@ -6,8 +6,8 @@ import { OutRef } from "@spacebudz/lucid";
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 
 const utxoRef: OutRef = {
-  txHash: "",
-  outputIndex: 0,
+  txHash: "371959f8603f7d529491e8998e8b9e4a5041449a1f05665d4c111a693c705649",
+  outputIndex: 1,
 };
 
 const { closeCbor } = await closeSettings(settingsUtxo, utxoRef);

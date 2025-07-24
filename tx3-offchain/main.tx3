@@ -201,9 +201,13 @@ tx close(
     githoneyPaymentCredential: Bytes,
     githoneyStakingCredential: Bytes,
     payment: Int,
+    settingsMintingPolicy: Bytes,
+    settingsMintingVersion: Int,
     settingsPolicyId: Bytes,
-    settingsRef: Bytes,
+    settingsRef: UtxoRef,
     settingsTokenName: Bytes,
+    settingsValidatorScript: Bytes,
+    settingsValidatorVersion: Int,
 ) {
 
     input githoney_wallet {
@@ -234,6 +238,16 @@ tx close(
 
     signers {
         GitHoneyAddr,
+    }
+
+    cardano::plutus_witness {
+        version: settingsValidatorVersion,
+        script: settingsValidatorScript,
+    }
+
+    cardano::plutus_witness {
+        version: settingsMintingVersion,
+        script: settingsMintingPolicy,
     }
 }
 

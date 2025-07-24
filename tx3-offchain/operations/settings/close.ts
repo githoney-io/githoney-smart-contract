@@ -1,12 +1,11 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, fromUnit, OutRef, Utxo } from "@spacebudz/lucid";
-import { creationFee, rewardFee } from "../../constants.ts";
 import {
-  GithoneyContractGithoneySpend,
   GithoneyContractSettingsMintingMint,
   GithoneyContractSettingsSpend,
 } from "../../plutus.ts";
 import {
+  getScriptVersion,
   keyPairsToAddress,
   lucidBase,
   lucidWithWallet,
@@ -20,6 +19,9 @@ async function closeSettings(
   closeCbor: string;
 }> {
   const settingsValidatorScript = new GithoneyContractSettingsSpend();
+  const settingsValidatorVersion = getScriptVersion(
+    settingsValidatorScript.type,
+  );
   const settingsValidatorAddress = Addresses.scriptToAddress(
     lucidBase.network,
     settingsValidatorScript,
@@ -38,7 +40,6 @@ async function closeSettings(
     outputIndex: BigInt(utxoRef.outputIndex),
   };
 
-  // TODO - how to attach this script
   const settingsMintingPolicy = new GithoneyContractSettingsMintingMint(
     outRefParam,
     {
@@ -46,6 +47,7 @@ async function closeSettings(
       stakeCredential: null,
     },
   );
+  const settingsMintingVersion = getScriptVersion(settingsMintingPolicy.type);
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
@@ -57,9 +59,7 @@ async function closeSettings(
   const settingsTokenName = fromUnit(settingsTokenUnit).name;
   const policyId = fromUnit(settingsTokenUnit).policyId;
 
-  const payment = Object.keys(settingsUtxo.assets).find((unit) => {
-    return unit == "lovelace";
-  })!;
+  const payment = settingsUtxo.assets["lovelace"];
 
   const settingsDatum = await lucidBase.datumOf(
     settingsUtxo,
@@ -87,6 +87,22 @@ async function closeSettings(
     settingstokenname: {
       value: Buffer.from(settingsTokenName!, "hex"),
       type: "Bytes",
+    },
+    settingsmintingpolicy: {
+      value: settingsMintingPolicy.script,
+      type: "String",
+    },
+    settingsmintingversion: {
+      type: "Int",
+      value: BigInt(settingsMintingVersion),
+    },
+    settingsvalidatorscript: {
+      value: settingsValidatorScript.script,
+      type: "String",
+    },
+    settingsvalidatorversion: {
+      value: BigInt(settingsValidatorVersion),
+      type: "Int",
     },
   });
 

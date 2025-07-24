@@ -11,7 +11,8 @@
     "tx3-merge": "npx tsx --experimental-wasm-modules test/merge.ts",
     "tx3-claim": "npx tsx --experimental-wasm-modules test/claim.ts",
     "tx3-deploy": "npx tsx --experimental-wasm-modules test/settings/deploy.ts",
-    "tx3-update": "npx tsx --experimental-wasm-modules test/settings/update.ts"
+    "tx3-update": "npx tsx --experimental-wasm-modules test/settings/update.ts",
+    "tx3-close-settings": "npx tsx --experimental-wasm-modules test/settings/close.ts"
   },
   "devDependencies": {
     "bun-types": "latest",
