@@ -146,7 +146,7 @@ tx update(
     collateralRef: UtxoRef,
     githoneyScript: Bytes,
     scriptVersion: Int,
-    settingsRef: Bytes,
+    settingsRef: UtxoRef,
     settingsValidatorScript: Bytes,
     settingsValidatorVersion: Int,
 ) {

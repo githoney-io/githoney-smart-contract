@@ -13,4 +13,4 @@ const newSettings = {
 const { updateCbor } = await updateSettings(settingsUtxo, newSettings);
 console.log("Deploy settings transaction CBOR:", updateCbor);
 
-// await signAndSubmit(updateCbor);
+await signAndSubmit(updateCbor);
