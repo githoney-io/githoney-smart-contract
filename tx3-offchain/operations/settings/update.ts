@@ -1,0 +1,106 @@
+import { protocol } from "../../gen/typescript/protocol.ts";
+import { Addresses, fromUnit, Utxo } from "@spacebudz/lucid";
+import { creationFee, rewardFee } from "../../constants.ts";
+import {
+  GithoneyContractGithoneySpend,
+  GithoneyContractSettingsSpend,
+} from "../../plutus.ts";
+import {
+  getScriptVersion,
+  keyPairsToAddress,
+  lucidBase,
+  lucidWithWallet,
+} from "../../utils/utils.ts";
+import { collateralOutRef } from "../../utils/utxo.ts";
+
+async function updateSettings(
+  settingsUtxo: Utxo,
+  settings?: {
+    githoneyAddress?: string;
+    creationFee: bigint;
+    rewardFee: bigint;
+  },
+): Promise<{
+  updateCbor: string;
+}> {
+  const settingsValidatorScript = new GithoneyContractSettingsSpend();
+  const settingsValidatorVersion = getScriptVersion(
+    settingsValidatorScript.type,
+  );
+  const settingsValidatorAddress = Addresses.scriptToAddress(
+    lucidBase.network,
+    settingsValidatorScript,
+  );
+
+  const settingsPolicyId = fromUnit(
+    Object.keys(settingsUtxo.assets).find((unit) => {
+      return unit !== "lovelace";
+    })!,
+  ).policyId;
+
+  const githoneyValidator = new GithoneyContractGithoneySpend(settingsPolicyId);
+  const scriptVersion = getScriptVersion(githoneyValidator.type);
+
+  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
+  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
+  const settingsRef = settingsUtxo.txHash + "#" + settingsUtxo.outputIndex;
+
+  const oldSettings = await lucidBase.datumOf(
+    settingsUtxo,
+    GithoneyContractSettingsSpend.datum,
+  );
+
+  const githoneyAddress = keyPairsToAddress(
+    lucidBase.network,
+    oldSettings.githoneyAddress,
+  );
+
+  let bountyCreationFee: bigint, bountyRewardFee: bigint;
+  if (!settings) {
+    bountyCreationFee = creationFee;
+    bountyRewardFee = rewardFee;
+  } else {
+    if (settings.rewardFee < 0n || settings.rewardFee > 10_000n) {
+      throw new Error("Reward fee must be between 0 and 10000");
+    }
+    if (settings.creationFee < 2_000_000n) {
+      throw new Error("Creation fee must be at least 2 ADA");
+    }
+    bountyCreationFee = settings.creationFee;
+    bountyRewardFee = settings.rewardFee;
+  }
+
+  const { tx } = await protocol.updateTx({
+    script: { value: settingsValidatorAddress, type: "String" },
+    githoneyaddr: { value: githoneyAddress, type: "String" },
+    bountycreationfee: { value: BigInt(bountyCreationFee), type: "Int" },
+    bountyrewardfee: { value: BigInt(bountyRewardFee), type: "Int" },
+    collateralref: { value: collateralref, type: "String" },
+    settingsref: {
+      value: settingsRef,
+      type: "String",
+    },
+    githoneyscript: {
+      value: githoneyValidator.script,
+      type: "String",
+    },
+    scriptversion: {
+      value: BigInt(scriptVersion),
+      type: "Int",
+    },
+    settingsvalidatorscript: {
+      value: settingsValidatorScript.script,
+      type: "String",
+    },
+    settingsvalidatorversion: {
+      value: BigInt(settingsValidatorVersion),
+      type: "Int",
+    },
+  });
+
+  return {
+    updateCbor: tx,
+  };
+}
+
+export { updateSettings };

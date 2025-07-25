@@ -134,10 +134,65 @@ tx deploy(
     }
 
      cardano::plutus_witness {
-      version: settingsMintingVersion,
-      script: settingsMintingPolicy,
+        version: settingsMintingVersion,
+        script: settingsMintingPolicy,
     }
 }
+
+// UPDATE SETTINGS
+tx update(
+    bountyCreationFee: Int,
+    bountyRewardFee: Int,
+    collateralRef: UtxoRef,
+    githoneyScript: Bytes,
+    scriptVersion: Int,
+    settingsRef: UtxoRef,
+    settingsValidatorScript: Bytes,
+    settingsValidatorVersion: Int,
+) {
+
+    input current {
+        from: Script,
+        ref: settingsRef,
+        datum_is: SettingsDatum,
+        redeemer: SettingsRedeemers::UpdateSettings {},
+    }
+
+    input githoney_wallet {
+        from: GitHoneyAddr,
+        min_amount: Ada(10000000),
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    output settings_utxo {
+        to: Script,
+        ref_script: { script: githoneyScript, version: scriptVersion, },
+        amount: current,
+        datum: SettingsDatum {
+            githoney_address: current.githoney_address,
+            bounty_creation_fee: bountyCreationFee,
+            bounty_reward_fee: bountyRewardFee,
+        },
+    }
+
+    output change {
+        to: GitHoneyAddr,
+        amount: githoney_wallet - fees,
+    }
+
+    signers {
+        GitHoneyAddr,
+    }
+
+    cardano::plutus_witness {
+        version: settingsValidatorVersion,
+        script: settingsValidatorScript,
+    }
+}
+
 
 // BOUNTIES
 // CREATE BOUNTY
