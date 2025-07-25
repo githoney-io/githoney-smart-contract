@@ -11,7 +11,7 @@ import { collateralOutRef } from "../../utils/utxo.ts";
 async function addReward(
   rewardAmount: bigint,
   settingsUtxo: Utxo,
-  userAddr: string,
+  sponsorAddr: string,
   utxoRef: OutRef,
 ): Promise<{
   addRewardCbor: string;
@@ -67,7 +67,7 @@ async function addReward(
       value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
       type: "Int",
     },
-    user: { value: userAddr, type: "String" },
+    sponsor: { value: sponsorAddr, type: "String" },
   });
 
   return {
