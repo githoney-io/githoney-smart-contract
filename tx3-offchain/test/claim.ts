@@ -6,7 +6,7 @@ import { lucidBase, signAndSubmit } from "../utils/utils";
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 
 const bountyRef: OutRef = {
-  txHash: "284e48cd4328c1e62304a93b6d321422003a46e65ac293411b51070ff284a7af",
+  txHash: "40881ea16f1b35a8c50cf7d83c40d73e1d7439df1af5ae9841cb20e433f131fd",
   outputIndex: 0,
 };
 

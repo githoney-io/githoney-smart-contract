@@ -2,13 +2,11 @@ import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, fromUnit, OutRef, Utxo } from "@spacebudz/lucid";
 import {
   extractBountyIdTokenUnit,
-  getRewardAsset,
   keyPairsToAddress,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
-import { MIN_ADA } from "../../constants.ts";
 import { GithoneyContractGithoneySpend } from "../../plutus.ts";
 
 async function claimBounty(
@@ -51,11 +49,6 @@ async function claimBounty(
     scriptHash,
   );
 
-  const { rewardPolicy, rewardName, rewardAmount } = getRewardAsset(
-    bountyUtxo.assets,
-    scriptHash,
-  );
-
   const { tx } = await protocol.claimTx({
     bountyid: {
       value: Buffer.from(fromUnit(bountyIdTokenUnit).name!, "hex"),
@@ -67,14 +60,10 @@ async function claimBounty(
     },
     collateralref: { value: collateralref, type: "String" },
     contributor: { value: contributorAddr, type: "String" },
-    minada: { value: BigInt(MIN_ADA), type: "Int" },
     mintingpolicyid: {
       value: Buffer.from(fromUnit(bountyIdTokenUnit).policyId, "hex"),
       type: "Bytes",
     },
-    rewardamount: { value: BigInt(rewardAmount), type: "Int" },
-    rewardassetname: { value: Buffer.from(rewardName, "hex"), type: "Bytes" },
-    rewardpolicyid: { value: Buffer.from(rewardPolicy, "hex"), type: "Bytes" },
     script: { value: scriptAddress, type: "String" },
     settingsref: {
       value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,

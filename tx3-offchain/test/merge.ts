@@ -6,7 +6,7 @@ import { mergeBounty } from "../operations/bounties/merge";
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 
 const bountyRef: OutRef = {
-  txHash: "c756b0ce6bc0b2d9cffa340103aceee178047504956ac53db6287debaac321fb",
+  txHash: "24c54eba5d4af56ec72897cea328b0a4542d577416178c73d9501b29a31d3944",
   outputIndex: 0,
 };
 

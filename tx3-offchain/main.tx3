@@ -682,9 +682,6 @@ tx claim(
     collateralRef: UtxoRef,
     minAda: Int,
     mintingPolicyId: Bytes,
-    rewardAmount: Int,
-    rewardAssetName: Bytes,
-    rewardPolicyId: Bytes,
     settingsRef: UtxoRef,
     since: Int,
     until: Int,
@@ -716,7 +713,7 @@ tx claim(
 
     output contributor_output {
         to: Contributor,
-        amount: contributor_input + Ada(minAda) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount) - fees,
+        amount: contributor_input + current - AnyAsset(mintingPolicyId, bountyId, 1) - fees,
     }
 
     validity {
