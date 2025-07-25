@@ -493,3 +493,54 @@ tx merge(
         Admin,
     }
 }
+
+// CLAIM BOUNTY
+
+tx claim(
+    bountyId: Bytes,
+    bountyRef: UtxoRef,
+    collateralRef: UtxoRef,
+    minAda: Int,
+    mintingPolicyId: Bytes,
+    rewardAmount: Int,
+    rewardAssetName: Bytes,
+    rewardPolicyId: Bytes,
+    settingsRef: UtxoRef,
+    since: Int,
+    until: Int,
+) {
+    reference contract {
+        ref: settingsRef,
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    input contributor_input {
+        from: Contributor,
+        min_amount: Ada(5000000),
+    }
+
+    input current {
+        from: Script,
+        ref: bountyRef,
+        datum_is: GithoneyDatum,
+        redeemer: GithoneyContractRedeemers::Claim {},
+    }
+
+    mint {
+        amount: AnyAsset(mintingPolicyId, bountyId, -1),
+        redeemer: (),
+    }
+
+    output contributor_output {
+        to: Contributor,
+        amount: contributor_input + Ada(minAda) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount) - fees,
+    }
+
+    validity {
+        until_slot: until,
+        since_slot: since,
+    }
+}
