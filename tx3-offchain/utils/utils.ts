@@ -116,3 +116,18 @@ export function getRewardAsset(
     rewardAmount: assets[unit],
   };
 }
+
+export function getScriptVersion(type: string): number {
+  switch (type.toLowerCase()) {
+    case "native":
+      return 0;
+    case "plutusv1":
+      return 1;
+    case "plutusv2":
+      return 2;
+    case "plutusv3":
+      return 3;
+    default:
+      return 3;
+  }
+}

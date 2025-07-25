@@ -73,6 +73,73 @@ type GithoneyDatum {
     initial_value: Map<Bytes, Map<Bytes, Int>>,
 }
 
+// SETTINGS
+// DEPLOY SETTINGS
+
+tx deploy(
+    bountyCreationFee: Int,
+    bountyRewardFee: Int,
+    collateralRef: UtxoRef,
+    githoneyPaymentCredential: Bytes,
+    githoneyScript: Bytes,
+    githoneyStakingCredential: Bytes,
+    scriptVersion: Int,
+    settingsMintingPolicy: Bytes,
+    settingsMintingVersion: Int,
+    settingsPolicyId: Bytes,
+    settingsTokenName: Bytes,
+    utxoRef: UtxoRef,
+) {
+
+    input githoney_wallet {
+        from: GitHoneyAddr,
+        ref: utxoRef,
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    mint {
+        amount: AnyAsset(settingsPolicyId, settingsTokenName, 1),
+        redeemer: (),
+    }
+
+    output settings_utxo {
+        to: Script,
+        ref_script: { script: githoneyScript, version: scriptVersion, },
+        // NOTE - the 40 ada is the minimum required to create the script utxo
+        amount: Ada(40113170) + AnyAsset(settingsPolicyId, settingsTokenName, 1),
+        datum: SettingsDatum {
+            githoney_address: CardanoAddress {
+                payment_credential: CardanoCredential::VerificationKey {
+                    VerificationKey: githoneyPaymentCredential,
+                },
+                staking_credential: OptionAddressCardanoCredential::Some {
+                    stakeCredetial: StakeCredWrapper::Inline {
+                        VerificationKey: CardanoCredential::VerificationKey {
+                            VerificationKey: githoneyStakingCredential,
+                        },
+                    },
+                },
+            },
+            bounty_creation_fee: bountyCreationFee,
+            bounty_reward_fee: bountyRewardFee,
+        },
+    }
+
+    output change {
+        to: GitHoneyAddr,
+        amount: githoney_wallet - fees - Ada(40113170),
+    }
+
+     cardano::plutus_witness {
+      version: settingsMintingVersion,
+      script: settingsMintingPolicy,
+    }
+}
+
+// BOUNTIES
 // CREATE BOUNTY
 
 tx create(

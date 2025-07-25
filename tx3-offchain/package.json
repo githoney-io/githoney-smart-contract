@@ -9,7 +9,8 @@
     "tx3-assign": "npx tsx --experimental-wasm-modules test/assignContributor.ts",
     "tx3-close": "npx tsx --experimental-wasm-modules test/close.ts",
     "tx3-merge": "npx tsx --experimental-wasm-modules test/merge.ts",
-    "tx3-claim": "npx tsx --experimental-wasm-modules test/claim.ts"
+    "tx3-claim": "npx tsx --experimental-wasm-modules test/claim.ts",
+    "tx3-deploy": "npx tsx --experimental-wasm-modules test/settings/deploy.ts"
   },
   "devDependencies": {
     "bun-types": "latest",
