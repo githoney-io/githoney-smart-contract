@@ -85,6 +85,65 @@ async function closeBounty(
 
   let tx;
 
+  const baseParams = {
+    script: { value: scriptAddress, type: "String" as const },
+    admin: { value: adminAddr, type: "String" as const },
+    maintainer: { value: maintainerAddr, type: "String" as const },
+    settingsref: {
+      value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
+      type: "String" as const,
+    },
+    bountyref: {
+      value: bountyRef,
+      type: "String" as const,
+    },
+    since: {
+      value: BigInt(lucidBase.utils.unixTimeToSlots(now)),
+      type: "Int" as const,
+    },
+    until: {
+      value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
+      type: "Int" as const,
+    },
+    minada: { value: BigInt(MIN_ADA), type: "Int" as const },
+    collateralref: { value: collateralref, type: "String" as const },
+    bountyid: {
+      value: Buffer.from(fromUnit(bountyIdTokenUnit).name!, "hex"),
+      type: "Bytes" as const,
+    },
+    mintingpolicyid: {
+      value: Buffer.from(fromUnit(bountyIdTokenUnit).policyId, "hex"),
+      type: "Bytes" as const,
+    },
+    rewardpolicyid: {
+      value: Buffer.from(rewardPolicy, "hex"),
+      type: "Bytes" as const,
+    },
+    rewardassetname: {
+      value: Buffer.from(rewardName, "hex"),
+      type: "Bytes" as const,
+    },
+    rewardamount: { value: BigInt(rewardAmount), type: "Int" as const },
+  };
+
+  const refundingsParams = {
+    sponsor: {
+      value: sponsorAddr,
+      type: "String" as const,
+    },
+    refundingsamount: {
+      value: BigInt(refundingAmount),
+      type: "Int" as const,
+    },
+    refundingsassetname: {
+      value: Buffer.from(refundingName!, "hex"),
+      type: "Bytes" as const,
+    },
+    refundingspolicyid: {
+      value: Buffer.from(refundingPolicy, "hex"),
+      type: "Bytes" as const,
+    },
+  };
   if (bountyDatum.contributorAddress) {
     const contributorAddr = keyPairsToAddress(
       lucidBase.network,
@@ -92,143 +151,25 @@ async function closeBounty(
     );
     if (Object.keys(refundings).length > 0) {
       ({ tx } = await protocol.closeAfterContributorWithRewardTx({
-        script: { value: scriptAddress, type: "String" },
+        ...baseParams,
+        ...refundingsParams,
         contributor: { value: contributorAddr, type: "String" },
-        admin: { value: adminAddr, type: "String" },
-        maintainer: { value: maintainerAddr, type: "String" },
-        settingsref: {
-          value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-          type: "String",
-        },
-        bountyref: {
-          value: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
-          type: "String",
-        },
-        since: {
-          value: BigInt(lucidBase.utils.unixTimeToSlots(now)),
-          type: "Int",
-        },
-        until: {
-          value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
-          type: "Int",
-        },
-        minada: { value: BigInt(MIN_ADA), type: "Int" },
-        collateralref: { value: collateralref, type: "String" },
-        bountyid: {
-          value: Buffer.from(fromUnit(bountyIdTokenUnit).name!, "hex"),
-          type: "Bytes",
-        },
-        mintingpolicyid: {
-          value: Buffer.from(fromUnit(bountyIdTokenUnit).policyId, "hex"),
-          type: "Bytes",
-        },
-        rewardpolicyid: {
-          value: Buffer.from(rewardPolicy, "hex"),
-          type: "Bytes",
-        },
-        rewardassetname: {
-          value: Buffer.from(rewardName, "hex"),
-          type: "Bytes",
-        },
-        rewardamount: { value: BigInt(rewardAmount), type: "Int" },
-        sponsor: {
-          value: sponsorAddr,
-          type: "String",
-        },
-        refundingsamount: {
-          value: BigInt(refundingAmount),
-          type: "Int",
-        },
-        refundingsassetname: {
-          value: Buffer.from(refundingName!, "hex"),
-          type: "Bytes",
-        },
-        refundingspolicyid: {
-          value: Buffer.from(refundingPolicy, "hex"),
-          type: "Bytes",
-        },
       }));
     } else {
       ({ tx } = await protocol.closeAfterContributorTx({
-        script: { value: scriptAddress, type: "String" },
+        ...baseParams,
         contributor: { value: contributorAddr, type: "String" },
-        admin: { value: adminAddr, type: "String" },
-        maintainer: { value: maintainerAddr, type: "String" },
-        settingsref: {
-          value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-          type: "String",
-        },
-        bountyref: {
-          value: `${bountyUtxo.txHash}#${bountyUtxo.outputIndex}`,
-          type: "String",
-        },
-        since: {
-          value: BigInt(lucidBase.utils.unixTimeToSlots(now)),
-          type: "Int",
-        },
-        until: {
-          value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
-          type: "Int",
-        },
-        minada: { value: BigInt(MIN_ADA), type: "Int" },
-        collateralref: { value: collateralref, type: "String" },
-        bountyid: {
-          value: Buffer.from(fromUnit(bountyIdTokenUnit).name!, "hex"),
-          type: "Bytes",
-        },
-        mintingpolicyid: {
-          value: Buffer.from(fromUnit(bountyIdTokenUnit).policyId, "hex"),
-          type: "Bytes",
-        },
-        rewardpolicyid: {
-          value: Buffer.from(rewardPolicy, "hex"),
-          type: "Bytes",
-        },
-        rewardassetname: {
-          value: Buffer.from(rewardName, "hex"),
-          type: "Bytes",
-        },
-        rewardamount: { value: BigInt(rewardAmount), type: "Int" },
       }));
     }
   } else {
-    ({ tx } = await protocol.closeBeforeContributorTx({
-      script: { value: scriptAddress, type: "String" },
-      admin: { value: adminAddr, type: "String" },
-      maintainer: { value: maintainerAddr, type: "String" },
-      settingsref: {
-        value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-        type: "String",
-      },
-      bountyref: {
-        value: bountyRef,
-        type: "String",
-      },
-      since: {
-        value: BigInt(lucidBase.utils.unixTimeToSlots(now)),
-        type: "Int",
-      },
-      until: {
-        value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
-        type: "Int",
-      },
-      minada: { value: BigInt(MIN_ADA), type: "Int" },
-      collateralref: { value: collateralref, type: "String" },
-      bountyid: {
-        value: Buffer.from(fromUnit(bountyIdTokenUnit).name!, "hex"),
-        type: "Bytes",
-      },
-      mintingpolicyid: {
-        value: Buffer.from(fromUnit(bountyIdTokenUnit).policyId, "hex"),
-        type: "Bytes",
-      },
-      rewardpolicyid: {
-        value: Buffer.from(rewardPolicy, "hex"),
-        type: "Bytes",
-      },
-      rewardassetname: { value: Buffer.from(rewardName, "hex"), type: "Bytes" },
-      rewardamount: { value: BigInt(rewardAmount), type: "Int" },
-    }));
+    if (Object.keys(refundings).length > 0) {
+      ({ tx } = await protocol.closeBeforeContributorWithRewardTx({
+        ...baseParams,
+        ...refundingsParams,
+      }));
+    } else {
+      ({ tx } = await protocol.closeBeforeContributorTx({ ...baseParams }));
+    }
   }
   return {
     closeCbor: tx,
