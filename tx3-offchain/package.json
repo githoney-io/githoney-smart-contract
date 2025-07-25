@@ -15,12 +15,14 @@
   },
   "devDependencies": {
     "bun-types": "lascripts",
+    "jest": "^30.0.5",
     "tsx": "^4.19.4"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@ptkdev/logger": "^1.8.0",
     "@spacebudz/lucid": "npm:@jsr/spacebudz__lucid@^0.20.11",
     "dotenv": "^17.0.1"
   }

@@ -13,6 +13,7 @@ async function createBounty(
   maintainerAddr: string,
   adminAddr: string,
   settingsUtxo: Utxo,
+  deadline: bigint,
 ): Promise<{
   createCbor: string;
 }> {
@@ -30,10 +31,6 @@ async function createBounty(
 
   const now = new Date().getTime() - 60 * 1000; // 1 minute ago
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
-
-  const deadline = new Date(
-    new Date().getTime() + 1000 * 60 * 60 * 24 * 2,
-  ).getTime(); // 2 days from now
 
   const maintainerPaymentCred = Addresses.inspect(maintainerAddr).payment?.hash;
   const maintainerStakeCred =
@@ -76,7 +73,7 @@ async function createBounty(
       value: BigInt(lucidBase.utils.unixTimeToSlots(now)),
       type: "Int",
     },
-    timelimit: { value: BigInt(deadline), type: "Int" },
+    timelimit: { value: deadline, type: "Int" },
     until: {
       value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
       type: "Int",

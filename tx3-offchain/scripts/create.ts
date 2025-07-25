@@ -14,6 +14,10 @@ const bountyId = "bountyTX3";
 
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 
+const deadline = new Date(
+  new Date().getTime() + 1000 * 60 * 60 * 24 * 2,
+).getTime(); // 2 days from now
+
 const { createCbor } = await createBounty(
   githoneyAddr,
   rewardPolicy,
@@ -23,6 +27,7 @@ const { createCbor } = await createBounty(
   maintainerAddr,
   adminAddr,
   settingsUtxo,
+  BigInt(deadline),
 );
 console.log("Create transaction CBOR:", createCbor);
 
