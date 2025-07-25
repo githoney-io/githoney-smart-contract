@@ -9,11 +9,7 @@ import {
 } from "@spacebudz/lucid";
 
 import dotenv from "dotenv";
-import {
-  CardanoAddressAddress,
-  CardanoAddressPaymentCredential,
-  CardanoAddressStakeCredential,
-} from "../plutus";
+import { Address, PaymentCredential, StakeCredential } from "../types";
 
 dotenv.config();
 
@@ -41,7 +37,7 @@ export const signAndSubmit = async (cbor: string): Promise<string> => {
 };
 
 function cardanoCredentialToCredential(
-  credential: CardanoAddressPaymentCredential,
+  credential: PaymentCredential,
 ): Credential {
   let hash: string;
   if ("VerificationKey" in credential) {
@@ -54,9 +50,7 @@ function cardanoCredentialToCredential(
   return Addresses.keyHashToCredential(hash);
 }
 
-function cardanoStakingCredToCredential(
-  credential: CardanoAddressStakeCredential,
-) {
+function cardanoStakingCredToCredential(credential: StakeCredential) {
   if ("Inline" in credential) {
     return cardanoCredentialToCredential(credential.Inline[0]);
   } else {
@@ -71,7 +65,7 @@ function cardanoStakingCredToCredential(
  */
 export function keyPairsToAddress(
   network: Network,
-  cardanoAddress: CardanoAddressAddress,
+  cardanoAddress: Address,
 ): string {
   return Addresses.credentialToAddress(
     network,

@@ -2,10 +2,10 @@ import { OutRef, Addresses, Script } from "@spacebudz/lucid";
 import {
   CardanoAddressAddress,
   CardanoAddressPaymentCredential,
+  CardanoAddressStakeCredential,
   GithoneyContractGithoneySpend,
   GithoneyContractSettingsSpend,
   PairsCardanoAssetsPolicyIdPairsCardanoAssetsAssetNameInt,
-  TypesGithoneyContractRedeemers,
   TypesGithoneyDatum,
   TypesSettingsDatum,
   TypesSettingsRedeemers,
@@ -20,15 +20,13 @@ const SETTINGS_POLICY = GithoneyContractSettingsMintingMint;
 
 type Address = CardanoAddressAddress;
 type PaymentCredential = CardanoAddressPaymentCredential;
+type StakeCredential = CardanoAddressStakeCredential;
 
 const GithoneyDatumSchema = GithoneyContractGithoneySpend.datum;
 
 type GithoneyDatum = TypesGithoneyDatum;
 
 type InitialValue = PairsCardanoAssetsPolicyIdPairsCardanoAssetsAssetNameInt;
-
-const GitHoneyRedeemerSchema = GithoneyContractGithoneySpend.redeemer;
-type GithoneyValidatorRedeemer = TypesGithoneyContractRedeemers;
 
 const SettingsDatumSchema = GithoneyContractSettingsSpend.datum;
 
@@ -79,12 +77,11 @@ export {
   GithoneyDatumSchema,
   GithoneyDatum,
   InitialValue,
-  GitHoneyRedeemerSchema,
-  GithoneyValidatorRedeemer,
   SettingsDatumSchema,
   SettingsDatum,
   SettingsRedeemerSchema,
   SettingsRedeemer,
   Address,
   PaymentCredential,
+  StakeCredential,
 };

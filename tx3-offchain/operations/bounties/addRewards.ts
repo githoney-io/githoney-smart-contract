@@ -1,12 +1,12 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, OutRef, Utxo } from "@spacebudz/lucid";
-import { GithoneyContractGithoneySpend } from "../../plutus.ts";
 import {
   getRewardAsset,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
+import { GithoneyDatumSchema } from "../../types.ts";
 
 async function addReward(
   rewardAmount: bigint,
@@ -28,10 +28,7 @@ async function addReward(
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
   const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
 
-  const oldDatum = await lucidBase.datumOf(
-    bountyUtxo,
-    GithoneyContractGithoneySpend.datum,
-  );
+  const oldDatum = await lucidBase.datumOf(bountyUtxo, GithoneyDatumSchema);
 
   if (oldDatum.merged) {
     throw new Error("Bounty already merged");

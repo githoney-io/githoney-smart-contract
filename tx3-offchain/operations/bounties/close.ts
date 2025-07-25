@@ -16,10 +16,7 @@ import {
 } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
-import {
-  GithoneyContractGithoneySpend,
-  PairsCardanoAssetsPolicyIdPairsCardanoAssetsAssetNameInt,
-} from "../../plutus.ts";
+import { GithoneyDatumSchema, InitialValue } from "../../types.ts";
 
 async function closeBounty(
   adminAddr: string,
@@ -40,10 +37,7 @@ async function closeBounty(
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
   const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
 
-  const bountyDatum = await lucidBase.datumOf(
-    bountyUtxo,
-    GithoneyContractGithoneySpend.datum,
-  );
+  const bountyDatum = await lucidBase.datumOf(bountyUtxo, GithoneyDatumSchema);
 
   if (bountyDatum.merged) {
     throw new Error("Bounty already merged");
@@ -179,8 +173,6 @@ async function closeBounty(
 export { closeBounty };
 
 // UTILS
-
-type InitialValue = PairsCardanoAssetsPolicyIdPairsCardanoAssetsAssetNameInt;
 
 const initialValueToAssets = (initialValue: InitialValue): Assets => {
   let initialAssets: Assets = {};

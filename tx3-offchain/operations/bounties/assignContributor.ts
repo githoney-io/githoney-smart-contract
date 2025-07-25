@@ -3,7 +3,7 @@ import { Addresses, OutRef, Utxo } from "@spacebudz/lucid";
 import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
-import { GithoneyContractGithoneySpend } from "../../plutus.ts";
+import { GithoneyDatumSchema } from "../../types.ts";
 
 async function assignContributor(
   contributorAddr: string,
@@ -22,10 +22,7 @@ async function assignContributor(
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
   const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
 
-  const oldDatum = await lucidBase.datumOf(
-    bountyUtxo,
-    GithoneyContractGithoneySpend.datum,
-  );
+  const oldDatum = await lucidBase.datumOf(bountyUtxo, GithoneyDatumSchema);
   if (oldDatum.merged) {
     throw new Error("Bounty already merged");
   }

@@ -7,7 +7,7 @@ import {
   lucidWithWallet,
 } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
-import { GithoneyContractGithoneySpend } from "../../plutus.ts";
+import { GithoneyDatumSchema } from "../../types.ts";
 
 async function claimBounty(
   settingsUtxo: Utxo,
@@ -26,10 +26,7 @@ async function claimBounty(
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
   const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
 
-  const bountyDatum = await lucidBase.datumOf(
-    bountyUtxo,
-    GithoneyContractGithoneySpend.datum,
-  );
+  const bountyDatum = await lucidBase.datumOf(bountyUtxo, GithoneyDatumSchema);
   if (!bountyDatum.contributorAddress) {
     throw new Error("Bounty doesn't have a contributor");
   }
