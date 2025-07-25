@@ -200,7 +200,7 @@ tx close(
     collateralRef: UtxoRef,
     githoneyPaymentCredential: Bytes,
     githoneyStakingCredential: Bytes,
-    payment: Int,
+    remainingAda: Int,
     settingsMintingPolicy: Bytes,
     settingsMintingVersion: Int,
     settingsPolicyId: Bytes,
@@ -233,7 +233,7 @@ tx close(
 
     output change {
         to: GitHoneyAddr,
-        amount: githoney_wallet - fees + Ada(payment),
+        amount: githoney_wallet - fees + Ada(remainingAda),
     }
 
     signers {

@@ -59,7 +59,7 @@ async function closeSettings(
   const settingsTokenName = fromUnit(settingsTokenUnit).name;
   const policyId = fromUnit(settingsTokenUnit).policyId;
 
-  const payment = settingsUtxo.assets["lovelace"];
+  const remainingAda = settingsUtxo.assets["lovelace"];
 
   const settingsDatum = await lucidBase.datumOf(
     settingsUtxo,
@@ -79,8 +79,8 @@ async function closeSettings(
       value: settingsRef,
       type: "String",
     },
-    payment: {
-      value: BigInt(payment),
+    remainingada: {
+      value: BigInt(remainingAda),
       type: "Int",
     },
     settingspolicyid: { value: Buffer.from(policyId, "hex"), type: "Bytes" },
