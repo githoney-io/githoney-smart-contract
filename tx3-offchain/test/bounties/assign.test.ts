@@ -1,0 +1,157 @@
+import { describe, expect, it } from "@jest/globals";
+import {
+  bountyId,
+  logger,
+  rewardAmount,
+  rewardName,
+  rewardPolicy,
+  waitForUtxosUpdate,
+} from "../utils";
+import { createBounty, assignContributor, mergeBounty } from "../../operations";
+import { lucidBase, signAndSubmit } from "../../utils/utils";
+import {
+  adminAddr,
+  adminSeed,
+  contributorSeed,
+  githoneyAddr,
+  maintainerAddr,
+  settingsRef,
+} from "../../constants";
+import { OutRef } from "@spacebudz/lucid";
+
+const contributorAddr =
+  "addr_test1qqzq2j55hh2ml3h08skfgg04lhh7n7epv2ycn90ntr6ys7zrxalmeg3lyamyahkfwdv6fylkyxj0stj8xpplusva7w7s40czuq";
+
+describe("Assign Contributor tests", async () => {
+  const now = new Date();
+  it("Assign Contributor", async () => {
+    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+    const deadline = new Date(
+      now.getTime() + 1000 * 60 * 60 * 24 * 2,
+    ).getTime();
+    const { createCbor } = await createBounty(
+      githoneyAddr,
+      rewardPolicy,
+      rewardName,
+      rewardAmount,
+      bountyId,
+      maintainerAddr,
+      adminAddr,
+      settingsUtxo,
+      BigInt(deadline),
+    );
+
+    const createTxHash = await signAndSubmit(createCbor);
+    waitForUtxosUpdate(lucidBase, createTxHash);
+    const bountyOutRef: OutRef = { txHash: createTxHash, outputIndex: 0 };
+
+    const { assignCbor } = await assignContributor(
+      contributorAddr,
+      settingsUtxo,
+      bountyOutRef,
+    );
+    console.log("Assign transaction CBOR:", assignCbor);
+    const lucid = lucidBase.selectWalletFromSeed(contributorSeed);
+    await signAndSubmit(assignCbor, lucid);
+  });
+
+  it("Assign Contributor with already merged bounty", async () => {
+    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+
+    try {
+      const deadline = new Date(
+        now.getTime() + 1000 * 60 * 60 * 24 * 2,
+      ).getTime();
+
+      const { createCbor } = await createBounty(
+        githoneyAddr,
+        rewardPolicy,
+        rewardName,
+        rewardAmount,
+        bountyId,
+        maintainerAddr,
+        adminAddr,
+        settingsUtxo,
+        BigInt(deadline),
+      );
+
+      const lucid = lucidBase.selectWalletFromSeed(adminSeed);
+      const createTxHash = await signAndSubmit(createCbor, lucid);
+      waitForUtxosUpdate(lucid, createTxHash);
+      const createOutRef: OutRef = { txHash: createTxHash, outputIndex: 0 };
+
+      const { assignCbor } = await assignContributor(
+        contributorAddr,
+        settingsUtxo,
+        createOutRef,
+      );
+
+      lucidBase.selectWalletFromSeed(contributorSeed);
+      const assignTxHash = await signAndSubmit(assignCbor, lucid);
+      waitForUtxosUpdate(lucid, assignTxHash);
+      const assignOutRef: OutRef = { txHash: assignTxHash, outputIndex: 0 };
+
+      const { mergeCbor } = await mergeBounty(
+        adminAddr,
+        settingsUtxo,
+        assignOutRef,
+      );
+      lucidBase.selectWalletFromSeed(adminSeed);
+      const mergeTxHash = await signAndSubmit(mergeCbor, lucid);
+      waitForUtxosUpdate(lucid, mergeTxHash);
+      const mergeOutRef: OutRef = { txHash: mergeTxHash, outputIndex: 0 };
+
+      await assignContributor(contributorAddr, settingsUtxo, mergeOutRef);
+    } catch (e) {
+      const error = e as Error;
+      logger.error(error.message);
+      expect(error.message).toBe("Bounty already merged");
+    }
+  });
+
+  it("Assign Contributor with contributor already assigned", async () => {
+    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+
+    try {
+      const deadline = new Date(
+        now.getTime() + 1000 * 60 * 60 * 24 * 2,
+      ).getTime();
+
+      const { createCbor } = await createBounty(
+        githoneyAddr,
+        rewardPolicy,
+        rewardName,
+        rewardAmount,
+        bountyId,
+        maintainerAddr,
+        adminAddr,
+        settingsUtxo,
+        BigInt(deadline),
+      );
+
+      const lucid = lucidBase.selectWalletFromSeed(adminSeed);
+      const createTxHash = await signAndSubmit(createCbor, lucid);
+      waitForUtxosUpdate(lucid, createTxHash);
+      const createOutRef: OutRef = { txHash: createTxHash, outputIndex: 0 };
+
+      // Assign contributor
+      const { assignCbor } = await assignContributor(
+        contributorAddr,
+        settingsUtxo,
+        createOutRef,
+      );
+
+      lucidBase.selectWalletFromSeed(contributorSeed);
+      const assignTxHash = await signAndSubmit(assignCbor, lucid);
+      waitForUtxosUpdate(lucid, assignTxHash);
+      const assignOutRef: OutRef = { txHash: assignTxHash, outputIndex: 0 };
+
+      // Try to assign different contributor (this should fail)
+      await assignContributor(adminAddr, settingsUtxo, assignOutRef);
+    } catch (e) {
+      const error = e as Error;
+      logger.error(error.message);
+      expect(error.message).toBe("Bounty already has a contributor");
+    }
+  });
+});
