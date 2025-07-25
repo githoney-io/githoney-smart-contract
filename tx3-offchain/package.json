@@ -3,19 +3,18 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "deploy": "npx tsx --experimental-wasm-modules test/deploy.ts",
-    "tx3-create": "npx tsx --experimental-wasm-modules test/create.ts",
-    "tx3-add-reward": "npx tsx --experimental-wasm-modules test/addRewards.ts",
-    "tx3-assign": "npx tsx --experimental-wasm-modules test/assignContributor.ts",
-    "tx3-close": "npx tsx --experimental-wasm-modules test/close.ts",
-    "tx3-merge": "npx tsx --experimental-wasm-modules test/merge.ts",
-    "tx3-claim": "npx tsx --experimental-wasm-modules test/claim.ts",
-    "tx3-deploy": "npx tsx --experimental-wasm-modules test/settings/deploy.ts",
-    "tx3-update": "npx tsx --experimental-wasm-modules test/settings/update.ts",
-    "tx3-close-settings": "npx tsx --experimental-wasm-modules test/settings/close.ts"
+    "tx3-create": "npx tsx --experimental-wasm-modules scripts/create.ts",
+    "tx3-add-reward": "npx tsx --experimental-wasm-modules scripts/addRewards.ts",
+    "tx3-assign": "npx tsx --experimental-wasm-modules scripts/assignContributor.ts",
+    "tx3-close": "npx tsx --experimental-wasm-modules scripts/close.ts",
+    "tx3-merge": "npx tsx --experimental-wasm-modules scripts/merge.ts",
+    "tx3-claim": "npx tsx --experimental-wasm-modules scripts/claim.ts",
+    "tx3-deploy": "npx tsx --experimental-wasm-modules scripts/settings/deploy.ts",
+    "tx3-update": "npx tsx --experimental-wasm-modules scripts/settings/update.ts",
+    "tx3-close-settings": "npx tsx --experimental-wasm-modules scripts/settings/close.ts"
   },
   "devDependencies": {
-    "bun-types": "latest",
+    "bun-types": "lascripts",
     "tsx": "^4.19.4"
   },
   "peerDependencies": {
