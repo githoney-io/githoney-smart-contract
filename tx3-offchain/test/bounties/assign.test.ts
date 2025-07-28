@@ -12,15 +12,13 @@ import { lucidBase, signAndSubmit } from "../../utils/utils";
 import {
   adminAddr,
   adminSeed,
+  contributorAddr,
   contributorSeed,
   githoneyAddr,
   maintainerAddr,
   settingsRef,
 } from "../../constants";
 import { OutRef } from "@spacebudz/lucid";
-
-const contributorAddr =
-  "addr_test1qqzq2j55hh2ml3h08skfgg04lhh7n7epv2ycn90ntr6ys7zrxalmeg3lyamyahkfwdv6fylkyxj0stj8xpplusva7w7s40czuq";
 
 describe("Assign Contributor tests", async () => {
   const now = new Date();

@@ -1,5 +1,6 @@
 export { createBounty } from "./bounties/create";
 export { assignContributor } from "./bounties/assignContributor";
+export { addReward } from "./bounties/addRewards";
 export { mergeBounty } from "./bounties/merge";
 export { claimBounty } from "./bounties/claim";
 export { closeBounty } from "./bounties/close";
