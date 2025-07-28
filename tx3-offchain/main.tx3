@@ -108,8 +108,7 @@ tx deploy(
     output settings_utxo {
         to: Script,
         ref_script: { script: githoneyScript, version: scriptVersion, },
-        // NOTE - the 40 ada is the minimum required to create the script utxo
-        amount: Ada(40113170) + AnyAsset(settingsPolicyId, settingsTokenName, 1),
+        amount: min_utxo(settings_utxo) + AnyAsset(settingsPolicyId, settingsTokenName, 1),
         datum: SettingsDatum {
             githoney_address: CardanoAddress {
                 payment_credential: CardanoCredential::VerificationKey {
@@ -130,7 +129,7 @@ tx deploy(
 
     output change {
         to: GitHoneyAddr,
-        amount: githoney_wallet - fees - Ada(40113170),
+        amount: githoney_wallet - fees - min_utxo(settings_utxo),
     }
 
      cardano::plutus_witness {
@@ -789,6 +788,7 @@ tx merge(
     output githoney_output {
         to: GitHoneyAddr,
         amount: AnyAsset(rewardPolicyId, rewardAssetName, githoneyFee) + Ada(1168010),
+        // amount: AnyAsset(rewardPolicyId, rewardAssetName, githoneyFee) + min_utxo(githoney_output),
     }
 
     output maintainer_output {
@@ -800,6 +800,7 @@ tx merge(
         to: Admin,
         // NOTE: admin pays the min ada to create the githoney utxo (1168010 lovelace)
         amount: admin_input - fees - Ada(1168010),
+        // amount: admin_input - fees - min_utxo(githoney_output),
     }
 
     validity {
