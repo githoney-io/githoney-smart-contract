@@ -68,6 +68,28 @@ async function outRefWithErrorCatching(
   return outRefUtxo;
 }
 
+/**
+ * Sign tx with the given private keys, submits it and waits for confirmation i.e. it is in the blockchain.
+ */
+async function signSubmitAndWaitConfirmation(
+  lucid: Lucid,
+  tx: string,
+): Promise<string> {
+  let txId;
+  while (!txId) {
+    try {
+      txId = await signAndSubmit(tx, lucid);
+    } catch (e: any) {
+      console.log(e.message);
+    }
+  }
+  logger.info("Waiting tx confirmation");
+  await waitForUtxosUpdate(lucid, txId);
+  logger.info("Utxos updated");
+
+  return txId;
+}
+
 const newBounty = async (lucid: Lucid, settingsUtxo: Utxo) => {
   const now = new Date();
   const deadline = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2).getTime();
@@ -136,6 +158,7 @@ export {
   newClaim,
   newClose,
   newMerge,
+  signSubmitAndWaitConfirmation,
   outRefWithErrorCatching,
   waitForUtxosUpdate,
 };
