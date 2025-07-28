@@ -10,7 +10,7 @@ import {
   waitForUtxosUpdate,
 } from "../utils";
 import { createBounty, addReward, updateSettings } from "../../operations";
-import { lucidBase, signAndSubmit } from "../../utils/utils";
+import { lucidBase as lucid, signAndSubmit } from "../../utils/utils";
 import {
   adminAddr,
   adminSeed,
@@ -23,9 +23,9 @@ import {
 
 describe("Add Rewards tests", async () => {
   it("Add Rewards with same token", async () => {
-    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
 
-    const createTxHash = await newBounty(lucidBase, settingsUtxo);
+    const createTxHash = await newBounty(lucid, settingsUtxo);
     const createOutRef: OutRef = { txHash: createTxHash, outputIndex: 0 };
 
     const additionalRewardAmount = 500n;
@@ -35,13 +35,13 @@ describe("Add Rewards tests", async () => {
       sponsorAddr,
       createOutRef,
     );
-    console.log("Add Rewards transaction CBOR:", addRewardCbor);
-    const lucidAddReward = lucidBase.selectWalletFromSeed(sponsorSeed);
-    await signAndSubmit(addRewardCbor, lucidAddReward);
+    lucid.selectWalletFromSeed(sponsorSeed);
+    await signAndSubmit(addRewardCbor, lucid);
+    waitForUtxosUpdate(lucid, addRewardCbor);
   });
 
   it("Add Rewards with lovelace", async () => {
-    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
     const now = new Date();
     const deadline = new Date(
       now.getTime() + 1000 * 60 * 60 * 24 * 2,
@@ -60,10 +60,10 @@ describe("Add Rewards tests", async () => {
     );
 
     const createTxHash = await signAndSubmit(createCbor);
-    waitForUtxosUpdate(lucidBase, createTxHash);
+    waitForUtxosUpdate(lucid, createTxHash);
     const bountyOutRef: OutRef = { txHash: createTxHash, outputIndex: 0 };
 
-    const additionalRewardAmount = 5n;
+    const additionalRewardAmount = 5_000_000n;
     const { addRewardCbor } = await addReward(
       additionalRewardAmount,
       settingsUtxo,
@@ -71,21 +71,21 @@ describe("Add Rewards tests", async () => {
       bountyOutRef,
     );
 
-    const lucidAddReward = lucidBase.selectWalletFromSeed(sponsorSeed);
-    await signAndSubmit(addRewardCbor, lucidAddReward);
+    lucid.selectWalletFromSeed(sponsorSeed);
+    await signAndSubmit(addRewardCbor, lucid);
   });
 
   it("Add Rewards with already merged bounty", async () => {
-    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
 
     try {
-      const createTxId = await newBounty(lucidBase, settingsUtxo);
+      const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
-      const assignTxId = await newAssign(lucidBase, createOutRef, settingsUtxo);
+      const assignTxId = await newAssign(lucid, createOutRef, settingsUtxo);
       const assignOutRef: OutRef = { txHash: assignTxId, outputIndex: 0 };
 
-      const mergeTxId = await newMerge(lucidBase, assignOutRef, settingsUtxo);
+      const mergeTxId = await newMerge(lucid, assignOutRef, settingsUtxo);
       const mergeOutRef: OutRef = { txHash: mergeTxId, outputIndex: 0 };
 
       const additionalRewardAmount = 100n;
@@ -105,7 +105,7 @@ describe("Add Rewards tests", async () => {
 
 describe("Reward bounds", async () => {
   it("0 reward fee", async () => {
-    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
 
     const newSettings = {
       creationFee: 2000000n,
@@ -113,32 +113,28 @@ describe("Reward bounds", async () => {
     };
     // Update settings with 0 reward fee
     const { updateCbor } = await updateSettings(settingsUtxo, newSettings);
-    const lucidAdmin = lucidBase.selectWalletFromSeed(adminSeed);
+    const lucidAdmin = lucid.selectWalletFromSeed(adminSeed);
     const updateTxHash = await signAndSubmit(updateCbor, lucidAdmin);
     waitForUtxosUpdate(lucidAdmin, updateTxHash);
 
-    const [newSettingsUtxo] = await lucidBase.utxosByOutRef([
+    const [newSettingsUtxo] = await lucid.utxosByOutRef([
       { txHash: updateTxHash, outputIndex: 0 },
     ]);
 
-    const createTxId = await newBounty(lucidBase, newSettingsUtxo);
+    const createTxId = await newBounty(lucid, newSettingsUtxo);
     const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
-    const assignTxId = await newAssign(
-      lucidBase,
-      createOutRef,
-      newSettingsUtxo,
-    );
+    const assignTxId = await newAssign(lucid, createOutRef, newSettingsUtxo);
     const assignOutRef: OutRef = { txHash: assignTxId, outputIndex: 0 };
 
-    const mergeTxId = await newMerge(lucidBase, assignOutRef, newSettingsUtxo);
+    const mergeTxId = await newMerge(lucid, assignOutRef, newSettingsUtxo);
     const mergeOutRef: OutRef = { txHash: mergeTxId, outputIndex: 0 };
 
-    await newClaim(lucidBase, mergeOutRef, newSettingsUtxo);
+    await newClaim(lucid, mergeOutRef, newSettingsUtxo);
   });
 
   it("10000 reward fee", async () => {
-    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
 
     const newSettings = {
       creationFee: 2000000n,
@@ -147,26 +143,22 @@ describe("Reward bounds", async () => {
     // Update settings with 10000 reward fee
     const { updateCbor } = await updateSettings(settingsUtxo, newSettings);
 
-    const lucidAdmin = lucidBase.selectWalletFromSeed(adminSeed);
-    const updateTxHash = await signAndSubmit(updateCbor, lucidAdmin);
-    waitForUtxosUpdate(lucidAdmin, updateTxHash);
-    const [newSettingsUtxo] = await lucidBase.utxosByOutRef([
+    lucid.selectWalletFromSeed(adminSeed);
+    const updateTxHash = await signAndSubmit(updateCbor, lucid);
+    waitForUtxosUpdate(lucid, updateTxHash);
+    const [newSettingsUtxo] = await lucid.utxosByOutRef([
       { txHash: updateTxHash, outputIndex: 0 },
     ]);
 
-    const createTxId = await newBounty(lucidBase, newSettingsUtxo);
+    const createTxId = await newBounty(lucid, newSettingsUtxo);
     const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
-    const assignTxId = await newAssign(
-      lucidBase,
-      createOutRef,
-      newSettingsUtxo,
-    );
+    const assignTxId = await newAssign(lucid, createOutRef, newSettingsUtxo);
     const assignOutRef: OutRef = { txHash: assignTxId, outputIndex: 0 };
 
-    const mergeTxId = await newMerge(lucidBase, assignOutRef, newSettingsUtxo);
+    const mergeTxId = await newMerge(lucid, assignOutRef, newSettingsUtxo);
     const mergeOutRef: OutRef = { txHash: mergeTxId, outputIndex: 0 };
 
-    await newClaim(lucidBase, mergeOutRef, newSettingsUtxo);
+    await newClaim(lucid, mergeOutRef, newSettingsUtxo);
   });
 });
