@@ -1,5 +1,5 @@
 import { OutRef } from "@spacebudz/lucid";
-import { addReward } from "../operations/bounties/addRewards";
+import { addRewards } from "../operations/bounties/addRewards";
 import { lucidBase, signAndSubmit } from "../utils/utils";
 import { settingsRef } from "../constants";
 
@@ -15,7 +15,7 @@ const bountyRef: OutRef = {
 const sponsorAddr =
   "addr_test1qqzq2j55hh2ml3h08skfgg04lhh7n7epv2ycn90ntr6ys7zrxalmeg3lyamyahkfwdv6fylkyxj0stj8xpplusva7w7s40czuq";
 
-const { addRewardCbor } = await addReward(
+const { addRewardCbor } = await addRewards(
   rewardAmount,
   settingsUtxo,
   sponsorAddr,

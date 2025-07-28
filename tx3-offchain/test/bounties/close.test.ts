@@ -7,7 +7,7 @@ import {
   newMerge,
   waitForUtxosUpdate,
 } from "../utils";
-import { closeBounty, addReward } from "../../operations";
+import { closeBounty, addRewards } from "../../operations";
 import { lucidBase as lucid, signAndSubmit } from "../../utils/utils";
 import {
   adminAddr,
@@ -81,7 +81,7 @@ describe("Close tests", async () => {
     const assignTxId = await newAssign(lucid, createOutRef, settingsUtxo);
     const assignOutRef: OutRef = { txHash: assignTxId, outputIndex: 0 };
 
-    const { addRewardCbor } = await addReward(
+    const { addRewardCbor } = await addRewards(
       100n,
       settingsUtxo,
       sponsorAddr,

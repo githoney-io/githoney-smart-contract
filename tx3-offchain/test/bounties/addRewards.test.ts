@@ -9,7 +9,7 @@ import {
   newMerge,
   waitForUtxosUpdate,
 } from "../utils";
-import { createBounty, addReward, updateSettings } from "../../operations";
+import { createBounty, addRewards, updateSettings } from "../../operations";
 import { lucidBase as lucid, signAndSubmit } from "../../utils/utils";
 import {
   adminAddr,
@@ -29,7 +29,7 @@ describe("Add Rewards tests", async () => {
     const createOutRef: OutRef = { txHash: createTxHash, outputIndex: 0 };
 
     const additionalRewardAmount = 500n;
-    const { addRewardCbor } = await addReward(
+    const { addRewardCbor } = await addRewards(
       additionalRewardAmount,
       settingsUtxo,
       sponsorAddr,
@@ -64,7 +64,7 @@ describe("Add Rewards tests", async () => {
     const bountyOutRef: OutRef = { txHash: createTxHash, outputIndex: 0 };
 
     const additionalRewardAmount = 5_000_000n;
-    const { addRewardCbor } = await addReward(
+    const { addRewardCbor } = await addRewards(
       additionalRewardAmount,
       settingsUtxo,
       sponsorAddr,
@@ -89,7 +89,7 @@ describe("Add Rewards tests", async () => {
       const mergeOutRef: OutRef = { txHash: mergeTxId, outputIndex: 0 };
 
       const additionalRewardAmount = 100n;
-      await addReward(
+      await addRewards(
         additionalRewardAmount,
         settingsUtxo,
         sponsorAddr,

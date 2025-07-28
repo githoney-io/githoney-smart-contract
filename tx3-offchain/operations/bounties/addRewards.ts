@@ -8,7 +8,7 @@ import {
 import { collateralOutRef } from "../../utils/utxo.ts";
 import { GithoneyDatumSchema } from "../../types.ts";
 
-async function addReward(
+async function addRewards(
   rewardAmount: bigint,
   settingsUtxo: Utxo,
   sponsorAddr: string,
@@ -72,4 +72,4 @@ async function addReward(
   };
 }
 
-export { addReward };
+export { addRewards };
