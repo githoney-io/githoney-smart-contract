@@ -7,7 +7,7 @@ import {
   rewardPolicy,
 } from "../utils";
 import { createBounty } from "../../operations";
-import { lucidBase, signAndSubmit } from "../../utils/utils";
+import { lucidBase as lucid, signAndSubmit } from "../../utils/utils";
 import {
   adminAddr,
   githoneyAddr,
@@ -18,7 +18,7 @@ import {
 describe("Create tests", async () => {
   const now = new Date();
   it("Create a New Bounty", async () => {
-    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
     const deadline = new Date(
       now.getTime() + 1000 * 60 * 60 * 24 * 2,
     ).getTime(); // 2 days from now
@@ -37,12 +37,12 @@ describe("Create tests", async () => {
     console.log("Create transaction CBOR:", createCbor);
 
     const createTx = await signAndSubmit(createCbor);
-    const lucid = lucidBase.selectWalletFromSeed(maintainerAddr);
+    lucid.selectWalletFromSeed(maintainerAddr);
     await signAndSubmit(createTx, lucid);
   });
 
   it("Bounty with deadline in the past", async () => {
-    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
 
     try {
       const deadline = new Date(
@@ -61,7 +61,7 @@ describe("Create tests", async () => {
       );
 
       const createTx = await signAndSubmit(createCbor);
-      const lucid = lucidBase.selectWalletFromSeed(maintainerAddr);
+      lucid.selectWalletFromSeed(maintainerAddr);
       await signAndSubmit(createTx, lucid);
     } catch (e) {
       const error = e as Error;
@@ -71,7 +71,7 @@ describe("Create tests", async () => {
   });
 
   it("Bounty with negative fees", async () => {
-    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
 
     try {
       const deadline = new Date(
@@ -90,7 +90,7 @@ describe("Create tests", async () => {
       );
 
       const createTx = await signAndSubmit(createCbor);
-      const lucid = lucidBase.selectWalletFromSeed(maintainerAddr);
+      lucid.selectWalletFromSeed(maintainerAddr);
       await signAndSubmit(createTx, lucid);
     } catch (e) {
       const error = e as Error;

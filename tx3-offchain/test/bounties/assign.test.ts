@@ -8,7 +8,7 @@ import {
   waitForUtxosUpdate,
 } from "../utils";
 import { createBounty, assignContributor, mergeBounty } from "../../operations";
-import { lucidBase, signAndSubmit } from "../../utils/utils";
+import { lucidBase as lucid, signAndSubmit } from "../../utils/utils";
 import {
   adminAddr,
   adminSeed,
@@ -23,7 +23,7 @@ import { OutRef } from "@spacebudz/lucid";
 describe("Assign Contributor tests", async () => {
   const now = new Date();
   it("Assign Contributor", async () => {
-    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
     const deadline = new Date(
       now.getTime() + 1000 * 60 * 60 * 24 * 2,
     ).getTime();
@@ -40,7 +40,7 @@ describe("Assign Contributor tests", async () => {
     );
 
     const createTxHash = await signAndSubmit(createCbor);
-    waitForUtxosUpdate(lucidBase, createTxHash);
+    waitForUtxosUpdate(lucid, createTxHash);
     const bountyOutRef: OutRef = { txHash: createTxHash, outputIndex: 0 };
 
     const { assignCbor } = await assignContributor(
@@ -49,12 +49,12 @@ describe("Assign Contributor tests", async () => {
       bountyOutRef,
     );
     console.log("Assign transaction CBOR:", assignCbor);
-    const lucid = lucidBase.selectWalletFromSeed(contributorSeed);
+    lucid.selectWalletFromSeed(contributorSeed);
     await signAndSubmit(assignCbor, lucid);
   });
 
   it("Assign Contributor with already merged bounty", async () => {
-    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
 
     try {
       const deadline = new Date(
@@ -73,7 +73,7 @@ describe("Assign Contributor tests", async () => {
         BigInt(deadline),
       );
 
-      const lucid = lucidBase.selectWalletFromSeed(adminSeed);
+      lucid.selectWalletFromSeed(adminSeed);
       const createTxHash = await signAndSubmit(createCbor, lucid);
       waitForUtxosUpdate(lucid, createTxHash);
       const createOutRef: OutRef = { txHash: createTxHash, outputIndex: 0 };
@@ -84,7 +84,7 @@ describe("Assign Contributor tests", async () => {
         createOutRef,
       );
 
-      lucidBase.selectWalletFromSeed(contributorSeed);
+      lucid.selectWalletFromSeed(contributorSeed);
       const assignTxHash = await signAndSubmit(assignCbor, lucid);
       waitForUtxosUpdate(lucid, assignTxHash);
       const assignOutRef: OutRef = { txHash: assignTxHash, outputIndex: 0 };
@@ -94,7 +94,7 @@ describe("Assign Contributor tests", async () => {
         settingsUtxo,
         assignOutRef,
       );
-      lucidBase.selectWalletFromSeed(adminSeed);
+      lucid.selectWalletFromSeed(adminSeed);
       const mergeTxHash = await signAndSubmit(mergeCbor, lucid);
       waitForUtxosUpdate(lucid, mergeTxHash);
       const mergeOutRef: OutRef = { txHash: mergeTxHash, outputIndex: 0 };
@@ -108,7 +108,7 @@ describe("Assign Contributor tests", async () => {
   });
 
   it("Assign Contributor with contributor already assigned", async () => {
-    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
 
     try {
       const deadline = new Date(
@@ -127,7 +127,7 @@ describe("Assign Contributor tests", async () => {
         BigInt(deadline),
       );
 
-      const lucid = lucidBase.selectWalletFromSeed(adminSeed);
+      lucid.selectWalletFromSeed(adminSeed);
       const createTxHash = await signAndSubmit(createCbor, lucid);
       waitForUtxosUpdate(lucid, createTxHash);
       const createOutRef: OutRef = { txHash: createTxHash, outputIndex: 0 };
@@ -139,7 +139,7 @@ describe("Assign Contributor tests", async () => {
         createOutRef,
       );
 
-      lucidBase.selectWalletFromSeed(contributorSeed);
+      lucid.selectWalletFromSeed(contributorSeed);
       const assignTxHash = await signAndSubmit(assignCbor, lucid);
       waitForUtxosUpdate(lucid, assignTxHash);
       const assignOutRef: OutRef = { txHash: assignTxHash, outputIndex: 0 };
