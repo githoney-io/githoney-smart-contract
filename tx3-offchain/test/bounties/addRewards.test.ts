@@ -8,9 +8,13 @@ import {
   newClaim,
   newMerge,
   waitForUtxosUpdate,
-} from "../utils";
-import { createBounty, addRewards, updateSettings } from "../../operations";
-import { lucidBase as lucid, signAndSubmit } from "../../utils/utils";
+} from "../utils.ts";
+import {
+  createBounty,
+  addRewards,
+  updateSettings,
+} from "../../operations/index.ts";
+import { lucidBase as lucid, signAndSubmit } from "../../utils/utils.ts";
 import {
   adminAddr,
   adminSeed,
@@ -19,7 +23,7 @@ import {
   settingsRef,
   sponsorSeed,
   sponsorAddr,
-} from "../../constants";
+} from "../../constants.ts";
 
 describe("Add Rewards tests", async () => {
   it("Add Rewards with same token", async () => {

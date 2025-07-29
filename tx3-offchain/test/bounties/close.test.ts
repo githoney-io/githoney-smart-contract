@@ -6,16 +6,16 @@ import {
   newBounty,
   newMerge,
   waitForUtxosUpdate,
-} from "../utils";
-import { closeBounty, addRewards } from "../../operations";
-import { lucidBase as lucid, signAndSubmit } from "../../utils/utils";
+} from "../utils.ts";
+import { closeBounty, addRewards } from "../../operations/index.ts";
+import { lucidBase as lucid, signAndSubmit } from "../../utils/utils.ts";
 import {
   adminAddr,
   adminSeed,
   settingsRef,
   sponsorAddr,
   sponsorSeed,
-} from "../../constants";
+} from "../../constants.ts";
 
 describe("Close tests", async () => {
   it("Close Bounty After Contributor Assignment", async () => {

@@ -7,10 +7,10 @@ import {
   newClose,
   newMerge,
   waitForUtxosUpdate,
-} from "../utils";
-import { claimBounty } from "../../operations";
-import { lucidBase as lucid, signAndSubmit } from "../../utils/utils";
-import { contributorSeed, settingsRef } from "../../constants";
+} from "../utils.ts";
+import { claimBounty } from "../../operations/index.ts";
+import { lucidBase as lucid, signAndSubmit } from "../../utils/utils.ts";
+import { contributorSeed, settingsRef } from "../../constants.ts";
 
 describe("Claim tests", async () => {
   it("Claim bounty", async () => {

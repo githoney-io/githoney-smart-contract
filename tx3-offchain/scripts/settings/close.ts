@@ -1,13 +1,13 @@
-import { closeSettings } from "../../operations/settings/close";
-import { settingsRef } from "../../constants";
-import { lucidBase, signAndSubmit } from "../../utils/utils";
+import { closeSettings } from "../../operations/settings/close.ts";
+import { settingsRef } from "../../constants.ts";
+import { lucidBase, signAndSubmit } from "../../utils/utils.ts";
 import { OutRef } from "@spacebudz/lucid";
 
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 
 const utxoRef: OutRef = {
-  txHash: "371959f8603f7d529491e8998e8b9e4a5041449a1f05665d4c111a693c705649",
-  outputIndex: 1,
+  txHash: "40881ea16f1b35a8c50cf7d83c40d73e1d7439df1af5ae9841cb20e433f131fd",
+  outputIndex: 3,
 };
 
 const { closeCbor } = await closeSettings(settingsUtxo, utxoRef);

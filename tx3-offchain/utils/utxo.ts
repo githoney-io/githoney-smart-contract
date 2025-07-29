@@ -76,7 +76,7 @@ export const collateralOutRef = async (lucid: Lucid): Promise<Utxo[]> => {
     .then((utxos) => {
       return utxos.filter(
         (utxo) =>
-          utxo.assets["lovelace"] >= 5_000_000 &&
+          utxo.assets["lovelace"] >= 20_000_000 &&
           Object.keys(utxo.assets).length === 1,
       );
     })

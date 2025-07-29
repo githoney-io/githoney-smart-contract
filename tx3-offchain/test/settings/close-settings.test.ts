@@ -1,8 +1,8 @@
 import { describe, it } from "@jest/globals";
-import { lucidBase as lucid, signAndSubmit } from "../../utils/utils";
-import { closeSettings, deploySettings } from "../../operations";
-import { githoneyAddr, githoneySeed } from "../../constants";
-import { waitForUtxosUpdate } from "../utils";
+import { lucidBase as lucid, signAndSubmit } from "../../utils/utils.ts";
+import { closeSettings, deploySettings } from "../../operations/index.ts";
+import { githoneyAddr, githoneySeed } from "../../constants.ts";
+import { waitForUtxosUpdate } from "../utils.ts";
 
 describe("Close Settings Test", async () => {
   it("Close settings", async () => {

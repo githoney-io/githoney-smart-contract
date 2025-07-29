@@ -9,7 +9,7 @@ import {
 } from "@spacebudz/lucid";
 
 import dotenv from "dotenv";
-import { Address, PaymentCredential, StakeCredential } from "../types";
+import { Address, PaymentCredential, StakeCredential } from "../types.ts";
 
 dotenv.config();
 

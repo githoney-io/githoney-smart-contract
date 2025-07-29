@@ -5,15 +5,15 @@ import {
   rewardAmount,
   rewardName,
   rewardPolicy,
-} from "../utils";
-import { createBounty } from "../../operations";
-import { lucidBase as lucid, signAndSubmit } from "../../utils/utils";
+} from "../utils.ts";
+import { createBounty } from "../../operations/index.ts";
+import { lucidBase as lucid, signAndSubmit } from "../../utils/utils.ts";
 import {
   adminAddr,
   githoneyAddr,
   maintainerAddr,
   settingsRef,
-} from "../../constants";
+} from "../../constants.ts";
 
 describe("Create tests", async () => {
   const now = new Date();
