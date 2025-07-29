@@ -1,6 +1,6 @@
-import { deploySettings } from "../../operations/settings/deploy";
-import { githoneyAddr } from "../../constants";
-import { signAndSubmit } from "../../utils/utils";
+import { deploySettings } from "../../operations/settings/deploy.ts";
+import { githoneyAddr } from "../../constants.ts";
+import { signAndSubmit } from "../../utils/utils.ts";
 
 const { deployCbor, outRef } = await deploySettings(githoneyAddr);
 console.log("Deploy settings transaction CBOR:", deployCbor);

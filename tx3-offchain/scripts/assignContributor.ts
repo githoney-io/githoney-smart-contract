@@ -1,7 +1,7 @@
 import { OutRef } from "@spacebudz/lucid";
-import { assignContributor } from "../operations/bounties/assignContributor";
-import { lucidBase, signAndSubmit } from "../utils/utils";
-import { settingsRef } from "../constants";
+import { assignContributor } from "../operations/bounties/assignContributor.ts";
+import { lucidBase, signAndSubmit } from "../utils/utils.ts";
+import { settingsRef } from "../constants.ts";
 
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 

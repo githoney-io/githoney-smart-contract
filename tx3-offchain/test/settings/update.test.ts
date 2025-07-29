@@ -1,8 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
-import { lucidBase as lucid, signAndSubmit } from "../../utils/utils";
-import { githoneySeed, settingsRef } from "../../constants";
-import { logger, waitForUtxosUpdate } from "../utils";
-import { updateSettings } from "../../operations";
+import { lucidBase as lucid, signAndSubmit } from "../../utils/utils.ts";
+import { githoneySeed, settingsRef } from "../../constants.ts";
+import { logger, waitForUtxosUpdate } from "../utils.ts";
+import { updateSettings } from "../../operations/index.ts";
 
 describe("Update Settings Test", async () => {
   it("Update settings", async () => {

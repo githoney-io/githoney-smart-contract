@@ -1,6 +1,6 @@
-import { githoneyAddr, settingsRef } from "../../constants";
-import { lucidBase, signAndSubmit } from "../../utils/utils";
-import { updateSettings } from "../../operations/settings/update";
+import { githoneyAddr, settingsRef } from "../../constants.ts";
+import { lucidBase, signAndSubmit } from "../../utils/utils.ts";
+import { updateSettings } from "../../operations/settings/update.ts";
 
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "@jest/globals";
 import { OutRef } from "@spacebudz/lucid";
-import { logger, newAssign, newBounty, waitForUtxosUpdate } from "../utils";
-import { mergeBounty } from "../../operations";
-import { lucidBase, signAndSubmit } from "../../utils/utils";
-import { adminAddr, adminSeed, settingsRef } from "../../constants";
+import { logger, newAssign, newBounty, waitForUtxosUpdate } from "../utils.ts";
+import { mergeBounty } from "../../operations/index.ts";
+import { lucidBase, signAndSubmit } from "../../utils/utils.ts";
+import { adminAddr, adminSeed, settingsRef } from "../../constants.ts";
 
 describe("Merge tests", async () => {
   it("Merge bounty", async () => {

@@ -17,26 +17,26 @@ import {
   deploySettings,
   updateSettings,
   closeSettings,
-} from "../../operations";
+} from "../../operations/index.ts";
 import {
   MIN_ADA,
   adminAddr,
   creationFee,
   githoneyAddr,
   rewardFee,
-} from "../../constants";
+} from "../../constants.ts";
 import {
   logger,
   outRefWithErrorCatching,
   signSubmitAndWaitConfirmation,
-} from "../utils";
+} from "../utils.ts";
 import { assert } from "console";
 import {
   GithoneyDatumSchema,
   githoneyMintingPolicy,
   SettingsDatumSchema,
-} from "../../types";
-import { keyPairsToAddress } from "../../utils/utils";
+} from "../../types.ts";
+import { keyPairsToAddress } from "../../utils/utils.ts";
 
 dotenv.config();
 const {

@@ -6,9 +6,13 @@ import {
   rewardName,
   rewardPolicy,
   waitForUtxosUpdate,
-} from "../utils";
-import { createBounty, assignContributor, mergeBounty } from "../../operations";
-import { lucidBase as lucid, signAndSubmit } from "../../utils/utils";
+} from "../utils.ts";
+import {
+  createBounty,
+  assignContributor,
+  mergeBounty,
+} from "../../operations/index.ts";
+import { lucidBase as lucid, signAndSubmit } from "../../utils/utils.ts";
 import {
   adminAddr,
   adminSeed,
@@ -17,7 +21,7 @@ import {
   githoneyAddr,
   maintainerAddr,
   settingsRef,
-} from "../../constants";
+} from "../../constants.ts";
 import { OutRef } from "@spacebudz/lucid";
 
 describe("Assign Contributor tests", async () => {

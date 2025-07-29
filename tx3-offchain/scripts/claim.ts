@@ -1,7 +1,7 @@
 import { OutRef } from "@spacebudz/lucid";
-import { settingsRef } from "../constants";
-import { claimBounty } from "../operations/bounties/claim";
-import { lucidBase, signAndSubmit } from "../utils/utils";
+import { settingsRef } from "../constants.ts";
+import { claimBounty } from "../operations/bounties/claim.ts";
+import { lucidBase, signAndSubmit } from "../utils/utils.ts";
 
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 

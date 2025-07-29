@@ -11,7 +11,7 @@ import {
   TypesSettingsRedeemers,
   GithoneyContractGithoneyMint,
   GithoneyContractSettingsMintingMint,
-} from "./plutus";
+} from "./plutus.ts";
 
 const GITHONEY_SCRIPT = GithoneyContractGithoneySpend;
 const MINTING_SCRIPT = GithoneyContractGithoneyMint;
@@ -75,11 +75,13 @@ export {
   settingsPolicy,
   settingsValidator,
   GithoneyDatumSchema,
+  SettingsDatumSchema,
+  SettingsRedeemerSchema,
+};
+export type {
   GithoneyDatum,
   InitialValue,
-  SettingsDatumSchema,
   SettingsDatum,
-  SettingsRedeemerSchema,
   SettingsRedeemer,
   Address,
   PaymentCredential,

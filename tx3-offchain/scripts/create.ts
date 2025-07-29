@@ -3,9 +3,9 @@ import {
   githoneyAddr,
   maintainerAddr,
   settingsRef,
-} from "../constants";
-import { createBounty } from "../operations/bounties/create";
-import { lucidBase, signAndSubmit } from "../utils/utils";
+} from "../constants.ts";
+import { createBounty } from "../operations/bounties/create.ts";
+import { lucidBase, signAndSubmit } from "../utils/utils.ts";
 
 const rewardPolicy = "fb279c09175731ade05f7314a9b36cf923c7a3d6873be26bbd1eeccf";
 const rewardName = "tokenD";
