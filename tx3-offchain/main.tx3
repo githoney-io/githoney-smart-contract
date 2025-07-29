@@ -581,12 +581,12 @@ tx closeBeforeContributorWithReward(
 
     output admin_output {
         to: Admin,
-        amount: admin_input - fees - Ada(1500000),
+        amount: admin_input - fees - min_utxo(sponsor_output),
     }
 
     output sponsor_output {
         to: Sponsor,
-        amount: AnyAsset(refundingsPolicyId, refundingsAssetName, refundingsAmount) + Ada(1500000),
+        amount: AnyAsset(refundingsPolicyId, refundingsAssetName, refundingsAmount) + min_utxo(sponsor_output),
     }
 
     validity {
@@ -718,12 +718,12 @@ tx closeAfterContributorWithReward(
 
     output admin_output {
         to: Admin,
-        amount: admin_input - fees - Ada(1500000),
+        amount: admin_input - fees - min_utxo(sponsor_output),
     }
 
     output sponsor_output {
         to: Sponsor,
-        amount: AnyAsset(refundingsPolicyId, refundingsAssetName, refundingsAmount) + Ada(1500000),
+        amount: AnyAsset(refundingsPolicyId, refundingsAssetName, refundingsAmount) + min_utxo(sponsor_output),
     }
 
     validity {
@@ -787,8 +787,7 @@ tx merge(
 
     output githoney_output {
         to: GitHoneyAddr,
-        amount: AnyAsset(rewardPolicyId, rewardAssetName, githoneyFee) + Ada(1168010),
-        // amount: AnyAsset(rewardPolicyId, rewardAssetName, githoneyFee) + min_utxo(githoney_output),
+        amount: AnyAsset(rewardPolicyId, rewardAssetName, githoneyFee) + min_utxo(githoney_output),
     }
 
     output maintainer_output {
@@ -798,9 +797,8 @@ tx merge(
 
     output admin_output {
         to: Admin,
-        // NOTE: admin pays the min ada to create the githoney utxo (1168010 lovelace)
-        amount: admin_input - fees - Ada(1168010),
-        // amount: admin_input - fees - min_utxo(githoney_output),
+        // NOTE: admin pays the min ada to create the githoney output (1168010 lovelace)
+        amount: admin_input - fees - min_utxo(githoney_output),
     }
 
     validity {

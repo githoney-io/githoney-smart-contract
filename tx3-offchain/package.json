@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "tx3-create": "npx tsx --experimental-wasm-modules scripts/create.ts",
-    "tx3-add-reward": "npx tsx --experimental-wasm-modules scripts/addRewards.ts",
+    "tx3-add-rewards": "npx tsx --experimental-wasm-modules scripts/addRewards.ts",
     "tx3-assign": "npx tsx --experimental-wasm-modules scripts/assignContributor.ts",
     "tx3-close": "npx tsx --experimental-wasm-modules scripts/close.ts",
     "tx3-merge": "npx tsx --experimental-wasm-modules scripts/merge.ts",
@@ -24,8 +24,10 @@
     "test-close-settings": "NODE_OPTIONS=--experimental-vm-modules jest test/settings/close.test.ts"
   },
   "devDependencies": {
-    "bun-types": "lascripts",
+    "@jest/globals": "^30.0.5",
+    "@types/jest": "^30.0.0",
     "jest": "^30.0.5",
+    "ts-jest": "^29.4.0",
     "tsx": "^4.19.4"
   },
   "peerDependencies": {
@@ -34,6 +36,8 @@
   "dependencies": {
     "@ptkdev/logger": "^1.8.0",
     "@spacebudz/lucid": "npm:@jsr/spacebudz__lucid@^0.20.11",
-    "dotenv": "^17.0.1"
+    "dotenv": "^17.0.1",
+    "ts-node": "^10.9.2",
+    "tx3-sdk": "^0.5.0"
   }
 }
