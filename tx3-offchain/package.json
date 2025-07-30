@@ -16,7 +16,7 @@
     "test-demo": "NODE_OPTIONS=--experimental-vm-modules jest test/demo/integration.test.ts",
     "test-create": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/create.test.ts",
     "test-addrewards": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/addRewards.test.ts",
-    "test-assign": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/assignContributor.test.ts",
+    "test-assign": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/assign.test.ts",
     "test-merge": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/merge.test.ts",
     "test-close": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/close.test.ts",
     "test-claim": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/claim.test.ts",

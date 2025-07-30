@@ -5,10 +5,10 @@ import {
   rewardAmount,
   rewardName,
   rewardPolicy,
-  waitForUtxosUpdate,
+  signSubmitAndWaitConfirmation,
 } from "../utils.ts";
 import { createBounty } from "../../operations/index.ts";
-import { lucidBase as lucid, signAndSubmit } from "../../utils/utils.ts";
+import { lucidBase as lucid } from "../../utils/utils.ts";
 import {
   adminAddr,
   maintainerAddr,
@@ -35,9 +35,7 @@ describe("Create tests", () => {
       BigInt(deadline),
     );
     lucid.selectWalletFromSeed(maintainerSeed);
-    const createTx = await signAndSubmit(createCbor, lucid);
-
-    await waitForUtxosUpdate(lucid, createTx);
+    await signSubmitAndWaitConfirmation(createCbor, lucid);
   }, 300000);
 
   it("Bounty with deadline in the past", async () => {

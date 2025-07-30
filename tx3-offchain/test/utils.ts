@@ -15,7 +15,7 @@ import {
   maintainerAddr,
   maintainerSeed,
 } from "../constants.ts";
-import { lucidBase, signAndSubmit } from "../utils/utils.ts";
+import { signAndSubmit } from "../utils/utils.ts";
 
 export const logger = new Logger();
 
@@ -71,20 +71,22 @@ async function outRefWithErrorCatching(
  * Sign tx with the given private keys, submits it and waits for confirmation i.e. it is in the blockchain.
  */
 async function signSubmitAndWaitConfirmation(
-  lucid: Lucid,
   tx: string,
+  lucid: Lucid,
 ): Promise<string> {
-  let txId;
-  while (!txId) {
-    try {
-      txId = await signAndSubmit(tx, lucid);
-    } catch (e: any) {
-      console.log(e.message);
-    }
-  }
-  logger.info("Waiting tx confirmation");
+  // let txId;
+  // while (!txId) {
+  //   try {
+  //     txId = await signAndSubmit(tx, lucid);
+  //   } catch (e: any) {
+  //     const error = e as Error;
+  //     console.error(error.message);
+  //   }
+  // }
+  const txId = await signAndSubmit(tx, lucid);
+  logger.info("Waiting tx confirmation...");
   await waitForUtxosUpdate(lucid, txId);
-  logger.info("Utxos updated");
+  logger.info("Utxos updated!");
 
   return txId;
 }
@@ -103,10 +105,9 @@ const newBounty = async (lucid: Lucid, settingsUtxo: Utxo) => {
     settingsUtxo,
     BigInt(deadline),
   );
-  console.log("Create transaction CBOR:", createCbor);
   lucid.selectWalletFromSeed(maintainerSeed);
   const txId = await signAndSubmit(createCbor, lucid);
-  waitForUtxosUpdate(lucidBase, txId);
+  await waitForUtxosUpdate(lucid, txId);
   return txId;
 };
 
@@ -116,37 +117,33 @@ const newAssign = async (lucid: Lucid, outRef: OutRef, settingsUtxo: Utxo) => {
     settingsUtxo,
     outRef,
   );
-  console.log("Assign transaction CBOR:", assignCbor);
   lucid.selectWalletFromSeed(contributorSeed);
   const txId = await signAndSubmit(assignCbor, lucid);
-  waitForUtxosUpdate(lucid, txId);
+  await waitForUtxosUpdate(lucid, txId);
   return txId;
 };
 
 const newMerge = async (lucid: Lucid, outRef: OutRef, settingsUtxo: Utxo) => {
   const { mergeCbor } = await mergeBounty(adminAddr, settingsUtxo, outRef);
-  console.log("Merge transaction CBOR:", mergeCbor);
   lucid.selectWalletFromSeed(adminSeed);
   const txId = await signAndSubmit(mergeCbor, lucid);
-  waitForUtxosUpdate(lucid, txId);
+  await waitForUtxosUpdate(lucid, txId);
   return txId;
 };
 
 const newClaim = async (lucid: Lucid, outRef: OutRef, settingsUtxo: Utxo) => {
   const { claimCbor } = await claimBounty(settingsUtxo, outRef);
-  console.log("Claim transaction CBOR:", claimCbor);
   lucid.selectWalletFromSeed(contributorSeed);
   const txId = await signAndSubmit(claimCbor, lucid);
-  waitForUtxosUpdate(lucid, txId);
+  await waitForUtxosUpdate(lucid, txId);
   return txId;
 };
 
 const newClose = async (lucid: Lucid, outRef: OutRef, settingsUtxo: Utxo) => {
   const { closeCbor } = await closeBounty(adminAddr, {}, settingsUtxo, outRef);
-  console.log("Close transaction CBOR:", closeCbor);
   lucid.selectWalletFromSeed(adminSeed);
   const txId = await signAndSubmit(closeCbor, lucid);
-  waitForUtxosUpdate(lucid, txId);
+  await waitForUtxosUpdate(lucid, txId);
   return txId;
 };
 
