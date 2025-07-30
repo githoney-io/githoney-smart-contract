@@ -12,7 +12,7 @@ import { claimBounty } from "../../operations/index.ts";
 import { lucidBase as lucid, signAndSubmit } from "../../utils/utils.ts";
 import { contributorSeed, settingsRef } from "../../constants.ts";
 
-describe("Claim tests", async () => {
+describe("Claim tests", () => {
   it("Claim bounty", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
     const createTxId = await newBounty(lucid, settingsUtxo);

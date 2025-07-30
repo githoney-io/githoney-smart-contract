@@ -5,7 +5,7 @@ import { mergeBounty } from "../../operations/index.ts";
 import { lucidBase, signAndSubmit } from "../../utils/utils.ts";
 import { adminAddr, adminSeed, settingsRef } from "../../constants.ts";
 
-describe("Merge tests", async () => {
+describe("Merge tests", () => {
   it("Merge bounty", async () => {
     const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
     const createTxHash = await newBounty(lucidBase, settingsUtxo);

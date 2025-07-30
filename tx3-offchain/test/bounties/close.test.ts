@@ -17,7 +17,7 @@ import {
   sponsorSeed,
 } from "../../constants.ts";
 
-describe("Close tests", async () => {
+describe("Close tests", () => {
   it("Close Bounty After Contributor Assignment", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
     const createTxId = await newBounty(lucid, settingsUtxo);

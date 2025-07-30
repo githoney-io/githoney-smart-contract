@@ -24,7 +24,7 @@ import {
 } from "../../constants.ts";
 import { OutRef } from "@spacebudz/lucid";
 
-describe("Assign Contributor tests", async () => {
+describe("Assign Contributor tests", () => {
   const now = new Date();
   it("Assign Contributor", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);

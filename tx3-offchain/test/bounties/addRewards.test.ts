@@ -25,7 +25,7 @@ import {
   sponsorAddr,
 } from "../../constants.ts";
 
-describe("Add Rewards tests", async () => {
+describe("Add Rewards tests", () => {
   it("Add Rewards with same token", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
 

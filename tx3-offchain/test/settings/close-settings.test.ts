@@ -4,7 +4,7 @@ import { closeSettings, deploySettings } from "../../operations/index.ts";
 import { githoneyAddr, githoneySeed } from "../../constants.ts";
 import { waitForUtxosUpdate } from "../utils.ts";
 
-describe("Close Settings Test", async () => {
+describe("Close Settings Test", () => {
   it("Close settings", async () => {
     const { deployCbor, outRef } = await deploySettings(githoneyAddr);
     lucid.selectWalletFromSeed(githoneySeed);

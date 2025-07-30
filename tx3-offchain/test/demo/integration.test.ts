@@ -78,7 +78,7 @@ const tokenDName = fromText("tokenD");
 const tokenDUnit = toUnit(tokenDPolicy, tokenDName);
 const bounty_id = "Bounty DEMO";
 
-describe("Integration tests", async () => {
+describe("Integration tests", () => {
   it("Demo Normal flow", async () => {
     const { deployCbor } = await deploySettings(githoneyAddr);
     logger.info(`Deploying Githoney`);

@@ -4,7 +4,7 @@ import { githoneySeed, settingsRef } from "../../constants.ts";
 import { logger, waitForUtxosUpdate } from "../utils.ts";
 import { updateSettings } from "../../operations/index.ts";
 
-describe("Update Settings Test", async () => {
+describe("Update Settings Test", () => {
   it("Update settings", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
 
