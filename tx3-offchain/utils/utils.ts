@@ -10,6 +10,7 @@ import {
 
 import dotenv from "dotenv";
 import { Address, PaymentCredential, StakeCredential } from "../types.ts";
+import { logger } from "../test/utils.ts";
 
 dotenv.config();
 
@@ -30,10 +31,12 @@ export const signAndSubmit = async (
   cbor: string,
   lucid: Lucid = lucidWithWallet,
 ): Promise<string> => {
+  logger.debug("CBOR to be signed and submitted:");
+  logger.debug(cbor);
   const tx = await lucid.fromTx(cbor);
   const signedTx = await tx.sign().commit();
   const txHash = await signedTx.submit();
-  console.log("Submitted transaction. View it at: " + cExplorerTxURL + txHash);
+  logger.info("Submitted transaction. View it at: " + cExplorerTxURL + txHash);
 
   return txHash;
 };
@@ -43,11 +46,9 @@ function cardanoCredentialToCredential(
 ): Credential {
   let hash: string;
   if ("VerificationKey" in credential) {
-    hash = (credential.VerificationKey as [string])[0];
+    hash = credential.VerificationKey[0];
   } else {
-    hash = (
-      (credential as unknown as { Script: [string] }).Script as [string]
-    )[0];
+    hash = (credential as unknown as { Script: [string] }).Script[0];
   }
   return Addresses.keyHashToCredential(hash);
 }
