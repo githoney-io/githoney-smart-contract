@@ -1,11 +1,15 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, Utxo } from "@spacebudz/lucid";
 import { creationFee, MIN_ADA, rewardFee } from "../../constants.ts";
-import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
+import {
+  keyPairsToAddress,
+  lucidBase,
+  lucidWithWallet,
+} from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
+import { SettingsDatumSchema } from "../../types.ts";
 
 async function createBounty(
-  githoneyAddr: string,
   rewardPolicy: string,
   rewardName: string,
   rewardAmount: bigint,
@@ -30,12 +34,29 @@ async function createBounty(
   };
 
   const now = new Date().getTime() - 60 * 1000; // 1 minute ago
+  const tomorrow = new Date(now + 1000 * 60 * 60 * 24 * 1).getTime();
+
+  const settings = await lucidBase.datumOf(settingsUtxo, SettingsDatumSchema);
+
+  if (settings.bountyRewardFee < 0n || settings.bountyRewardFee > 10_000n) {
+    throw new Error("Reward fee must be between 0 and 10000");
+  }
+  if (BigInt(settings.bountyCreationFee) < 2_000_000n) {
+    throw new Error("Creation fee must be at least 2 ADA");
+  }
+  if (deadline < tomorrow) {
+    throw new Error("Deadline must be at least 24 hours from now");
+  }
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
   const maintainerPaymentCred = Addresses.inspect(maintainerAddr).payment?.hash;
   const maintainerStakeCred =
     Addresses.inspect(maintainerAddr).delegation?.hash || null;
   const adminPaymentCred = Addresses.inspect(adminAddr).payment?.hash;
+  const githoneyAddr = keyPairsToAddress(
+    lucidBase.network,
+    settings.githoneyAddress,
+  );
 
   const { tx } = await protocol.createTx({
     adminpaymentcredential: {

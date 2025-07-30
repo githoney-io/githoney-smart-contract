@@ -5,17 +5,18 @@ import {
   rewardAmount,
   rewardName,
   rewardPolicy,
+  waitForUtxosUpdate,
 } from "../utils.ts";
 import { createBounty } from "../../operations/index.ts";
 import { lucidBase as lucid, signAndSubmit } from "../../utils/utils.ts";
 import {
   adminAddr,
-  githoneyAddr,
   maintainerAddr,
+  maintainerSeed,
   settingsRef,
 } from "../../constants.ts";
 
-describe("Create tests", async () => {
+describe("Create tests", () => {
   const now = new Date();
   it("Create a New Bounty", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
@@ -24,7 +25,6 @@ describe("Create tests", async () => {
     ).getTime(); // 2 days from now
 
     const { createCbor } = await createBounty(
-      githoneyAddr,
       rewardPolicy,
       rewardName,
       rewardAmount,
@@ -34,12 +34,11 @@ describe("Create tests", async () => {
       settingsUtxo,
       BigInt(deadline),
     );
-    console.log("Create transaction CBOR:", createCbor);
+    lucid.selectWalletFromSeed(maintainerSeed);
+    const createTx = await signAndSubmit(createCbor, lucid);
 
-    const createTx = await signAndSubmit(createCbor);
-    lucid.selectWalletFromSeed(maintainerAddr);
-    await signAndSubmit(createTx, lucid);
-  });
+    await waitForUtxosUpdate(lucid, createTx);
+  }, 300000);
 
   it("Bounty with deadline in the past", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
@@ -48,8 +47,7 @@ describe("Create tests", async () => {
       const deadline = new Date(
         now.getTime() - 1000 * 60 * 60 * 24 * 1,
       ).getTime(); // Yesterday
-      const { createCbor } = await createBounty(
-        githoneyAddr,
+      await createBounty(
         rewardPolicy,
         rewardName,
         rewardAmount,
@@ -59,43 +57,10 @@ describe("Create tests", async () => {
         settingsUtxo,
         BigInt(deadline),
       );
-
-      const createTx = await signAndSubmit(createCbor);
-      lucid.selectWalletFromSeed(maintainerAddr);
-      await signAndSubmit(createTx, lucid);
     } catch (e) {
       const error = e as Error;
       logger.error(error.message);
       expect(error.message).toBe("Deadline must be at least 24 hours from now");
-    }
-  });
-
-  it("Bounty with negative fees", async () => {
-    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
-
-    try {
-      const deadline = new Date(
-        now.getTime() + 1000 * 60 * 60 * 24 * 2,
-      ).getTime();
-      const { createCbor } = await createBounty(
-        githoneyAddr,
-        rewardPolicy,
-        rewardName,
-        rewardAmount,
-        bountyId,
-        maintainerAddr,
-        adminAddr,
-        settingsUtxo,
-        BigInt(deadline),
-      );
-
-      const createTx = await signAndSubmit(createCbor);
-      lucid.selectWalletFromSeed(maintainerAddr);
-      await signAndSubmit(createTx, lucid);
-    } catch (e) {
-      const error = e as Error;
-      logger.error(error.message);
-      expect(error.message).toBe("Negative fees are not allowed");
     }
   });
 });

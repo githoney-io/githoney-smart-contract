@@ -12,7 +12,6 @@ import {
   adminSeed,
   contributorAddr,
   contributorSeed,
-  githoneyAddr,
   maintainerAddr,
   maintainerSeed,
 } from "../constants.ts";
@@ -95,7 +94,6 @@ const newBounty = async (lucid: Lucid, settingsUtxo: Utxo) => {
   const deadline = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 2).getTime();
 
   const { createCbor } = await createBounty(
-    githoneyAddr,
     rewardPolicy,
     rewardName,
     rewardAmount,
