@@ -3,6 +3,7 @@ import { Addresses, Utxo } from "@spacebudz/lucid";
 import { creationFee, MIN_ADA, rewardFee } from "../../constants.ts";
 import {
   keyPairsToAddress,
+  logger,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
@@ -21,10 +22,13 @@ async function createBounty(
 ): Promise<{
   createCbor: string;
 }> {
-  const scriptAddress = lucidBase.utils.scriptToAddress(
-    settingsUtxo.scriptRef!,
-  );
-  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
+  logger.info("START create");
+
+  if (!settingsUtxo.scriptRef) {
+    throw new Error("Githoney validator not found");
+  }
+  const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
+  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
 
   const selectedUtxos = await collateralOutRef(lucidWithWallet);
 
@@ -101,6 +105,7 @@ async function createBounty(
     },
   });
 
+  logger.info("END create");
   return {
     createCbor: tx,
   };

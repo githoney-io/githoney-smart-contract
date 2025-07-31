@@ -3,6 +3,7 @@ import { Addresses, fromUnit, OutRef, Utxo } from "@spacebudz/lucid";
 import {
   extractBountyIdTokenUnit,
   keyPairsToAddress,
+  logger,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
@@ -15,10 +16,13 @@ async function claimBounty(
 ): Promise<{
   claimCbor: string;
 }> {
-  const scriptAddress = lucidBase.utils.scriptToAddress(
-    settingsUtxo.scriptRef!,
-  );
-  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
+  logger.info("START claim");
+
+  if (!settingsUtxo.scriptRef) {
+    throw new Error("Githoney validator not found");
+  }
+  const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
+  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
@@ -72,7 +76,7 @@ async function claimBounty(
       type: "Int",
     },
   });
-
+  logger.info("END claim");
   return {
     claimCbor: tx,
   };

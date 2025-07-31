@@ -4,6 +4,7 @@ import { creationFee, rewardFee } from "../../constants.ts";
 import {
   getScriptVersion,
   keyPairsToAddress,
+  logger,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
@@ -24,6 +25,8 @@ async function updateSettings(
 ): Promise<{
   updateCbor: string;
 }> {
+  logger.info("START update");
+
   const settingsValidatorScript = settingsValidator();
   const settingsValidatorVersion = getScriptVersion(
     settingsValidatorScript.type,
@@ -99,6 +102,7 @@ async function updateSettings(
     },
   });
 
+  logger.info("END update");
   return {
     updateCbor: tx,
   };

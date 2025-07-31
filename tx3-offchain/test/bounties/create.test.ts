@@ -1,14 +1,13 @@
 import { describe, expect, it } from "@jest/globals";
 import {
   bountyId,
-  logger,
   rewardAmount,
   rewardName,
   rewardPolicy,
   signSubmitAndWaitConfirmation,
 } from "../utils.ts";
 import { createBounty } from "../../operations/index.ts";
-import { lucidBase as lucid } from "../../utils/utils.ts";
+import { logger, lucidBase as lucid } from "../../utils/utils.ts";
 import {
   adminAddr,
   maintainerAddr,

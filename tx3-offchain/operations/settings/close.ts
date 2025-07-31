@@ -3,6 +3,7 @@ import { Addresses, fromUnit, OutRef, Utxo } from "@spacebudz/lucid";
 import {
   getScriptVersion,
   keyPairsToAddress,
+  logger,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
@@ -19,6 +20,8 @@ async function closeSettings(
 ): Promise<{
   closeCbor: string;
 }> {
+  logger.info("START closeSettings");
+
   const settingsValidatorScript = settingsValidator();
   const settingsValidatorVersion = getScriptVersion(
     settingsValidatorScript.type,
@@ -96,6 +99,7 @@ async function closeSettings(
     },
   });
 
+  logger.info("END closeSettings");
   return {
     closeCbor: tx,
   };

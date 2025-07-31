@@ -3,6 +3,7 @@ import { Addresses, OutRef } from "@spacebudz/lucid";
 import { creationFee, rewardFee, settingsTokenName } from "../../constants.ts";
 import {
   getScriptVersion,
+  logger,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
@@ -16,6 +17,8 @@ import {
 async function deploySettings(
   githoneyAddr: string,
 ): Promise<{ deployCbor: string; outRef: OutRef }> {
+  logger.info("START deploy");
+
   const settingsValidatorScript = settingsValidator();
   const settingsValidatorAddress = Addresses.scriptToAddress(
     lucidBase.network,
@@ -101,6 +104,7 @@ async function deploySettings(
     },
   });
 
+  logger.info("END deploy");
   return {
     deployCbor: tx,
     outRef,

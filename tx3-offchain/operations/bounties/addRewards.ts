@@ -2,6 +2,7 @@ import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, OutRef, Utxo } from "@spacebudz/lucid";
 import {
   getRewardAsset,
+  logger,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
@@ -16,11 +17,13 @@ async function addRewards(
 ): Promise<{
   addRewardCbor: string;
 }> {
-  const scriptAddress = lucidBase.utils.scriptToAddress(
-    settingsUtxo.scriptRef!,
-  );
+  logger.info("START addRewards");
 
-  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
+  if (!settingsUtxo.scriptRef) {
+    throw new Error("Githoney validator not found");
+  }
+  const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
+  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
@@ -67,6 +70,7 @@ async function addRewards(
     sponsor: { value: sponsorAddr, type: "String" },
   });
 
+  logger.info("END addRewards");
   return {
     addRewardCbor: tx,
   };

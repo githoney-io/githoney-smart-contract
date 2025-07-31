@@ -11,6 +11,7 @@ import {
   extractBountyIdTokenUnit,
   getRewardAsset,
   keyPairsToAddress,
+  logger,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
@@ -26,10 +27,13 @@ async function closeBounty(
 ): Promise<{
   closeCbor: string;
 }> {
-  const scriptAddress = lucidBase.utils.scriptToAddress(
-    settingsUtxo.scriptRef!,
-  );
-  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
+  logger.info("START close");
+
+  if (!settingsUtxo.scriptRef) {
+    throw new Error("Githoney validator not found");
+  }
+  const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
+  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
@@ -165,6 +169,7 @@ async function closeBounty(
       ({ tx } = await protocol.closeBeforeContributorTx({ ...baseParams }));
     }
   }
+  logger.info("END close");
   return {
     closeCbor: tx,
   };

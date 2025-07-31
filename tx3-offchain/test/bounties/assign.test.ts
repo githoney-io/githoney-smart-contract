@@ -1,12 +1,11 @@
 import { describe, expect, it } from "@jest/globals";
 import {
-  logger,
   newBounty,
   newMerge,
   signSubmitAndWaitConfirmation,
 } from "../utils.ts";
 import { assignContributor } from "../../operations/index.ts";
-import { lucidBase as lucid } from "../../utils/utils.ts";
+import { logger, lucidBase as lucid } from "../../utils/utils.ts";
 import {
   adminAddr,
   contributorAddr,
