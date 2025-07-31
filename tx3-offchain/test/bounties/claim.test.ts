@@ -1,15 +1,14 @@
 import { describe, expect, it } from "@jest/globals";
 import { OutRef } from "@spacebudz/lucid";
 import {
-  logger,
   newAssign,
   newBounty,
   newClose,
   newMerge,
-  waitForUtxosUpdate,
+  signSubmitAndWaitConfirmation,
 } from "../utils.ts";
 import { claimBounty } from "../../operations/index.ts";
-import { lucidBase as lucid, signAndSubmit } from "../../utils/utils.ts";
+import { logger, lucidBase as lucid } from "../../utils/utils.ts";
 import { contributorSeed, settingsRef } from "../../constants.ts";
 
 describe("Claim tests", () => {
@@ -26,10 +25,8 @@ describe("Claim tests", () => {
 
     const { claimCbor } = await claimBounty(settingsUtxo, mergeOutRef);
     lucid.selectWalletFromSeed(contributorSeed);
-    const txId = await signAndSubmit(claimCbor, lucid);
-    waitForUtxosUpdate(lucid, txId);
-  });
-
+    await signSubmitAndWaitConfirmation(claimCbor, lucid);
+  }, 300000);
   it("Claim bounty after close", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
     try {
@@ -44,15 +41,14 @@ describe("Claim tests", () => {
 
       const { claimCbor } = await claimBounty(settingsUtxo, closeOutRef);
       lucid.selectWalletFromSeed(contributorSeed);
-      const txId = await signAndSubmit(claimCbor, lucid);
-      waitForUtxosUpdate(lucid, txId);
+      await signSubmitAndWaitConfirmation(claimCbor, lucid);
     } catch (e) {
       const error = e as Error;
+      console.error(error);
       logger.error(error.message);
-      expect(error.message).toBe("This Utxo does not have a datum hash.");
+      expect(error.message).toBe("This UTxO does not have a datum hash.");
     }
-  });
-
+  }, 300000);
   it("Claim bounty not merged", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
     try {
@@ -68,8 +64,7 @@ describe("Claim tests", () => {
       logger.error(error.message);
       expect(error.message).toBe("Bounty is not merged");
     }
-  });
-
+  }, 300000);
   it("Claim bounty with no contributor", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
     try {
@@ -82,5 +77,5 @@ describe("Claim tests", () => {
       logger.error(error.message);
       expect(error.message).toBe("Bounty doesn't have a contributor");
     }
-  });
+  }, 300000);
 });

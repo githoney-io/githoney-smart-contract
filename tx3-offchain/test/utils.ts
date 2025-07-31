@@ -6,7 +6,6 @@ import {
   createBounty,
   mergeBounty,
 } from "../operations/index.ts";
-import Logger from "@ptkdev/logger";
 import {
   adminAddr,
   adminSeed,
@@ -15,9 +14,7 @@ import {
   maintainerAddr,
   maintainerSeed,
 } from "../constants.ts";
-import { signAndSubmit } from "../utils/utils.ts";
-
-export const logger = new Logger();
+import { logger, signAndSubmit } from "../utils/utils.ts";
 
 export const rewardPolicy =
   "fb279c09175731ade05f7314a9b36cf923c7a3d6873be26bbd1eeccf";
@@ -74,16 +71,15 @@ async function signSubmitAndWaitConfirmation(
   tx: string,
   lucid: Lucid,
 ): Promise<string> {
-  // let txId;
-  // while (!txId) {
-  //   try {
-  //     txId = await signAndSubmit(tx, lucid);
-  //   } catch (e: any) {
-  //     const error = e as Error;
-  //     console.error(error.message);
-  //   }
-  // }
-  const txId = await signAndSubmit(tx, lucid);
+  let txId;
+  while (!txId) {
+    try {
+      txId = await signAndSubmit(tx, lucid);
+    } catch (e: any) {
+      const error = e as Error;
+      console.error(error);
+    }
+  }
   logger.info("Waiting tx confirmation...");
   await waitForUtxosUpdate(lucid, txId);
   logger.info("Utxos updated!");
@@ -139,8 +135,18 @@ const newClaim = async (lucid: Lucid, outRef: OutRef, settingsUtxo: Utxo) => {
   return txId;
 };
 
-const newClose = async (lucid: Lucid, outRef: OutRef, settingsUtxo: Utxo) => {
-  const { closeCbor } = await closeBounty(adminAddr, {}, settingsUtxo, outRef);
+const newClose = async (
+  lucid: Lucid,
+  outRef: OutRef,
+  settingsUtxo: Utxo,
+  refundings = {},
+) => {
+  const { closeCbor } = await closeBounty(
+    adminAddr,
+    refundings,
+    settingsUtxo,
+    outRef,
+  );
   lucid.selectWalletFromSeed(adminSeed);
   const txId = await signAndSubmit(closeCbor, lucid);
   await waitForUtxosUpdate(lucid, txId);
