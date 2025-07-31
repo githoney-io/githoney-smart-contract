@@ -21,7 +21,7 @@
     "test-close": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/close.test.ts",
     "test-claim": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/claim.test.ts",
     "test-update-settings": "NODE_OPTIONS=--experimental-vm-modules jest test/settings/update.test.ts",
-    "test-close-settings": "NODE_OPTIONS=--experimental-vm-modules jest test/settings/close.test.ts"
+    "test-close-settings": "NODE_OPTIONS=--experimental-vm-modules jest test/settings/close-settings.test.ts"
   },
   "devDependencies": {
     "@jest/globals": "^30.0.5",
