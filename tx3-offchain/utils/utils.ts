@@ -10,9 +10,11 @@ import {
 
 import dotenv from "dotenv";
 import { Address, PaymentCredential, StakeCredential } from "../types.ts";
-import { logger } from "../test/utils.ts";
+import Logger from "@ptkdev/logger";
 
 dotenv.config();
+
+export const logger = new Logger();
 
 export const lucidBase = new Lucid({
   provider: new Blockfrost(

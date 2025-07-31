@@ -72,14 +72,29 @@ async function signSubmitAndWaitConfirmation(
   lucid: Lucid,
 ): Promise<string> {
   let txId;
-  while (!txId) {
+  let attempts = 0;
+  const maxAttempts = 5;
+
+  while (!txId && attempts < maxAttempts) {
     try {
       txId = await signAndSubmit(tx, lucid);
     } catch (e: any) {
       const error = e as Error;
-      console.error(error);
+      logger.error(`Attempt ${attempts + 1}: ${error.message}`);
+      attempts++;
+
+      if (attempts >= maxAttempts) {
+        break;
+      }
     }
   }
+
+  if (!txId) {
+    throw new Error(
+      `Failed to sign and submit transaction after ${maxAttempts} attempts.`,
+    );
+  }
+
   logger.info("Waiting tx confirmation...");
   await waitForUtxosUpdate(lucid, txId);
   logger.info("Utxos updated!");
