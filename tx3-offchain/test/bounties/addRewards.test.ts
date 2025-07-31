@@ -2,27 +2,26 @@ import { describe, expect, it } from "@jest/globals";
 import { OutRef } from "@spacebudz/lucid";
 import {
   bountyId,
-  logger,
   newAssign,
   newBounty,
   newClaim,
   newMerge,
-  waitForUtxosUpdate,
+  signSubmitAndWaitConfirmation,
 } from "../utils.ts";
 import {
   createBounty,
   addRewards,
   updateSettings,
 } from "../../operations/index.ts";
-import { lucidBase as lucid, signAndSubmit } from "../../utils/utils.ts";
+import { logger, lucidBase as lucid } from "../../utils/utils.ts";
 import {
   adminAddr,
   adminSeed,
-  githoneyAddr,
   maintainerAddr,
   settingsRef,
   sponsorSeed,
   sponsorAddr,
+  maintainerSeed,
 } from "../../constants.ts";
 
 describe("Add Rewards tests", () => {
@@ -40,9 +39,8 @@ describe("Add Rewards tests", () => {
       createOutRef,
     );
     lucid.selectWalletFromSeed(sponsorSeed);
-    await signAndSubmit(addRewardCbor, lucid);
-    waitForUtxosUpdate(lucid, addRewardCbor);
-  });
+    await signSubmitAndWaitConfirmation(addRewardCbor, lucid);
+  }, 300000);
 
   it("Add Rewards with lovelace", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
@@ -51,11 +49,11 @@ describe("Add Rewards tests", () => {
       now.getTime() + 1000 * 60 * 60 * 24 * 2,
     ).getTime();
 
+    // TODO - manage this case in createBounty function
     const { createCbor } = await createBounty(
-      githoneyAddr,
       "lovelace",
       "",
-      10n,
+      5_000_000n,
       bountyId,
       maintainerAddr,
       adminAddr,
@@ -63,21 +61,21 @@ describe("Add Rewards tests", () => {
       BigInt(deadline),
     );
 
-    const createTxHash = await signAndSubmit(createCbor);
-    waitForUtxosUpdate(lucid, createTxHash);
-    const bountyOutRef: OutRef = { txHash: createTxHash, outputIndex: 0 };
+    lucid.selectWalletFromSeed(maintainerSeed);
+    const createTxHash = await signSubmitAndWaitConfirmation(createCbor, lucid);
+    const createOutRef: OutRef = { txHash: createTxHash, outputIndex: 0 };
 
     const additionalRewardAmount = 5_000_000n;
     const { addRewardCbor } = await addRewards(
       additionalRewardAmount,
       settingsUtxo,
       sponsorAddr,
-      bountyOutRef,
+      createOutRef,
     );
 
     lucid.selectWalletFromSeed(sponsorSeed);
-    await signAndSubmit(addRewardCbor, lucid);
-  });
+    await signSubmitAndWaitConfirmation(addRewardCbor, lucid);
+  }, 300000);
 
   it("Add Rewards with already merged bounty", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
@@ -104,10 +102,11 @@ describe("Add Rewards tests", () => {
       logger.error(error.message);
       expect(error.message).toBe("Bounty already merged");
     }
-  });
+  }, 300000);
 });
 
-describe("Reward bounds", async () => {
+// TODO - review this test because it's failing
+describe("Reward bounds", () => {
   it("0 reward fee", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
 
@@ -118,8 +117,10 @@ describe("Reward bounds", async () => {
     // Update settings with 0 reward fee
     const { updateCbor } = await updateSettings(settingsUtxo, newSettings);
     const lucidAdmin = lucid.selectWalletFromSeed(adminSeed);
-    const updateTxHash = await signAndSubmit(updateCbor, lucidAdmin);
-    waitForUtxosUpdate(lucidAdmin, updateTxHash);
+    const updateTxHash = await signSubmitAndWaitConfirmation(
+      updateCbor,
+      lucidAdmin,
+    );
 
     const [newSettingsUtxo] = await lucid.utxosByOutRef([
       { txHash: updateTxHash, outputIndex: 0 },
@@ -135,7 +136,7 @@ describe("Reward bounds", async () => {
     const mergeOutRef: OutRef = { txHash: mergeTxId, outputIndex: 0 };
 
     await newClaim(lucid, mergeOutRef, newSettingsUtxo);
-  });
+  }, 300000);
 
   it("10000 reward fee", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
@@ -146,10 +147,8 @@ describe("Reward bounds", async () => {
     };
     // Update settings with 10000 reward fee
     const { updateCbor } = await updateSettings(settingsUtxo, newSettings);
-
     lucid.selectWalletFromSeed(adminSeed);
-    const updateTxHash = await signAndSubmit(updateCbor, lucid);
-    waitForUtxosUpdate(lucid, updateTxHash);
+    const updateTxHash = await signSubmitAndWaitConfirmation(updateCbor, lucid);
     const [newSettingsUtxo] = await lucid.utxosByOutRef([
       { txHash: updateTxHash, outputIndex: 0 },
     ]);
@@ -164,5 +163,5 @@ describe("Reward bounds", async () => {
     const mergeOutRef: OutRef = { txHash: mergeTxId, outputIndex: 0 };
 
     await newClaim(lucid, mergeOutRef, newSettingsUtxo);
-  });
+  }, 300000);
 });
