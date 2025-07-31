@@ -1,12 +1,17 @@
 import { describe, expect, it } from "@jest/globals";
 import { logger, lucidBase as lucid } from "../../utils/utils.ts";
-import { githoneySeed, settingsRef } from "../../constants.ts";
+import { githoneyAddr, githoneySeed, settingsRef } from "../../constants.ts";
 import { signSubmitAndWaitConfirmation } from "../utils.ts";
-import { updateSettings } from "../../operations/index.ts";
+import { deploySettings, updateSettings } from "../../operations/index.ts";
 
 describe("Update Settings Test", () => {
   it("Update settings", async () => {
-    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
+    const { deployCbor } = await deploySettings(githoneyAddr);
+    lucid.selectWalletFromSeed(githoneySeed);
+    const deployTxId = await signSubmitAndWaitConfirmation(deployCbor, lucid);
+
+    const deployRef = { txHash: deployTxId, outputIndex: 0 };
+    const [settingsUtxo] = await lucid.utxosByOutRef([deployRef]);
 
     const { updateCbor } = await updateSettings(settingsUtxo);
     lucid.selectWalletFromSeed(githoneySeed);
@@ -24,9 +29,7 @@ describe("Update Settings Test", () => {
         creationFee: 1000000n,
         rewardFee: 1000n,
       };
-      const { updateCbor } = await updateSettings(settingsUtxo, settings);
-      lucid.selectWalletFromSeed(githoneySeed);
-      await signSubmitAndWaitConfirmation(updateCbor, lucid);
+      await updateSettings(settingsUtxo, settings);
     } catch (e) {
       const error = e as Error;
       logger.error(error.message);

@@ -10,8 +10,8 @@ describe("Close Settings Test", () => {
     lucid.selectWalletFromSeed(githoneySeed);
     const deployTxId = await signSubmitAndWaitConfirmation(deployCbor, lucid);
 
-    const settingsRef = { txHash: deployTxId, outputIndex: 0 };
-    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
+    const deployRef = { txHash: deployTxId, outputIndex: 0 };
+    const [settingsUtxo] = await lucid.utxosByOutRef([deployRef]);
 
     const { closeCbor } = await closeSettings(settingsUtxo, outRef);
     await signSubmitAndWaitConfirmation(closeCbor, lucid);
