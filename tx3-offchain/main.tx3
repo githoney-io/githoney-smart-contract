@@ -254,7 +254,7 @@ tx close(
 // BOUNTIES
 // CREATE BOUNTY
 
-tx create(
+tx createWithToken(
     adminPaymentCredential: Bytes,
     // Since the settingsutxo datum cannot be accessed,
     // they are passed as parameters.
@@ -335,6 +335,87 @@ tx create(
     output maintainer_output {
         to: Maintainer,
         amount: maintainer_input - Ada(bountyCreationFee) - fees - AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount) - Ada(minAda),
+    }
+
+    validity {
+        until_slot: until,
+        since_slot: since,
+    }
+}
+
+tx createWithLovelace(
+    adminPaymentCredential: Bytes,
+    bountyCreationFee: Int,
+    bountyId: Bytes,
+    bountyRewardFee: Int,
+    collateralRef: UtxoRef,
+    maintainerPaymentCredential: Bytes,
+    maintainerStakeCredential: Bytes,
+    minAda: Int,
+    mintingPolicyId: Bytes,
+    rewardAmount: Int,
+    settingsRef: UtxoRef,
+    since: Int,
+    timeLimit: Int,
+    until: Int,
+) {
+    reference contract {
+        ref: settingsRef,
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    input maintainer_input {
+        from: Maintainer,
+        min_amount: min_utxo(bounty_utxo) + Ada(rewardAmount),
+    }
+
+    mint {
+        amount: AnyAsset(mintingPolicyId, bountyId, 1),
+        redeemer: (),
+    }
+
+    output bounty_utxo {
+        to: Script,
+        amount: Ada(minAda + rewardAmount) + AnyAsset(mintingPolicyId, bountyId, 1),
+        datum: GithoneyDatum {
+            admin_payment_credential: CardanoCredential::VerificationKey {
+                VerificationKey: adminPaymentCredential,
+            },
+            maintainer_address: CardanoAddress {
+                payment_credential: CardanoCredential::VerificationKey {
+                    VerificationKey: maintainerPaymentCredential,
+                },
+                staking_credential: OptionAddressCardanoCredential::Some {
+                    stakeCredetial: StakeCredWrapper::Inline {
+                        VerificationKey: CardanoCredential::VerificationKey {
+                            VerificationKey: maintainerStakeCredential,
+                        },
+                    },
+                },
+            },
+            contributor_address: OptionAddress::None {},
+            bounty_reward_fee: bountyRewardFee,
+            deadline: timeLimit,
+            merged: false,
+            initial_value: {
+                "": {
+                    "": minAda + rewardAmount,
+                },
+            },
+        },
+    }
+
+    output githoney_wallet{
+        to: GitHoneyAddr,
+        amount: Ada(bountyCreationFee),
+    }
+
+    output maintainer_output {
+        to: Maintainer,
+        amount: maintainer_input - Ada(bountyCreationFee + rewardAmount + minAda) - fees,
     }
 
     validity {

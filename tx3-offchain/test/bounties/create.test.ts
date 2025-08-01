@@ -17,7 +17,7 @@ import {
 
 describe("Create tests", () => {
   const now = new Date();
-  it("Create a New Bounty", async () => {
+  it("Create a new bounty with token", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
     const deadline = new Date(
       now.getTime() + 1000 * 60 * 60 * 24 * 2,
@@ -27,6 +27,26 @@ describe("Create tests", () => {
       rewardPolicy,
       rewardName,
       rewardAmount,
+      bountyId,
+      maintainerAddr,
+      adminAddr,
+      settingsUtxo,
+      BigInt(deadline),
+    );
+    lucid.selectWalletFromSeed(maintainerSeed);
+    await signSubmitAndWaitConfirmation(createCbor, lucid);
+  }, 300000);
+
+  it("Create a new bounty with lovelace", async () => {
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
+    const deadline = new Date(
+      now.getTime() + 1000 * 60 * 60 * 24 * 2,
+    ).getTime();
+
+    const { createCbor } = await createBounty(
+      "lovelace",
+      "",
+      1_000_000n,
       bountyId,
       maintainerAddr,
       adminAddr,

@@ -62,48 +62,68 @@ async function createBounty(
     settings.githoneyAddress,
   );
 
-  const { tx } = await protocol.createTx({
+  const createParams = {
     adminpaymentcredential: {
-      value: Buffer.from(adminPaymentCred!, "hex"),
-      type: "Bytes",
+      value: new Uint8Array(Buffer.from(adminPaymentCred!, "hex")),
+      type: "Bytes" as const,
     },
-    bountycreationfee: { value: creationFee, type: "Int" },
-    bountyid: { value: Buffer.from(bountyId), type: "Bytes" },
-    bountyrewardfee: { value: rewardFee, type: "Int" },
-    collateralref: { value: collateralref, type: "UtxoRef" },
-    githoneyaddr: { value: githoneyAddr, type: "String" },
-    maintainer: { value: maintainerAddr, type: "String" },
+    bountycreationfee: { value: creationFee, type: "Int" as const },
+    bountyid: {
+      value: new Uint8Array(Buffer.from(bountyId)),
+      type: "Bytes" as const,
+    },
+    bountyrewardfee: { value: rewardFee, type: "Int" as const },
+    collateralref: { value: collateralref, type: "UtxoRef" as const },
+    githoneyaddr: { value: githoneyAddr, type: "String" as const },
+    maintainer: { value: maintainerAddr, type: "String" as const },
     maintainerpaymentcredential: {
-      value: Buffer.from(maintainerPaymentCred!, "hex"),
-      type: "Bytes",
+      value: new Uint8Array(Buffer.from(maintainerPaymentCred!, "hex")),
+      type: "Bytes" as const,
     },
     maintainerstakecredential: {
-      value: Buffer.from(maintainerStakeCred!, "hex"),
-      type: "Bytes",
+      value: new Uint8Array(Buffer.from(maintainerStakeCred!, "hex")),
+      type: "Bytes" as const,
     },
-    minada: { value: MIN_ADA, type: "Int" },
-    mintingpolicyid: { value: Buffer.from(scriptHash, "hex"), type: "Bytes" },
-    rewardamount: { value: rewardAmount, type: "Int" },
-    rewardassetname: {
-      value: Buffer.from(rewardName),
-      type: "Bytes",
+    minada: { value: MIN_ADA, type: "Int" as const },
+    mintingpolicyid: {
+      value: new Uint8Array(Buffer.from(scriptHash, "hex")),
+      type: "Bytes" as const,
     },
-    rewardpolicyid: { value: Buffer.from(rewardPolicy, "hex"), type: "Bytes" },
-    script: { value: scriptAddress, type: "String" },
+    rewardamount: { value: rewardAmount, type: "Int" as const },
+    script: { value: scriptAddress, type: "String" as const },
     settingsref: {
       value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-      type: "String",
+      type: "String" as const,
     },
     since: {
       value: BigInt(lucidBase.utils.unixTimeToSlots(now)),
-      type: "Int",
+      type: "Int" as const,
     },
-    timelimit: { value: deadline, type: "Int" },
+    timelimit: { value: deadline, type: "Int" as const },
     until: {
       value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
-      type: "Int",
+      type: "Int" as const,
     },
-  });
+  };
+
+  let tx;
+  if (rewardPolicy === "lovelace" || rewardPolicy === "") {
+    ({ tx } = await protocol.createWithLovelaceTx({
+      ...createParams,
+    }));
+  } else {
+    ({ tx } = await protocol.createWithTokenTx({
+      ...createParams,
+      rewardassetname: {
+        value: Buffer.from(rewardName),
+        type: "Bytes",
+      },
+      rewardpolicyid: {
+        value: Buffer.from(rewardPolicy, "hex"),
+        type: "Bytes",
+      },
+    }));
+  }
 
   logger.info("END create");
   return {
