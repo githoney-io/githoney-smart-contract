@@ -14,6 +14,7 @@ async function addRewards(
   settingsUtxo: Utxo,
   sponsorAddr: string,
   utxoRef: OutRef,
+  withLovelace?: boolean,
 ): Promise<{
   addRewardCbor: string;
 }> {
@@ -40,35 +41,51 @@ async function addRewards(
     throw new Error("Bounty deadline passed");
   }
 
-  const { rewardPolicy, rewardName } = getRewardAsset(
-    bountyUtxo.assets,
-    scriptHash,
-  );
-
   const now = new Date().getTime() - 60 * 1000;
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
 
-  const { tx } = await protocol.addTx({
+  const addParams = {
     bountyref: {
       value: bountyRef,
-      type: "String",
+      type: "String" as const,
     },
-    collateralref: { value: collateralref, type: "String" },
-    rewardamount: { value: BigInt(rewardAmount), type: "Int" },
-    rewardassetname: { value: Buffer.from(rewardName, "hex"), type: "Bytes" },
-    rewardpolicyid: { value: Buffer.from(rewardPolicy, "hex"), type: "Bytes" },
-    script: { value: scriptAddress, type: "String" },
+    collateralref: { value: collateralref, type: "String" as const },
+    rewardamount: { value: BigInt(rewardAmount), type: "Int" as const },
+    script: { value: scriptAddress, type: "String" as const },
     settingsref: {
       value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-      type: "String",
+      type: "String" as const,
     },
-    since: { value: BigInt(lucidBase.utils.unixTimeToSlots(now)), type: "Int" },
+    since: {
+      value: BigInt(lucidBase.utils.unixTimeToSlots(now)),
+      type: "Int" as const,
+    },
     until: {
       value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
-      type: "Int",
+      type: "Int" as const,
     },
-    sponsor: { value: sponsorAddr, type: "String" },
-  });
+    sponsor: { value: sponsorAddr, type: "String" as const },
+  };
+
+  let tx;
+  if (!withLovelace) {
+    const { rewardPolicy, rewardName } = getRewardAsset(
+      bountyUtxo.assets,
+      scriptHash,
+    );
+    ({ tx } = await protocol.addWithTokenTx({
+      ...addParams,
+      rewardassetname: { value: Buffer.from(rewardName, "hex"), type: "Bytes" },
+      rewardpolicyid: {
+        value: Buffer.from(rewardPolicy, "hex"),
+        type: "Bytes",
+      },
+    }));
+  } else {
+    ({ tx } = await protocol.addWithLovelaceTx({
+      ...addParams,
+    }));
+  }
 
   logger.info("END addRewards");
   return {

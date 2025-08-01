@@ -426,7 +426,7 @@ tx createWithLovelace(
 
 // ADD REWARDS
 
-tx add(
+tx addWithToken(
     bountyRef: UtxoRef,
     collateralRef: UtxoRef,
     minAda: Int,
@@ -481,6 +481,61 @@ tx add(
         since_slot: since,
     }
 }
+
+tx addWithLovelace(
+    bountyRef: UtxoRef,
+    collateralRef: UtxoRef,
+    minAda: Int,
+    rewardAmount: Int,
+    settingsRef: UtxoRef,
+    since: Int,
+    until: Int,
+) {
+    reference contract {
+        ref: settingsRef,
+    }
+
+    collateral {
+        ref: collateralRef,
+    }
+
+    input sponsor_input {
+        from: Sponsor,
+        min_amount: min_utxo(bounty_utxo) + Ada(rewardAmount),
+    }
+
+    input current {
+        from: Script,
+        ref: bountyRef,
+        datum_is: GithoneyDatum,
+        redeemer: GithoneyContractRedeemers::AddRewards {},
+    }
+
+    output bounty_utxo {
+        to: Script,
+        amount: current + Ada(rewardAmount),
+        datum: GithoneyDatum {
+            admin_payment_credential: current.admin_payment_credential,
+            maintainer_address: current.maintainer_address,
+            contributor_address: current.contributor_address,
+            bounty_reward_fee: current.bounty_reward_fee,
+            deadline: current.deadline,
+            merged: current.merged,
+            initial_value: current.initial_value,
+        },
+    }
+
+    output sponsor_output {
+        to: Sponsor,
+        amount: sponsor_input - fees - Ada(rewardAmount),
+    }
+
+    validity {
+        until_slot: until,
+        since_slot: since,
+    }
+}
+
 
 // ASSIGN CONTRIBUTOR
 
