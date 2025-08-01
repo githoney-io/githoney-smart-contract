@@ -55,7 +55,6 @@ async function outRefWithErrorCatching(
     } catch (e: any) {
       i++;
       logger.error(e.message);
-      // await new Promise((r) => setTimeout(r, 5000));
       if (i > 15) {
         throw new Error("OutRef not found, max attempts reached");
       }

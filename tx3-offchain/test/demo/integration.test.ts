@@ -26,7 +26,6 @@ import {
   rewardFee,
 } from "../../constants.ts";
 import {
-  logger,
   outRefWithErrorCatching,
   signSubmitAndWaitConfirmation,
 } from "../utils.ts";
@@ -36,7 +35,7 @@ import {
   githoneyMintingPolicy,
   SettingsDatumSchema,
 } from "../../types.ts";
-import { keyPairsToAddress } from "../../utils/utils.ts";
+import { keyPairsToAddress, logger } from "../../utils/utils.ts";
 
 dotenv.config();
 const {
@@ -74,7 +73,7 @@ const maintainerAddress = await lucidMaintainer.wallet.address();
 logger.info(`MAINTAINER address: ${maintainerAddress}\n`);
 
 const tokenDPolicy = "fb279c09175731ade05f7314a9b36cf923c7a3d6873be26bbd1eeccf";
-const tokenDName = fromText("tokenD");
+const tokenDName = "tokenD";
 const tokenDUnit = toUnit(tokenDPolicy, tokenDName);
 const bounty_id = "Bounty DEMO";
 
@@ -83,8 +82,8 @@ describe("Integration tests", () => {
     const { deployCbor } = await deploySettings(githoneyAddr);
     logger.info(`Deploying Githoney`);
     const deployTxId = await signSubmitAndWaitConfirmation(
-      lucidGithoney,
       deployCbor,
+      lucidGithoney,
     );
     const deployOutRef = { txHash: deployTxId, outputIndex: 0 };
     const settingsUtxo = await outRefWithErrorCatching(deployOutRef, lucid);
@@ -108,21 +107,20 @@ describe("Integration tests", () => {
     );
 
     const { createCbor } = await createBounty(
-      githoneyAddr,
       tokenDPolicy,
       tokenDName,
       100n,
-      tokenDName,
       bounty_id,
       maintainerAddress,
+      adminAddr,
       settingsUtxo,
       BigInt(deadline),
     );
 
     logger.info(`Creating bounty ${bounty_id}`);
     const createTxId = await signSubmitAndWaitConfirmation(
-      lucidMaintainer,
       createCbor,
+      lucidMaintainer,
     );
     const createOutRef = { txHash: createTxId, outputIndex: 0 };
     const githoneyOutRef = { txHash: createTxId, outputIndex: 1 };
@@ -158,8 +156,8 @@ describe("Integration tests", () => {
 
     logger.info(`Adding reward to bounty`);
     const addRewardTxId = await signSubmitAndWaitConfirmation(
-      lucidMaintainer,
       addRewardCbor,
+      lucidMaintainer,
     );
     const addRewatdOutRef = { txHash: addRewardTxId, outputIndex: 0 };
     const addRewardUtxo = await outRefWithErrorCatching(addRewatdOutRef, lucid);
@@ -176,8 +174,8 @@ describe("Integration tests", () => {
       { txHash: addRewardTxId, outputIndex: 0 },
     );
     const assignTxId = await signSubmitAndWaitConfirmation(
-      lucidContributor,
       assignCbor,
+      lucidContributor,
     );
 
     const assignOutRef = { txHash: assignTxId, outputIndex: 0 };
@@ -188,7 +186,10 @@ describe("Integration tests", () => {
     assert(
       keyPairsToAddress("Preprod", assignDatum.contributorAddress!) ===
         contributorAddr,
-      `Contributor mismatch: ${assignDatum.contributorAddress} !== ${contributorAddr}`,
+      `Contributor mismatch: ${keyPairsToAddress(
+        "Preprod",
+        assignDatum.contributorAddress!,
+      )} !== ${contributorAddr}`,
     );
     assert(
       assignUtxo.assets["lovelace"] === 26_000_000n,
@@ -202,8 +203,8 @@ describe("Integration tests", () => {
       outputIndex: 0,
     });
     const mergeTxId = await signSubmitAndWaitConfirmation(
-      lucidGithoney,
       mergeCbor,
+      lucidGithoney,
     );
 
     const mergeOutRef = { txHash: mergeTxId, outputIndex: 0 };
@@ -229,8 +230,8 @@ describe("Integration tests", () => {
       outputIndex: 0,
     });
     const claimTxId = await signSubmitAndWaitConfirmation(
-      lucidContributor,
       claimCbor,
+      lucidContributor,
     );
 
     const claimOutRef = { txHash: claimTxId, outputIndex: 0 };
@@ -243,7 +244,7 @@ describe("Integration tests", () => {
       claimUtxo.assets[tokenDUnit] === tokenAReward,
       `Token A mismatch ${claimUtxo.assets[tokenDUnit]} !== ${tokenAReward}`,
     );
-  });
+  }, 900000);
 
   it("Demo with settings change", async () => {
     const { deployCbor, outRef: nftOutRef } = await deploySettings(
@@ -251,8 +252,8 @@ describe("Integration tests", () => {
     );
     logger.info(`Deploying Githoney`);
     const deployTxId = await signSubmitAndWaitConfirmation(
-      lucidGithoney,
       deployCbor,
+      lucidGithoney,
     );
     const deployOutRef = { txHash: deployTxId, outputIndex: 0 };
     const settingsUtxo = await outRefWithErrorCatching(deployOutRef, lucid);
@@ -276,7 +277,6 @@ describe("Integration tests", () => {
     );
 
     const { createCbor } = await createBounty(
-      githoneyAddr,
       tokenDPolicy,
       tokenDName,
       100n,
@@ -289,8 +289,8 @@ describe("Integration tests", () => {
 
     logger.info(`Creating bounty ${bounty_id}`);
     const createTxId = await signSubmitAndWaitConfirmation(
-      lucidMaintainer,
       createCbor,
+      lucidMaintainer,
     );
     const createOutRef = { txHash: createTxId, outputIndex: 0 };
     const githoneyOutRef = { txHash: createTxId, outputIndex: 1 };
@@ -312,8 +312,8 @@ describe("Integration tests", () => {
 
     logger.info(`Updating settings`);
     const updateSettingsTxId = await signSubmitAndWaitConfirmation(
-      lucidGithoney,
       updateCbor,
+      lucidGithoney,
     );
     const updateSettingsOutRef = { txHash: updateSettingsTxId, outputIndex: 0 };
     const newSettingsUtxo = await outRefWithErrorCatching(
@@ -333,7 +333,6 @@ describe("Integration tests", () => {
     );
 
     const newCreateCbor = await createBounty(
-      githoneyAddr,
       tokenDPolicy,
       tokenDName,
       100n,
@@ -346,8 +345,8 @@ describe("Integration tests", () => {
 
     logger.info(`Creating bounty Bounty DEMO 2`);
     const newCreateTxId = await signSubmitAndWaitConfirmation(
-      lucidMaintainer,
       newCreateCbor.createCbor,
+      lucidMaintainer,
     );
     const newCreateOutRef = { txHash: newCreateTxId, outputIndex: 0 };
     const newGithoneyOutRef = { txHash: newCreateTxId, outputIndex: 1 };
@@ -376,8 +375,8 @@ describe("Integration tests", () => {
 
     logger.info(`Assigning contributor with addr ${contributorAddr}`);
     const assignTxId = await signSubmitAndWaitConfirmation(
-      lucidContributor,
       assignCbor,
+      lucidContributor,
     );
 
     const assignOutRef = { txHash: assignTxId, outputIndex: 0 };
@@ -390,8 +389,8 @@ describe("Integration tests", () => {
 
     logger.info(`Merging bounty`);
     const mergeTxId = await signSubmitAndWaitConfirmation(
-      lucidGithoney,
       mergeCbor,
+      lucidGithoney,
     );
     const mergeOutRef = { txHash: mergeTxId, outputIndex: 0 };
     const githoneyFeePayOutRef = { txHash: mergeTxId, outputIndex: 2 };
@@ -411,14 +410,14 @@ describe("Integration tests", () => {
     const { claimCbor } = await claimBounty(newSettingsUtxo, mergeOutRef);
 
     logger.info(`Claiming bounty`);
-    await signSubmitAndWaitConfirmation(lucidContributor, claimCbor);
+    await signSubmitAndWaitConfirmation(claimCbor, lucidContributor);
 
     const { closeCbor } = await closeSettings(newSettingsUtxo, nftOutRef);
 
     logger.info(`Closing settings`);
     const closeSettingsTxId = await signSubmitAndWaitConfirmation(
-      lucidGithoney,
       closeCbor,
+      lucidGithoney,
     );
     const githoneyPayOutRef = { txHash: closeSettingsTxId, outputIndex: 0 };
     const githoneyPayUtxo = await outRefWithErrorCatching(
@@ -428,5 +427,5 @@ describe("Integration tests", () => {
     assert(
       newSettingsUtxo.assets["lovelace"] === githoneyPayUtxo.assets["lovelace"],
     );
-  });
+  }, 900000);
 });
