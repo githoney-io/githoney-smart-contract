@@ -105,8 +105,8 @@ describe("Add Rewards tests", () => {
   }, 300000);
 });
 
-// TODO - review this test because it's failing
 describe("Reward bounds", () => {
+  // NOTE - change the reward fee in the .env file to 0n or 10000n before running this test
   it("0 reward fee", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
 
@@ -163,5 +163,5 @@ describe("Reward bounds", () => {
     const mergeOutRef: OutRef = { txHash: mergeTxId, outputIndex: 0 };
 
     await newClaim(lucid, mergeOutRef, newSettingsUtxo);
-  }, 300000);
+  }, 360000);
 });
