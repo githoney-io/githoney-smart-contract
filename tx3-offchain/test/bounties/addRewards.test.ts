@@ -49,7 +49,6 @@ describe("Add Rewards tests", () => {
       now.getTime() + 1000 * 60 * 60 * 24 * 2,
     ).getTime();
 
-    // TODO - manage this case in createBounty function
     const { createCbor } = await createBounty(
       "lovelace",
       "",
@@ -71,6 +70,7 @@ describe("Add Rewards tests", () => {
       settingsUtxo,
       sponsorAddr,
       createOutRef,
+      true, // withLovelace
     );
 
     lucid.selectWalletFromSeed(sponsorSeed);
