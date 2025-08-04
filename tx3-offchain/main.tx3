@@ -132,7 +132,7 @@ tx deploy(
         amount: githoney_wallet - fees - min_utxo(settings_utxo),
     }
 
-     cardano::plutus_witness {
+    cardano::plutus_witness {
         version: settingsMintingVersion,
         script: settingsMintingPolicy,
     }
@@ -160,7 +160,7 @@ tx update(
 
     input githoney_wallet {
         from: GitHoneyAddr,
-        min_amount: Ada(10000000),
+        min_amount: min_utxo(change) + fees,
     }
 
     collateral {
@@ -211,7 +211,7 @@ tx close(
 
     input githoney_wallet {
         from: GitHoneyAddr,
-        min_amount: Ada(10000000),
+        min_amount: min_utxo(change) + fees,
     }
 
     input current {
@@ -285,7 +285,7 @@ tx createWithToken(
 
     input maintainer_input {
         from: Maintainer,
-        min_amount: min_utxo(bounty_utxo) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+        min_amount: min_utxo(bounty_utxo) + min_utxo(maintainer_output) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount) + Ada(bountyCreationFee) + fees,
     }
 
     mint {
@@ -369,7 +369,7 @@ tx createWithLovelace(
 
     input maintainer_input {
         from: Maintainer,
-        min_amount: min_utxo(bounty_utxo) + Ada(rewardAmount),
+        min_amount: min_utxo(bounty_utxo) + min_utxo(maintainer_output) + Ada(bountyCreationFee + rewardAmount) + fees,
     }
 
     mint {
@@ -447,7 +447,7 @@ tx add(
 
     input sponsor_input {
         from: Sponsor,
-        min_amount: min_utxo(bounty_utxo) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+        min_amount: min_utxo(sponsor_output) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount) + fees,
     }
 
     input current {
@@ -504,7 +504,7 @@ tx assign(
 
     input contributor_input {
         from: Contributor,
-        min_amount: min_utxo(bounty_utxo) + Ada(minAda),
+        min_amount: min_utxo(contributor_output) + Ada(minAda) + fees,
     }
 
     input current {
@@ -578,7 +578,7 @@ tx closeBeforeContributor(
 
     input admin_input {
         from: Admin,
-        min_amount: Ada(10000000),
+        min_amount: min_utxo(admin_output) + min_utxo(maintainer_output) + fees,
     }
 
     input current {
@@ -640,7 +640,7 @@ tx closeBeforeContributorWithReward(
 
     input admin_input {
         from: Admin,
-        min_amount: Ada(10000000),
+        min_amount: min_utxo(admin_output) + min_utxo(maintainer_output) + min_utxo(sponsor_output) + fees,
     }
 
     input current {
@@ -705,7 +705,7 @@ tx closeAfterContributor(
 
     input admin_input {
         from: Admin,
-        min_amount: Ada(10000000),
+        min_amount: min_utxo(admin_output) + min_utxo(maintainer_output) + fees,
     }
 
     input current {
@@ -772,7 +772,7 @@ tx closeAfterContributorWithReward(
 
     input admin_input {
         from: Admin,
-        min_amount: Ada(10000000),
+        min_amount: min_utxo(admin_output) + min_utxo(maintainer_output) + min_utxo(sponsor_output) + fees,
     }
 
     input current {
@@ -841,7 +841,7 @@ tx merge(
 
     input admin_input {
         from: Admin,
-        min_amount: Ada(10000000),
+        min_amount: min_utxo(admin_output) + fees,
     }
 
     input current {
@@ -914,7 +914,7 @@ tx claim(
 
     input contributor_input {
         from: Contributor,
-        min_amount: Ada(5000000),
+        min_amount: min_utxo(contributor_output) + fees,
     }
 
     input current {
