@@ -1,5 +1,5 @@
 import { Assets, OutRef } from "@spacebudz/lucid";
-import { adminAddr, settingsRef } from "../constants.ts";
+import { adminAddr, adminSeed, settingsRef } from "../constants.ts";
 import { closeBounty } from "../operations/bounties/close.ts";
 import { lucidBase, signAndSubmit } from "../utils/utils.ts";
 
@@ -19,10 +19,7 @@ const closeBefore = await closeBounty(
   settingsUtxo,
   bountyRefBefore,
 );
-console.log(
-  "Close bounty before contributor transaction CBOR:",
-  closeBefore.closeCbor,
-);
+lucidBase.selectWalletFromSeed(adminSeed);
 await signAndSubmit(closeBefore.closeCbor);
 
 const bountyRefAfter: OutRef = {
@@ -36,10 +33,6 @@ const closeAfter = await closeBounty(
   {},
   settingsUtxo,
   bountyRefAfter,
-);
-console.log(
-  "Close bounty after contributor transaction CBOR:",
-  closeAfter.closeCbor,
 );
 await signAndSubmit(closeAfter.closeCbor);
 
@@ -68,10 +61,6 @@ const closeBeforeWithRewards = await closeBounty(
   settingsUtxo,
   bountyRefBeforeWithRewards,
 );
-console.log(
-  "Close bounty before contributor with rewards transaction CBOR:",
-  closeBeforeWithRewards.closeCbor,
-);
 await signAndSubmit(closeBeforeWithRewards.closeCbor);
 
 const bountyRefAfterWithRewards: OutRef = {
@@ -84,9 +73,5 @@ const closeAfterWithRewards = await closeBounty(
   refundings,
   settingsUtxo,
   bountyRefAfterWithRewards,
-);
-console.log(
-  "Close bounty after contributor with rewards transaction CBOR:",
-  closeAfterWithRewards.closeCbor,
 );
 await signAndSubmit(closeAfterWithRewards.closeCbor);

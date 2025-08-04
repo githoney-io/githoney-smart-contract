@@ -1,4 +1,4 @@
-import { githoneyAddr, settingsRef } from "../../constants.ts";
+import { githoneyAddr, githoneySeed, settingsRef } from "../../constants.ts";
 import { lucidBase, signAndSubmit } from "../../utils/utils.ts";
 import { updateSettings } from "../../operations/settings/update.ts";
 
@@ -11,6 +11,5 @@ const newSettings = {
 };
 
 const { updateCbor } = await updateSettings(settingsUtxo, newSettings);
-console.log("Deploy settings transaction CBOR:", updateCbor);
-
+lucidBase.selectWalletFromSeed(githoneySeed);
 await signAndSubmit(updateCbor);

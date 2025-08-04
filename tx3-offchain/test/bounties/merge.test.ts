@@ -6,16 +6,16 @@ import {
   signSubmitAndWaitConfirmation,
 } from "../utils.ts";
 import { mergeBounty } from "../../operations/index.ts";
-import { logger, lucidBase } from "../../utils/utils.ts";
+import { logger, lucidBase as lucid } from "../../utils/utils.ts";
 import { adminAddr, adminSeed, settingsRef } from "../../constants.ts";
 
 describe("Merge tests", () => {
   it("Merge bounty", async () => {
-    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
-    const createTxId = await newBounty(lucidBase, settingsUtxo);
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
+    const createTxId = await newBounty(lucid, settingsUtxo);
     const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
-    const assignTxId = await newAssign(lucidBase, createOutRef, settingsUtxo);
+    const assignTxId = await newAssign(lucid, createOutRef, settingsUtxo);
     const assignOutRef: OutRef = { txHash: assignTxId, outputIndex: 0 };
 
     const { mergeCbor } = await mergeBounty(
@@ -23,17 +23,17 @@ describe("Merge tests", () => {
       settingsUtxo,
       assignOutRef,
     );
-    lucidBase.selectWalletFromSeed(adminSeed);
-    await signSubmitAndWaitConfirmation(mergeCbor, lucidBase);
+    lucid.selectWalletFromSeed(adminSeed);
+    await signSubmitAndWaitConfirmation(mergeCbor, lucid);
   }, 300000);
 
   it("Merge bounty already merged", async () => {
-    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
     try {
-      const createTxId = await newBounty(lucidBase, settingsUtxo);
+      const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
-      const assignTxId = await newAssign(lucidBase, createOutRef, settingsUtxo);
+      const assignTxId = await newAssign(lucid, createOutRef, settingsUtxo);
       const assignOutRef: OutRef = { txHash: assignTxId, outputIndex: 0 };
 
       // First merge
@@ -42,11 +42,8 @@ describe("Merge tests", () => {
         settingsUtxo,
         assignOutRef,
       );
-      lucidBase.selectWalletFromSeed(adminSeed);
-      const mergeTxId = await signSubmitAndWaitConfirmation(
-        mergeCbor,
-        lucidBase,
-      );
+      lucid.selectWalletFromSeed(adminSeed);
+      const mergeTxId = await signSubmitAndWaitConfirmation(mergeCbor, lucid);
 
       // Second merge
       const mergeOutRef: OutRef = {
@@ -62,9 +59,9 @@ describe("Merge tests", () => {
   }, 300000);
 
   it("Merge bounty without contributor", async () => {
-    const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
+    const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
     try {
-      const createTxId = await newBounty(lucidBase, settingsUtxo);
+      const createTxId = await newBounty(lucid, settingsUtxo);
       const createOutRef: OutRef = { txHash: createTxId, outputIndex: 0 };
 
       await mergeBounty(adminAddr, settingsUtxo, createOutRef);

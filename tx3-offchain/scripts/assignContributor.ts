@@ -1,7 +1,7 @@
 import { OutRef } from "@spacebudz/lucid";
 import { assignContributor } from "../operations/bounties/assignContributor.ts";
 import { lucidBase, signAndSubmit } from "../utils/utils.ts";
-import { settingsRef } from "../constants.ts";
+import { contributorSeed, settingsRef } from "../constants.ts";
 
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 
@@ -18,6 +18,5 @@ const { assignCbor } = await assignContributor(
   settingsUtxo,
   bountyRef,
 );
-console.log("Assign contributor transaction CBOR:", assignCbor);
-
+lucidBase.selectWalletFromSeed(contributorSeed);
 await signAndSubmit(assignCbor);

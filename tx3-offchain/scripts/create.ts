@@ -1,7 +1,7 @@
 import {
   adminAddr,
-  githoneyAddr,
   maintainerAddr,
+  maintainerSeed,
   settingsRef,
 } from "../constants.ts";
 import { createBounty } from "../operations/bounties/create.ts";
@@ -19,7 +19,6 @@ const deadline = new Date(
 ).getTime(); // 2 days from now
 
 const { createCbor } = await createBounty(
-  githoneyAddr,
   rewardPolicy,
   rewardName,
   rewardAmount,
@@ -29,6 +28,5 @@ const { createCbor } = await createBounty(
   settingsUtxo,
   BigInt(deadline),
 );
-console.log("Create transaction CBOR:", createCbor);
-
+lucidBase.selectWalletFromSeed(maintainerSeed);
 await signAndSubmit(createCbor);

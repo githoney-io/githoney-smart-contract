@@ -1,5 +1,5 @@
 import { closeSettings } from "../../operations/settings/close.ts";
-import { settingsRef } from "../../constants.ts";
+import { githoneySeed, settingsRef } from "../../constants.ts";
 import { lucidBase, signAndSubmit } from "../../utils/utils.ts";
 import { OutRef } from "@spacebudz/lucid";
 
@@ -11,6 +11,5 @@ const utxoRef: OutRef = {
 };
 
 const { closeCbor } = await closeSettings(settingsUtxo, utxoRef);
-console.log("Close settings transaction CBOR:", closeCbor);
-
+lucidBase.selectWalletFromSeed(githoneySeed);
 await signAndSubmit(closeCbor);
