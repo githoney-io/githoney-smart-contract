@@ -1,7 +1,7 @@
 import { OutRef } from "@spacebudz/lucid";
 import { addRewards } from "../operations/bounties/addRewards.ts";
 import { lucidBase, signAndSubmit } from "../utils/utils.ts";
-import { settingsRef } from "../constants.ts";
+import { settingsRef, sponsorSeed } from "../constants.ts";
 
 const rewardAmount = 500n;
 
@@ -21,6 +21,5 @@ const { addRewardCbor } = await addRewards(
   sponsorAddr,
   bountyRef,
 );
-console.log("Add reward transaction CBOR:", addRewardCbor);
-
+lucidBase.selectWalletFromSeed(sponsorSeed);
 await signAndSubmit(addRewardCbor);

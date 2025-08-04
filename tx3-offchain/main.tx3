@@ -285,7 +285,7 @@ tx createWithToken(
 
     input maintainer_input {
         from: Maintainer,
-        min_amount: Ada(10000000) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+        min_amount: min_utxo(bounty_utxo) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
     }
 
     mint {
@@ -426,7 +426,7 @@ tx createWithLovelace(
 
 // ADD REWARDS
 
-tx addWithToken(
+tx add(
     bountyRef: UtxoRef,
     collateralRef: UtxoRef,
     minAda: Int,
@@ -447,7 +447,7 @@ tx addWithToken(
 
     input sponsor_input {
         from: Sponsor,
-        min_amount: Ada(5000000) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
+        min_amount: min_utxo(bounty_utxo) + AnyAsset(rewardPolicyId, rewardAssetName, rewardAmount),
     }
 
     input current {
@@ -482,61 +482,6 @@ tx addWithToken(
     }
 }
 
-tx addWithLovelace(
-    bountyRef: UtxoRef,
-    collateralRef: UtxoRef,
-    minAda: Int,
-    rewardAmount: Int,
-    settingsRef: UtxoRef,
-    since: Int,
-    until: Int,
-) {
-    reference contract {
-        ref: settingsRef,
-    }
-
-    collateral {
-        ref: collateralRef,
-    }
-
-    input sponsor_input {
-        from: Sponsor,
-        min_amount: min_utxo(bounty_utxo) + Ada(rewardAmount),
-    }
-
-    input current {
-        from: Script,
-        ref: bountyRef,
-        datum_is: GithoneyDatum,
-        redeemer: GithoneyContractRedeemers::AddRewards {},
-    }
-
-    output bounty_utxo {
-        to: Script,
-        amount: current + Ada(rewardAmount),
-        datum: GithoneyDatum {
-            admin_payment_credential: current.admin_payment_credential,
-            maintainer_address: current.maintainer_address,
-            contributor_address: current.contributor_address,
-            bounty_reward_fee: current.bounty_reward_fee,
-            deadline: current.deadline,
-            merged: current.merged,
-            initial_value: current.initial_value,
-        },
-    }
-
-    output sponsor_output {
-        to: Sponsor,
-        amount: sponsor_input - fees - Ada(rewardAmount),
-    }
-
-    validity {
-        until_slot: until,
-        since_slot: since,
-    }
-}
-
-
 // ASSIGN CONTRIBUTOR
 
 tx assign(
@@ -559,7 +504,7 @@ tx assign(
 
     input contributor_input {
         from: Contributor,
-        min_amount: Ada(5000000),
+        min_amount: min_utxo(bounty_utxo) + Ada(minAda),
     }
 
     input current {
