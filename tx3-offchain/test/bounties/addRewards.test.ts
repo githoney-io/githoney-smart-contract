@@ -50,7 +50,7 @@ describe("Add Rewards tests", () => {
     ).getTime();
 
     const { createCbor } = await createBounty(
-      "lovelace",
+      "",
       "",
       5_000_000n,
       bountyId,
@@ -106,7 +106,6 @@ describe("Add Rewards tests", () => {
 });
 
 describe("Reward bounds", () => {
-  // NOTE - change the reward fee in the .env file to 0n or 10000n before running this test
   it("0 reward fee", async () => {
     const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
 

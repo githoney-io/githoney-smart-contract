@@ -44,7 +44,7 @@ describe("Create tests", () => {
     ).getTime();
 
     const { createCbor } = await createBounty(
-      "lovelace",
+      "",
       "",
       1_000_000n,
       bountyId,

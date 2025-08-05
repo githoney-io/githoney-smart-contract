@@ -1,6 +1,6 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, Utxo } from "@spacebudz/lucid";
-import { creationFee, MIN_ADA, rewardFee } from "../../constants.ts";
+import { MIN_ADA } from "../../constants.ts";
 import {
   keyPairsToAddress,
   logger,
@@ -67,12 +67,15 @@ async function createBounty(
       value: new Uint8Array(Buffer.from(adminPaymentCred!, "hex")),
       type: "Bytes" as const,
     },
-    bountycreationfee: { value: creationFee, type: "Int" as const },
+    bountycreationfee: {
+      value: settings.bountyCreationFee,
+      type: "Int" as const,
+    },
     bountyid: {
       value: new Uint8Array(Buffer.from(bountyId)),
       type: "Bytes" as const,
     },
-    bountyrewardfee: { value: rewardFee, type: "Int" as const },
+    bountyrewardfee: { value: settings.bountyRewardFee, type: "Int" as const },
     collateralref: { value: collateralref, type: "UtxoRef" as const },
     githoneyaddr: { value: githoneyAddr, type: "String" as const },
     maintainer: { value: maintainerAddr, type: "String" as const },

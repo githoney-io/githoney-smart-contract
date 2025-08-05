@@ -41,7 +41,7 @@ async function addRewards(
     throw new Error("Bounty deadline passed");
   }
 
-  let rewardPolicy = "lovelace";
+  let rewardPolicy = "";
   let rewardName = "";
   if (!withLovelace) {
     ({ rewardPolicy, rewardName } = getRewardAsset(
