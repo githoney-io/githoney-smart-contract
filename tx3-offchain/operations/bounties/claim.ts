@@ -3,11 +3,12 @@ import { Addresses, fromUnit, OutRef, Utxo } from "@spacebudz/lucid";
 import {
   extractBountyIdTokenUnit,
   keyPairsToAddress,
+  logger,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
-import { GithoneyContractGithoneySpend } from "../../plutus.ts";
+import { GithoneyDatumSchema } from "../../types.ts";
 
 async function claimBounty(
   settingsUtxo: Utxo,
@@ -15,10 +16,13 @@ async function claimBounty(
 ): Promise<{
   claimCbor: string;
 }> {
-  const scriptAddress = lucidBase.utils.scriptToAddress(
-    settingsUtxo.scriptRef!,
-  );
-  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
+  logger.info("START claim");
+
+  if (!settingsUtxo.scriptRef) {
+    throw new Error("Githoney validator not found");
+  }
+  const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
+  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
@@ -26,10 +30,7 @@ async function claimBounty(
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
   const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
 
-  const bountyDatum = await lucidBase.datumOf(
-    bountyUtxo,
-    GithoneyContractGithoneySpend.datum,
-  );
+  const bountyDatum = await lucidBase.datumOf(bountyUtxo, GithoneyDatumSchema);
   if (!bountyDatum.contributorAddress) {
     throw new Error("Bounty doesn't have a contributor");
   }
@@ -75,7 +76,7 @@ async function claimBounty(
       type: "Int",
     },
   });
-
+  logger.info("END claim");
   return {
     claimCbor: tx,
   };

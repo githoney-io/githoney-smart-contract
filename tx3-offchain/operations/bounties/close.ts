@@ -11,15 +11,13 @@ import {
   extractBountyIdTokenUnit,
   getRewardAsset,
   keyPairsToAddress,
+  logger,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
-import {
-  GithoneyContractGithoneySpend,
-  PairsCardanoAssetsPolicyIdPairsCardanoAssetsAssetNameInt,
-} from "../../plutus.ts";
+import { GithoneyDatumSchema, InitialValue } from "../../types.ts";
 
 async function closeBounty(
   adminAddr: string,
@@ -29,10 +27,13 @@ async function closeBounty(
 ): Promise<{
   closeCbor: string;
 }> {
-  const scriptAddress = lucidBase.utils.scriptToAddress(
-    settingsUtxo.scriptRef!,
-  );
-  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
+  logger.info("START close");
+
+  if (!settingsUtxo.scriptRef) {
+    throw new Error("Githoney validator not found");
+  }
+  const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
+  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
@@ -40,10 +41,7 @@ async function closeBounty(
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
   const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
 
-  const bountyDatum = await lucidBase.datumOf(
-    bountyUtxo,
-    GithoneyContractGithoneySpend.datum,
-  );
+  const bountyDatum = await lucidBase.datumOf(bountyUtxo, GithoneyDatumSchema);
 
   if (bountyDatum.merged) {
     throw new Error("Bounty already merged");
@@ -57,11 +55,6 @@ async function closeBounty(
   ) {
     throw new Error("Refundings are invalid");
   }
-
-  const [sponsorAddr, refundingAssets] = Object.entries(refundings)[0];
-  const [refundingUnit, refundingAmount] = Object.entries(refundingAssets)[0];
-  const { policyId: refundingPolicy, assetName: refundingName } =
-    fromUnit(refundingUnit);
 
   const now = new Date().getTime() - 60 * 1000;
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
@@ -126,30 +119,39 @@ async function closeBounty(
     rewardamount: { value: BigInt(rewardAmount), type: "Int" as const },
   };
 
-  const refundingsParams = {
-    sponsor: {
-      value: sponsorAddr,
-      type: "String" as const,
-    },
-    refundingsamount: {
-      value: BigInt(refundingAmount),
-      type: "Int" as const,
-    },
-    refundingsassetname: {
-      value: Buffer.from(refundingName!, "hex"),
-      type: "Bytes" as const,
-    },
-    refundingspolicyid: {
-      value: Buffer.from(refundingPolicy, "hex"),
-      type: "Bytes" as const,
-    },
-  };
+  let refundingsParams;
+  if (Object.keys(refundings).length > 0) {
+    const [sponsorAddr, refundingAssets] = Object.entries(refundings)[0];
+    const [refundingUnit, refundingAmount] = Object.entries(refundingAssets)[0];
+    const { policyId: refundingPolicy, assetName: refundingName } =
+      fromUnit(refundingUnit);
+
+    refundingsParams = {
+      sponsor: {
+        value: sponsorAddr,
+        type: "String" as const,
+      },
+      refundingsamount: {
+        value: BigInt(refundingAmount),
+        type: "Int" as const,
+      },
+      refundingsassetname: {
+        value: Buffer.from(refundingName!, "hex"),
+        type: "Bytes" as const,
+      },
+      refundingspolicyid: {
+        value: Buffer.from(refundingPolicy, "hex"),
+        type: "Bytes" as const,
+      },
+    };
+  }
+
   if (bountyDatum.contributorAddress) {
     const contributorAddr = keyPairsToAddress(
       lucidBase.network,
       bountyDatum.contributorAddress,
     );
-    if (Object.keys(refundings).length > 0) {
+    if (refundingsParams) {
       ({ tx } = await protocol.closeAfterContributorWithRewardTx({
         ...baseParams,
         ...refundingsParams,
@@ -162,7 +164,7 @@ async function closeBounty(
       }));
     }
   } else {
-    if (Object.keys(refundings).length > 0) {
+    if (refundingsParams) {
       ({ tx } = await protocol.closeBeforeContributorWithRewardTx({
         ...baseParams,
         ...refundingsParams,
@@ -171,6 +173,7 @@ async function closeBounty(
       ({ tx } = await protocol.closeBeforeContributorTx({ ...baseParams }));
     }
   }
+  logger.info("END close");
   return {
     closeCbor: tx,
   };
@@ -179,8 +182,6 @@ async function closeBounty(
 export { closeBounty };
 
 // UTILS
-
-type InitialValue = PairsCardanoAssetsPolicyIdPairsCardanoAssetsAssetNameInt;
 
 const initialValueToAssets = (initialValue: InitialValue): Assets => {
   let initialAssets: Assets = {};

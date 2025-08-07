@@ -1,16 +1,18 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, fromUnit, OutRef, Utxo } from "@spacebudz/lucid";
 import {
-  GithoneyContractSettingsMintingMint,
-  GithoneyContractSettingsSpend,
-} from "../../plutus.ts";
-import {
   getScriptVersion,
   keyPairsToAddress,
+  logger,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
+import {
+  SettingsDatumSchema,
+  settingsPolicy,
+  settingsValidator,
+} from "../../types.ts";
 
 async function closeSettings(
   settingsUtxo: Utxo,
@@ -18,7 +20,9 @@ async function closeSettings(
 ): Promise<{
   closeCbor: string;
 }> {
-  const settingsValidatorScript = new GithoneyContractSettingsSpend();
+  logger.info("START closeSettings");
+
+  const settingsValidatorScript = settingsValidator();
   const settingsValidatorVersion = getScriptVersion(
     settingsValidatorScript.type,
   );
@@ -35,18 +39,7 @@ async function closeSettings(
     );
   }
 
-  const outRefParam = {
-    transactionId: utxoRef.txHash,
-    outputIndex: BigInt(utxoRef.outputIndex),
-  };
-
-  const settingsMintingPolicy = new GithoneyContractSettingsMintingMint(
-    outRefParam,
-    {
-      paymentCredential: { Script: [settingsValidatorCredential.hash] },
-      stakeCredential: null,
-    },
-  );
+  const settingsMintingPolicy = settingsPolicy(utxoRef);
   const settingsMintingVersion = getScriptVersion(settingsMintingPolicy.type);
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
@@ -63,7 +56,7 @@ async function closeSettings(
 
   const settingsDatum = await lucidBase.datumOf(
     settingsUtxo,
-    GithoneyContractSettingsSpend.datum,
+    SettingsDatumSchema,
   );
 
   const githoneyAddr = keyPairsToAddress(
@@ -106,6 +99,7 @@ async function closeSettings(
     },
   });
 
+  logger.info("END closeSettings");
   return {
     closeCbor: tx,
   };

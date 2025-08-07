@@ -3,15 +3,13 @@ import { Addresses, OutRef, toUnit, Utxo } from "@spacebudz/lucid";
 import {
   getRewardAsset,
   keyPairsToAddress,
+  logger,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
 import { MIN_ADA, rewardFee } from "../../constants.ts";
-import {
-  GithoneyContractGithoneySpend,
-  GithoneyContractSettingsSpend,
-} from "../../plutus.ts";
+import { GithoneyDatumSchema, SettingsDatumSchema } from "../../types.ts";
 
 async function mergeBounty(
   adminAddr: string,
@@ -20,20 +18,20 @@ async function mergeBounty(
 ): Promise<{
   mergeCbor: string;
 }> {
-  const scriptAddress = lucidBase.utils.scriptToAddress(
-    settingsUtxo.scriptRef!,
-  );
-  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef!).hash;
+  logger.info("START merge");
+
+  if (!settingsUtxo.scriptRef) {
+    throw new Error("Githoney validator not found");
+  }
+  const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
+  const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
   const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
-  const bountyDatum = await lucidBase.datumOf(
-    bountyUtxo,
-    GithoneyContractGithoneySpend.datum,
-  );
+  const bountyDatum = await lucidBase.datumOf(bountyUtxo, GithoneyDatumSchema);
 
   const { rewardPolicy, rewardName } = getRewardAsset(
     bountyUtxo.assets,
@@ -41,10 +39,7 @@ async function mergeBounty(
   );
   const rewardUnit = toUnit(rewardPolicy, rewardName);
 
-  const settings = await lucidBase.datumOf(
-    settingsUtxo,
-    GithoneyContractSettingsSpend.datum,
-  );
+  const settings = await lucidBase.datumOf(settingsUtxo, SettingsDatumSchema);
   const githoneyAddr = keyPairsToAddress(
     lucidBase.network,
     settings.githoneyAddress,
@@ -85,6 +80,7 @@ async function mergeBounty(
     },
   });
 
+  logger.info("END merge");
   return {
     mergeCbor: tx,
   };

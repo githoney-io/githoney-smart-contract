@@ -1,9 +1,9 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, OutRef, Utxo } from "@spacebudz/lucid";
-import { lucidBase, lucidWithWallet } from "../../utils/utils.ts";
+import { logger, lucidBase, lucidWithWallet } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
-import { GithoneyContractGithoneySpend } from "../../plutus.ts";
+import { GithoneyDatumSchema } from "../../types.ts";
 
 async function assignContributor(
   contributorAddr: string,
@@ -12,9 +12,12 @@ async function assignContributor(
 ): Promise<{
   assignCbor: string;
 }> {
-  const scriptAddress = lucidBase.utils.scriptToAddress(
-    settingsUtxo.scriptRef!,
-  );
+  logger.info("START assign");
+
+  if (!settingsUtxo.scriptRef) {
+    throw new Error("Githoney validator not found");
+  }
+  const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
@@ -22,10 +25,7 @@ async function assignContributor(
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
   const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
 
-  const oldDatum = await lucidBase.datumOf(
-    bountyUtxo,
-    GithoneyContractGithoneySpend.datum,
-  );
+  const oldDatum = await lucidBase.datumOf(bountyUtxo, GithoneyDatumSchema);
   if (oldDatum.merged) {
     throw new Error("Bounty already merged");
   }
@@ -72,6 +72,7 @@ async function assignContributor(
     },
   });
 
+  logger.info("END assign");
   return {
     assignCbor: tx,
   };

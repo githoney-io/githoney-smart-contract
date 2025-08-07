@@ -1,7 +1,7 @@
 import { OutRef } from "@spacebudz/lucid";
-import { settingsRef } from "../constants";
-import { claimBounty } from "../operations/bounties/claim";
-import { lucidBase, signAndSubmit } from "../utils/utils";
+import { contributorSeed, settingsRef } from "../constants.ts";
+import { claimBounty } from "../operations/bounties/claim.ts";
+import { lucidBase, signAndSubmit } from "../utils/utils.ts";
 
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 
@@ -11,6 +11,5 @@ const bountyRef: OutRef = {
 };
 
 const { claimCbor } = await claimBounty(settingsUtxo, bountyRef);
-console.log("Claim bounty transaction CBOR:", claimCbor);
-
+lucidBase.selectWalletFromSeed(contributorSeed);
 await signAndSubmit(claimCbor);

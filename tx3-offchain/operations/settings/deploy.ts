@@ -2,21 +2,24 @@ import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, OutRef } from "@spacebudz/lucid";
 import { creationFee, rewardFee, settingsTokenName } from "../../constants.ts";
 import {
-  GithoneyContractGithoneySpend,
-  GithoneyContractSettingsMintingMint,
-  GithoneyContractSettingsSpend,
-} from "../../plutus.ts";
-import {
   getScriptVersion,
+  logger,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
 import { collateralOutRef, sortUTxOs } from "../../utils/utxo.ts";
+import {
+  settingsValidator,
+  githoneyValidator,
+  settingsPolicy,
+} from "../../types.ts";
 
 async function deploySettings(
   githoneyAddr: string,
 ): Promise<{ deployCbor: string; outRef: OutRef }> {
-  const settingsValidatorScript = new GithoneyContractSettingsSpend();
+  logger.info("START deploy");
+
+  const settingsValidatorScript = settingsValidator();
   const settingsValidatorAddress = Addresses.scriptToAddress(
     lucidBase.network,
     settingsValidatorScript,
@@ -45,25 +48,12 @@ async function deploySettings(
     txHash: utxo.txHash,
     outputIndex: utxo.outputIndex,
   };
-  const outRefParam = {
-    transactionId: utxo.txHash,
-    outputIndex: BigInt(utxo.outputIndex),
-  };
 
-  const settingsMintingPolicy = new GithoneyContractSettingsMintingMint(
-    outRefParam,
-    {
-      paymentCredential: { Script: [settingsValidatorCredential.hash] },
-      stakeCredential: null,
-    },
-  );
-
+  const settingsMintingPolicy = settingsPolicy(outRef);
   const settingsPolicyId = Addresses.scriptToCredential(settingsMintingPolicy);
 
-  const githoneyValidator = new GithoneyContractGithoneySpend(
-    settingsPolicyId.hash,
-  );
-  const scriptVersion = getScriptVersion(githoneyValidator.type);
+  const gitHoneyValidator = githoneyValidator(settingsPolicyId.hash);
+  const scriptVersion = getScriptVersion(gitHoneyValidator.type);
   const settingsMintingVersion = getScriptVersion(settingsMintingPolicy.type);
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
@@ -97,7 +87,7 @@ async function deploySettings(
     settingstokenname: { value: Buffer.from(settingsTokenName), type: "Bytes" },
     collateralref: { value: collateralref, type: "String" },
     githoneyscript: {
-      value: githoneyValidator.script,
+      value: gitHoneyValidator.script,
       type: "String",
     },
     scriptversion: {
@@ -114,6 +104,7 @@ async function deploySettings(
     },
   });
 
+  logger.info("END deploy");
   return {
     deployCbor: tx,
     outRef,

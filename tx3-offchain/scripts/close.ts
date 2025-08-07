@@ -1,7 +1,7 @@
 import { Assets, OutRef } from "@spacebudz/lucid";
-import { adminAddr, settingsRef } from "../constants";
-import { closeBounty } from "../operations/bounties/close";
-import { lucidBase, signAndSubmit } from "../utils/utils";
+import { adminAddr, adminSeed, settingsRef } from "../constants.ts";
+import { closeBounty } from "../operations/bounties/close.ts";
+import { lucidBase, signAndSubmit } from "../utils/utils.ts";
 
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 
@@ -19,10 +19,7 @@ const closeBefore = await closeBounty(
   settingsUtxo,
   bountyRefBefore,
 );
-console.log(
-  "Close bounty before contributor transaction CBOR:",
-  closeBefore.closeCbor,
-);
+lucidBase.selectWalletFromSeed(adminSeed);
 await signAndSubmit(closeBefore.closeCbor);
 
 const bountyRefAfter: OutRef = {
@@ -36,10 +33,6 @@ const closeAfter = await closeBounty(
   {},
   settingsUtxo,
   bountyRefAfter,
-);
-console.log(
-  "Close bounty after contributor transaction CBOR:",
-  closeAfter.closeCbor,
 );
 await signAndSubmit(closeAfter.closeCbor);
 
@@ -58,7 +51,7 @@ const refundings: { [key: string]: Assets } = {
 };
 
 const bountyRefBeforeWithRewards: OutRef = {
-  txHash: "f9dad7aeaebe37def307e94aaca972228f64fe79916dd85551041e938f4a42ca",
+  txHash: "e2f17d07ebf4f8395081ad9d9fa5da5c8dfef486046e7ada5a2eba0279b69bd7",
   outputIndex: 0,
 };
 
@@ -67,10 +60,6 @@ const closeBeforeWithRewards = await closeBounty(
   refundings,
   settingsUtxo,
   bountyRefBeforeWithRewards,
-);
-console.log(
-  "Close bounty before contributor with rewards transaction CBOR:",
-  closeBeforeWithRewards.closeCbor,
 );
 await signAndSubmit(closeBeforeWithRewards.closeCbor);
 
@@ -84,9 +73,5 @@ const closeAfterWithRewards = await closeBounty(
   refundings,
   settingsUtxo,
   bountyRefAfterWithRewards,
-);
-console.log(
-  "Close bounty after contributor with rewards transaction CBOR:",
-  closeAfterWithRewards.closeCbor,
 );
 await signAndSubmit(closeAfterWithRewards.closeCbor);

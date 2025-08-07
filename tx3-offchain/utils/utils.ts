@@ -9,13 +9,12 @@ import {
 } from "@spacebudz/lucid";
 
 import dotenv from "dotenv";
-import {
-  CardanoAddressAddress,
-  CardanoAddressPaymentCredential,
-  CardanoAddressStakeCredential,
-} from "../plutus";
+import { Address, PaymentCredential, StakeCredential } from "../types.ts";
+import Logger from "@ptkdev/logger";
 
 dotenv.config();
+
+export const logger = new Logger();
 
 export const lucidBase = new Lucid({
   provider: new Blockfrost(
@@ -25,38 +24,38 @@ export const lucidBase = new Lucid({
 });
 
 export const lucidWithWallet = lucidBase.selectWalletFromSeed(
-  process.env.SEED as string,
+  process.env.ADMIN_SEED as string,
 );
 
 export const cExplorerTxURL = "https://preprod.cexplorer.io/tx/";
 
-export const signAndSubmit = async (cbor: string): Promise<string> => {
-  const lucid = lucidBase.selectWalletFromSeed(process.env.SEED as string);
+export const signAndSubmit = async (
+  cbor: string,
+  lucid: Lucid = lucidWithWallet,
+): Promise<string> => {
+  logger.debug("CBOR to be signed and submitted:");
+  logger.debug(cbor);
   const tx = await lucid.fromTx(cbor);
   const signedTx = await tx.sign().commit();
   const txHash = await signedTx.submit();
-  console.log("Submitted transaction. View it at: " + cExplorerTxURL + txHash);
+  logger.info("Submitted transaction. View it at: " + cExplorerTxURL + txHash);
 
   return txHash;
 };
 
 function cardanoCredentialToCredential(
-  credential: CardanoAddressPaymentCredential,
+  credential: PaymentCredential,
 ): Credential {
   let hash: string;
   if ("VerificationKey" in credential) {
-    hash = (credential.VerificationKey as [string])[0];
+    hash = credential.VerificationKey[0];
   } else {
-    hash = (
-      (credential as unknown as { Script: [string] }).Script as [string]
-    )[0];
+    hash = (credential as unknown as { Script: [string] }).Script[0];
   }
   return Addresses.keyHashToCredential(hash);
 }
 
-function cardanoStakingCredToCredential(
-  credential: CardanoAddressStakeCredential,
-) {
+function cardanoStakingCredToCredential(credential: StakeCredential) {
   if ("Inline" in credential) {
     return cardanoCredentialToCredential(credential.Inline[0]);
   } else {
@@ -71,7 +70,7 @@ function cardanoStakingCredToCredential(
  */
 export function keyPairsToAddress(
   network: Network,
-  cardanoAddress: CardanoAddressAddress,
+  cardanoAddress: Address,
 ): string {
   return Addresses.credentialToAddress(
     network,

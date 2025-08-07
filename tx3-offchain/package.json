@@ -3,26 +3,41 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "deploy": "npx tsx --experimental-wasm-modules test/deploy.ts",
-    "tx3-create": "npx tsx --experimental-wasm-modules test/create.ts",
-    "tx3-add-reward": "npx tsx --experimental-wasm-modules test/addRewards.ts",
-    "tx3-assign": "npx tsx --experimental-wasm-modules test/assignContributor.ts",
-    "tx3-close": "npx tsx --experimental-wasm-modules test/close.ts",
-    "tx3-merge": "npx tsx --experimental-wasm-modules test/merge.ts",
-    "tx3-claim": "npx tsx --experimental-wasm-modules test/claim.ts",
-    "tx3-deploy": "npx tsx --experimental-wasm-modules test/settings/deploy.ts",
-    "tx3-update": "npx tsx --experimental-wasm-modules test/settings/update.ts",
-    "tx3-close-settings": "npx tsx --experimental-wasm-modules test/settings/close.ts"
+    "tx3-create": "npx tsx --experimental-wasm-modules scripts/create.ts",
+    "tx3-add-rewards": "npx tsx --experimental-wasm-modules scripts/addRewards.ts",
+    "tx3-assign": "npx tsx --experimental-wasm-modules scripts/assignContributor.ts",
+    "tx3-close": "npx tsx --experimental-wasm-modules scripts/close.ts",
+    "tx3-merge": "npx tsx --experimental-wasm-modules scripts/merge.ts",
+    "tx3-claim": "npx tsx --experimental-wasm-modules scripts/claim.ts",
+    "tx3-deploy": "npx tsx --experimental-wasm-modules scripts/settings/deploy.ts",
+    "tx3-update": "npx tsx --experimental-wasm-modules scripts/settings/update.ts",
+    "tx3-close-settings": "npx tsx --experimental-wasm-modules scripts/settings/close.ts",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test-demo": "NODE_OPTIONS=--experimental-vm-modules jest test/demo/integration.test.ts",
+    "test-create": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/create.test.ts",
+    "test-add-rewards": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/addRewards.test.ts",
+    "test-assign": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/assign.test.ts",
+    "test-merge": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/merge.test.ts",
+    "test-close": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/close.test.ts",
+    "test-claim": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/claim.test.ts",
+    "test-update-settings": "NODE_OPTIONS=--experimental-vm-modules jest test/settings/update.test.ts",
+    "test-close-settings": "NODE_OPTIONS=--experimental-vm-modules jest test/settings/close-settings.test.ts"
   },
   "devDependencies": {
-    "bun-types": "latest",
+    "@jest/globals": "^30.0.5",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.0",
     "tsx": "^4.19.4"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@ptkdev/logger": "^1.8.0",
     "@spacebudz/lucid": "npm:@jsr/spacebudz__lucid@^0.20.11",
-    "dotenv": "^17.0.1"
+    "dotenv": "^17.0.1",
+    "ts-node": "^10.9.2",
+    "tx3-sdk": "^0.5.0"
   }
 }

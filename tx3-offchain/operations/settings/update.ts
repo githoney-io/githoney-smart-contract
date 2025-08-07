@@ -2,16 +2,18 @@ import { protocol } from "../../gen/typescript/protocol.ts";
 import { Addresses, fromUnit, Utxo } from "@spacebudz/lucid";
 import { creationFee, rewardFee } from "../../constants.ts";
 import {
-  GithoneyContractGithoneySpend,
-  GithoneyContractSettingsSpend,
-} from "../../plutus.ts";
-import {
   getScriptVersion,
   keyPairsToAddress,
+  logger,
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
+import {
+  githoneyValidator,
+  SettingsDatumSchema,
+  settingsValidator,
+} from "../../types.ts";
 
 async function updateSettings(
   settingsUtxo: Utxo,
@@ -23,7 +25,9 @@ async function updateSettings(
 ): Promise<{
   updateCbor: string;
 }> {
-  const settingsValidatorScript = new GithoneyContractSettingsSpend();
+  logger.info("START update");
+
+  const settingsValidatorScript = settingsValidator();
   const settingsValidatorVersion = getScriptVersion(
     settingsValidatorScript.type,
   );
@@ -38,8 +42,8 @@ async function updateSettings(
     })!,
   ).policyId;
 
-  const githoneyValidator = new GithoneyContractGithoneySpend(settingsPolicyId);
-  const scriptVersion = getScriptVersion(githoneyValidator.type);
+  const gitHoneyValidator = githoneyValidator(settingsPolicyId);
+  const scriptVersion = getScriptVersion(gitHoneyValidator.type);
 
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
@@ -47,7 +51,7 @@ async function updateSettings(
 
   const oldSettings = await lucidBase.datumOf(
     settingsUtxo,
-    GithoneyContractSettingsSpend.datum,
+    SettingsDatumSchema,
   );
 
   const githoneyAddress = keyPairsToAddress(
@@ -81,7 +85,7 @@ async function updateSettings(
       type: "String",
     },
     githoneyscript: {
-      value: githoneyValidator.script,
+      value: gitHoneyValidator.script,
       type: "String",
     },
     scriptversion: {
@@ -98,6 +102,7 @@ async function updateSettings(
     },
   });
 
+  logger.info("END update");
   return {
     updateCbor: tx,
   };
