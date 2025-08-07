@@ -43,7 +43,7 @@ export const signAndSubmit = async (
   return txHash;
 };
 
-function cardanoCredentialToCredential(
+export function cardanoCredentialToCredential(
   credential: PaymentCredential,
 ): Credential {
   let hash: string;
