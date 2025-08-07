@@ -91,11 +91,11 @@ async function deploySettings(
       type: "String",
     },
     scriptversion: {
-      value: BigInt(scriptVersion),
+      value: scriptVersion,
       type: "Int",
     },
     settingsmintingversion: {
-      value: BigInt(settingsMintingVersion),
+      value: settingsMintingVersion,
       type: "Int",
     },
     utxoref: {
