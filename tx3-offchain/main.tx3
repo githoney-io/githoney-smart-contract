@@ -73,6 +73,128 @@ type GithoneyDatum {
     initial_value: Map<Bytes, Map<Bytes, Int>>,
 }
 
+type BadgesDatum {
+    metadata: Map<Bytes, Bytes>,
+    version: Int,
+}
+
+// BADGES
+
+// DEPLOY BADGE
+tx deployBadge(
+    collateralRef: UtxoRef,
+    ftAddress: Bytes,
+    ftBadgeAmount: Int,
+    ftBadgeName: Bytes,
+    ftBadgePolicyId: Bytes,
+    policyScript: Bytes,
+    policyScriptVersion: Int,
+    settingsRef: UtxoRef,
+    utxoRef: UtxoRef,
+    refNftPolicyId: Bytes,
+    refNftAssetName: Bytes,
+    mVersion: Int,
+    mKey: Bytes,
+    mValue: Bytes,
+) {
+    collateral {
+        ref: collateralRef,
+    }
+
+    input githoney_wallet {
+        from: GitHoneyAddr,
+        ref: utxoRef,
+    }
+
+    mint {
+        amount: AnyAsset(refNftPolicyId, refNftAssetName, 1) + AnyAsset(ftBadgePolicyId, ftBadgeName, ftBadgeAmount),
+        redeemer: (),
+    }
+
+    output badge_utxo {
+        to: Script,
+        amount: min_utxo(badge_utxo) + AnyAsset(refNftPolicyId, refNftAssetName, 1),
+        datum: BadgesDatum {
+            metadata: {
+                mKey: mValue,
+            },
+            version: 1,
+        },
+    }
+
+    output ft_output {
+        to: ftAddress,
+        amount: AnyAsset(ftBadgePolicyId, ftBadgeName, ftBadgeAmount) + min_utxo(ft_output),
+    }
+
+    cardano::plutus_witness {
+        version: policyScriptVersion,
+        script: policyScript,
+    }
+
+    metadata {
+        674: "Creating badges",
+    }
+}
+
+// UPDATE BADGE METADATA
+tx updateBadge(
+    collateralRef: UtxoRef,
+    badgesScript: Bytes,
+    badgesScriptVersion: Int,
+    settingsRef: UtxoRef,
+    utxoRef: UtxoRef,
+    mVersion: Int,
+    mKey: Bytes,
+    mValue: Bytes,
+    utxoToCollect: UtxoRef,
+) {
+    collateral {
+        ref: collateralRef,
+    }
+
+    input githoney_wallet {
+        from: GitHoneyAddr,
+        ref: utxoRef,
+    }
+
+    input settings_utxo {
+        from: Script,
+        ref: settingsRef,
+    }
+
+    input current {
+        from: Script,
+        ref: utxoToCollect,
+        redeemer: (),
+    }
+
+    output badge_utxo {
+        to: Script,
+        amount: current,
+        datum: BadgesDatum {
+            metadata: {
+                mKey: mValue,
+            },
+            version: 1,
+        },
+    }
+
+    signers {
+        GitHoneyAddr,
+    }
+
+    cardano::plutus_witness {
+        version: badgesScriptVersion,
+        script: badgesScript,
+    }
+
+    metadata {
+        674: "Creating badges",
+    }
+}
+
+
 // SETTINGS
 // DEPLOY SETTINGS
 
