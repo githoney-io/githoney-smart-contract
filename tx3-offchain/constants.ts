@@ -13,6 +13,7 @@ const maintainerAddr = process.env.MAINTAINER_ADDRESS!;
 const adminAddr = process.env.ADMIN_ADDRESS!;
 const contributorAddr = process.env.CONTRIBUTOR_ADDRESS!;
 const sponsorAddr = process.env.SPONSOR_ADDRESS!;
+const ftAddr = process.env.FT_ADDRESS!;
 const settingsRef: OutRef = {
   txHash: process.env.SETTINGS_TX_HASH!,
   outputIndex: 0,
@@ -40,4 +41,5 @@ export {
   settingsTokenName,
   sponsorAddr,
   sponsorSeed,
+  ftAddr,
 };

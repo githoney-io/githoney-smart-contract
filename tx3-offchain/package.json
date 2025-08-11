@@ -12,6 +12,7 @@
     "tx3-deploy": "npx tsx --experimental-wasm-modules scripts/settings/deploy.ts",
     "tx3-update": "npx tsx --experimental-wasm-modules scripts/settings/update.ts",
     "tx3-close-settings": "npx tsx --experimental-wasm-modules scripts/settings/close.ts",
+    "tx3-deploy-badges": "npx tsx --experimental-wasm-modules scripts/badges/deploy.ts",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test-demo": "NODE_OPTIONS=--experimental-vm-modules jest test/demo/integration.test.ts",
     "test-create": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/create.test.ts",

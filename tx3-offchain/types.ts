@@ -86,6 +86,16 @@ function badgesValidator(settingsPolicyId: string): Script {
   return new BADGES_SCRIPT(settingsPolicyId);
 }
 
+interface Metadata {
+  name: string;
+  logo: string;
+  description: string;
+}
+interface MetadataWithPolicy {
+  metadata: Metadata;
+  policyId?: string;
+}
+
 export {
   githoneyMintingPolicy,
   githoneyValidator,
@@ -105,4 +115,6 @@ export type {
   Address,
   PaymentCredential,
   StakeCredential,
+  Metadata,
+  MetadataWithPolicy,
 };

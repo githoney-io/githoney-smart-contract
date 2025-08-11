@@ -4,6 +4,7 @@ party GitHoneyAddr;
 party Maintainer;
 party Script;
 party Sponsor;
+party FTAddress;
 
 type CardanoAddress {
     payment_credential: CardanoCredential,
@@ -83,19 +84,21 @@ type BadgesDatum {
 // DEPLOY BADGE
 tx deployBadge(
     collateralRef: UtxoRef,
-    ftAddress: Bytes,
+    description: Bytes,
+    descriptionValue: Bytes,
     ftBadgeAmount: Int,
     ftBadgeName: Bytes,
-    ftBadgePolicyId: Bytes,
+    logo: Bytes,
+    logoValue: Bytes,
+    mVersion: Int,
+    mintingPolicyId: Bytes,
+    name: Bytes,
+    nameValue: Bytes,
     policyScript: Bytes,
     policyScriptVersion: Int,
+    refNftAssetName: Bytes,
     settingsRef: UtxoRef,
     utxoRef: UtxoRef,
-    refNftPolicyId: Bytes,
-    refNftAssetName: Bytes,
-    mVersion: Int,
-    mKey: Bytes,
-    mValue: Bytes,
 ) {
     collateral {
         ref: collateralRef,
@@ -107,24 +110,26 @@ tx deployBadge(
     }
 
     mint {
-        amount: AnyAsset(refNftPolicyId, refNftAssetName, 1) + AnyAsset(ftBadgePolicyId, ftBadgeName, ftBadgeAmount),
+        amount: AnyAsset(mintingPolicyId, refNftAssetName, 1) + AnyAsset(mintingPolicyId, ftBadgeName, ftBadgeAmount),
         redeemer: (),
     }
 
     output badge_utxo {
         to: Script,
-        amount: min_utxo(badge_utxo) + AnyAsset(refNftPolicyId, refNftAssetName, 1),
+        amount: min_utxo(badge_utxo) + AnyAsset(mintingPolicyId, refNftAssetName, 1),
         datum: BadgesDatum {
             metadata: {
-                mKey: mValue,
+                name: nameValue,
+                logo: logoValue,
+                description: descriptionValue,
             },
-            version: 1,
+            version: mVersion,
         },
     }
 
     output ft_output {
-        to: ftAddress,
-        amount: AnyAsset(ftBadgePolicyId, ftBadgeName, ftBadgeAmount) + min_utxo(ft_output),
+        to: FTAddress,
+        amount: AnyAsset(mintingPolicyId, ftBadgeName, ftBadgeAmount) + min_utxo(ft_output),
     }
 
     cardano::plutus_witness {
@@ -139,14 +144,18 @@ tx deployBadge(
 
 // UPDATE BADGE METADATA
 tx updateBadge(
-    collateralRef: UtxoRef,
     badgesScript: Bytes,
     badgesScriptVersion: Int,
+    collateralRef: UtxoRef,
+    description: Bytes,
+    descriptionValue: Bytes,
+    logo: Bytes,
+    logoValue: Bytes,
+    mVersion: Int,
+    name: Bytes,
+    nameValue: Bytes,
     settingsRef: UtxoRef,
     utxoRef: UtxoRef,
-    mVersion: Int,
-    mKey: Bytes,
-    mValue: Bytes,
     utxoToCollect: UtxoRef,
 ) {
     collateral {
@@ -174,9 +183,11 @@ tx updateBadge(
         amount: current,
         datum: BadgesDatum {
             metadata: {
-                mKey: mValue,
+                name: nameValue,
+                logo: logoValue,
+                description: descriptionValue,
             },
-            version: 1,
+            version: mVersion,
         },
     }
 
