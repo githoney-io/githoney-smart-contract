@@ -6,6 +6,7 @@ party Script;
 party Sponsor;
 party FTAddress;
 party ScriptBadge;
+party PayAddress;
 
 type CardanoAddress {
     payment_credential: CardanoCredential,
@@ -83,6 +84,7 @@ type BadgesDatum {
 // BADGES
 
 // DEPLOY BADGE
+
 tx deployBadge(
     collateralRef: UtxoRef,
     description: Bytes,
@@ -148,6 +150,7 @@ tx deployBadge(
 }
 
 // UPDATE BADGE METADATA
+
 tx updateBadge(
     badgesScript: Bytes,
     badgesScriptVersion: Int,
@@ -212,6 +215,28 @@ tx updateBadge(
 
     metadata {
         674: "Creating badges",
+    }
+}
+
+// PAY BADGES TO
+
+tx payBadgesTo(
+    badgeName: Bytes,
+    badgePolicy: Bytes
+) {
+    input badges {
+        from: FTAddress,
+        min_amount: AnyAsset(badgePolicy, badgeName, 1) + fees + min_utxo(payment) + min_utxo(change),
+    }
+
+    output payment {
+        to: PayAddress,
+        amount: AnyAsset(badgePolicy, badgeName, 1) + min_utxo(payment),
+    }
+
+    output change {
+        to: FTAddress,
+        amount: badges - fees - min_utxo(payment) - AnyAsset(badgePolicy, badgeName, 1),
     }
 }
 
