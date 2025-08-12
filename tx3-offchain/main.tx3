@@ -245,6 +245,33 @@ tx payBadgesTo(
     }
 }
 
+// COLLECT UTXOS FROM BADGES
+
+tx collectUtxos(
+    collateralRef: UtxoRef,
+    settingsRef: UtxoRef,
+    utxoRef: UtxoRef,
+    badgesScript: Bytes,
+    badgesScriptVersion: Int,
+) {
+    collateral {
+        ref: collateralRef,
+    }
+
+    input settings_utxo {
+        from: Script,
+        ref: settingsRef,
+    }
+
+    signers {
+        GitHoneyAddr,
+    }
+
+    cardano::plutus_witness {
+        version: badgesScriptVersion,
+        script: badgesScript,
+    }
+}
 
 // SETTINGS
 // DEPLOY SETTINGS
