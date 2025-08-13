@@ -13,7 +13,6 @@ import {
   Addresses,
 } from "@spacebudz/lucid";
 import {
-  cardanoCredentialToCredential,
   getScriptVersion,
   keyPairsToAddress,
   logger,
@@ -108,21 +107,14 @@ async function deployBadges(
       );
       // We only need to update the metadata
       const nftUnit = toUnit(meta.policyId, fromText(meta.metadata.name), 100);
-      console.log("NFT Unit", fromUnit(nftUnit).assetName);
 
-      console.log("FT Unit", fromUnit(nftUnit).name);
       utxos = await lucid.utxosAtWithUnit(scriptAddr, nftUnit);
       if (utxos.length === 1) {
-        utxosToCollect.push(utxos[0]);
         logger.info("Collecting utxo to update metadata");
-        const githoneyPaymentHash = cardanoCredentialToCredential(
-          settings.githoneyAddress.paymentCredential,
-        ).hash;
+
+        utxosToCollect.push(utxos[0]);
+        console.log("utxosToCollect", utxosToCollect);
         const utxoToCollectRef = utxos[0].txHash + "#" + utxos[0].outputIndex;
-        const hexMetadata: [string, string][] = Object.entries(
-          meta.metadata,
-        ).map(([key, value]) => [fromText(key), fromText(value)]);
-        console.debug("Hex metadata", hexMetadata);
         ({ tx } = await protocol.updateBadgeTx({
           badgesscript: {
             type: "String",
@@ -138,7 +130,7 @@ async function deployBadges(
           },
           githoneyaddr: {
             type: "String",
-            value: githoneyPaymentHash,
+            value: githoneyAddr,
           },
           description: {
             type: "Bytes",
@@ -168,7 +160,7 @@ async function deployBadges(
             type: "Int",
             value: 1n,
           },
-          script: {
+          scriptbadge: {
             type: "String",
             value: scriptAddr,
           },
@@ -192,13 +184,13 @@ async function deployBadges(
       const policyScript = badgesPolicy(outRef, i);
       i++;
 
-      const mintingPolicyid = Addresses.scriptToCredential(policyScript).hash;
+      const mintingPolicyId = Addresses.scriptToCredential(policyScript).hash;
       const referenceNFTUnit = toUnit(
-        mintingPolicyid,
+        mintingPolicyId,
         fromText(meta.metadata.name),
         100,
       );
-      const ftUnit = toUnit(mintingPolicyid, fromText(meta.metadata.name), 333);
+      const ftUnit = toUnit(mintingPolicyId, fromText(meta.metadata.name), 333);
       ftAssets[ftUnit] = ftBadgeAmount;
 
       ({ tx } = await protocol.deployBadgeTx({
@@ -220,7 +212,7 @@ async function deployBadges(
         },
         mintingpolicyid: {
           type: "Bytes",
-          value: Buffer.from(mintingPolicyid, "hex"),
+          value: Buffer.from(mintingPolicyId, "hex"),
         },
         githoneyaddr: {
           type: "String",
@@ -238,7 +230,7 @@ async function deployBadges(
           type: "Bytes",
           value: Buffer.from(fromUnit(referenceNFTUnit).assetName!, "hex"),
         },
-        script: {
+        scriptbadge: {
           type: "String",
           value: scriptAddr,
         },
@@ -275,7 +267,7 @@ async function deployBadges(
           value: 1n,
         },
       }));
-      newMetadatas.push({ metadata: meta.metadata, policyId: mintingPolicyid });
+      newMetadatas.push({ metadata: meta.metadata, policyId: mintingPolicyId });
     }
   }
 

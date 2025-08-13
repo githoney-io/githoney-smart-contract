@@ -5,6 +5,7 @@ party Maintainer;
 party Script;
 party Sponsor;
 party FTAddress;
+party ScriptBadge;
 
 type CardanoAddress {
     payment_credential: CardanoCredential,
@@ -178,13 +179,13 @@ tx updateBadge(
     }
 
     input current {
-        from: Script,
+        from: ScriptBadge,
         ref: utxoToCollect,
         redeemer: (),
     }
 
     output badge_utxo {
-        to: Script,
+        to: ScriptBadge,
         amount: current,
         datum: BadgesDatum {
             metadata: {
@@ -195,6 +196,12 @@ tx updateBadge(
             version: mVersion,
         },
     }
+
+    output change {
+        to: GitHoneyAddr,
+        amount: githoney_wallet - fees - min_utxo(badge_utxo),
+    }
+
 
     signers {
         GitHoneyAddr,

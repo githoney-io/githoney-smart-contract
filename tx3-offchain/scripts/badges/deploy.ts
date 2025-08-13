@@ -13,9 +13,9 @@ const metadata: MetadataWithPolicy = {
   metadata: {
     name: "Express Pollinator",
     logo: "https://githoney.io/assets/badges/small/express-pollinator_400.webp",
-    description:
-      "Given to a contributor who completes a bounty within 24h of accepting the bounty.",
+    description: "Updated description",
   },
+  policyId: "c8e163afc42e7f490af16326cab6b8eb8183386f5415dfca2929f010",
 };
 
 const { deployBadgesCbor, newMetadatas } = await deployBadges(
@@ -25,6 +25,6 @@ const { deployBadgesCbor, newMetadatas } = await deployBadges(
   ftAddr,
   [metadata],
 );
-logger.debug("Metadata", JSON.stringify(newMetadatas));
+logger.debug("New Metadatas", JSON.stringify(newMetadatas));
 lucidBase.selectWalletFromSeed(githoneySeed);
 await signAndSubmit(deployBadgesCbor);
