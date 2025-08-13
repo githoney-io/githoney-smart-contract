@@ -132,6 +132,11 @@ tx deployBadge(
         amount: AnyAsset(mintingPolicyId, ftBadgeName, ftBadgeAmount) + min_utxo(ft_output),
     }
 
+    output change {
+        to: GitHoneyAddr,
+        amount: githoney_wallet - fees - min_utxo(ft_output) - min_utxo(badge_utxo),
+    }
+
     cardano::plutus_witness {
         version: policyScriptVersion,
         script: policyScript,

@@ -25,7 +25,6 @@ const { deployBadgesCbor, newMetadatas } = await deployBadges(
   ftAddr,
   [metadata],
 );
-logger.info("Metadata", JSON.stringify(newMetadatas));
-console.log(deployBadgesCbor);
-// lucidBase.selectWalletFromSeed(githoneySeed);
-// await signAndSubmit(deployBadgesCbor);
+logger.debug("Metadata", JSON.stringify(newMetadatas));
+lucidBase.selectWalletFromSeed(githoneySeed);
+await signAndSubmit(deployBadgesCbor);

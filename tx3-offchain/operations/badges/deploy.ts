@@ -57,7 +57,10 @@ async function deployBadges(
     settings.githoneyAddress,
   );
   logger.info(`Deploying badges from ${githoneyAddr}`);
-  const utxo = (await lucid.utxosAt(githoneyAddr))[0];
+  const [utxo] = (await lucid.utxosAt(githoneyAddr)).filter(
+    (utxo) => utxo.assets["lovelace"] >= 15_000_000,
+  );
+
   const outRef = {
     txHash: utxo.txHash,
     outputIndex: utxo.outputIndex,
@@ -346,3 +349,7 @@ async function hasReferenceNft(
 }
 
 export { deployBadges, isReferenceNftMinted };
+
+// {mismatchSupplied = MaryValue (Coin 2000458) (MultiAsset (fromList [(PolicyID {policyID = ScriptHash \"1889f6656b22b63c13498f08d3514b6fbb8223e3329f157b7b993ff0\"},fromList [(\"000643b04578707265737320506f6c6c696e61746f72\",1),(\"0014df104578707265737320506f6c6c696e61746f72\",3)]),(PolicyID {policyID = ScriptHash \"a9fc2c980e6beed499b91089ca06ad433961a6238690219b8021fe43\"},fromList [(\"0014df1044454449\",897670012)])])),
+
+//   mismatchExpected = MaryValue (Coin 13438347) (MultiAsset (fromList [(PolicyID {policyID = ScriptHash \"1889f6656b22b63c13498f08d3514b6fbb8223e3329f157b7b993ff0\"},fromList [(\"000643b04578707265737320506f6c6c696e61746f72\",1),(\"0014df104578707265737320506f6c6c696e61746f72\",3)])]))})))"],"kind":"ShelleyTxValidationError"},"tag":"TxValidationErrorInCardanoMode"},"tag":"TxCmdTxSubmitValidationError"},"tag":"TxSubmitFail"}
