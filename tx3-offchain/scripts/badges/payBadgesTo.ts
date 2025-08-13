@@ -8,8 +8,9 @@ const badges: Badge[] = [
   // TODO - complete with actual badge data
   {
     badgeName: "Express Pollinator",
-    badgePolicy: "policy1",
-    payAddress: "addr1",
+    badgePolicy: "1889f6656b22b63c13498f08d3514b6fbb8223e3329f157b7b993ff0",
+    payAddress:
+      "addr_test1qqzq2j55hh2ml3h08skfgg04lhh7n7epv2ycn90ntr6ys7zrxalmeg3lyamyahkfwdv6fylkyxj0stj8xpplusva7w7s40czuq",
   },
   {
     badgeName: "Community Contributor",
