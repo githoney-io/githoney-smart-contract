@@ -50,8 +50,7 @@ async function deployBadges(
 ): Promise<{ deployBadgesCbor: string; newMetadatas: MetadataWithPolicy[] }> {
   logger.info("START deployBadges");
   const settings = await lucid.datumOf(settingsUtxo, SettingsDatumSchema);
-  const settingsRef =
-    settingsNftOutRef.txHash + "#" + settingsNftOutRef.outputIndex;
+  const settingsRef = settingsUtxo.txHash + "#" + settingsUtxo.outputIndex;
 
   const githoneyAddr = keyPairsToAddress(
     lucid.network,
