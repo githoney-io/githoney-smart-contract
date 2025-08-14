@@ -36,11 +36,6 @@ async function collectUtxos(
   const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
-  const githoneyAddr = keyPairsToAddress(
-    lucid.network,
-    settings.githoneyAddress,
-  );
-
   const settingsMintingPolicy = settingsPolicy(settingsNftOutRef);
   const settingsNftPolicy = Addresses.scriptToCredential(
     settingsMintingPolicy,
@@ -51,10 +46,10 @@ async function collectUtxos(
 
   const utxosAtScript = await lucid.utxosAt(scriptAddr);
 
-  const githoneyPaymentHash = cardanoCredentialToCredential(
-    settings.githoneyAddress.paymentCredential,
-  ).hash;
-
+  const githoneyAddr = keyPairsToAddress(
+    lucid.network,
+    settings.githoneyAddress,
+  );
   lucid.selectReadOnlyWallet({ address: githoneyAddr });
 
   const { tx } = await protocol.collectUtxosTx({
@@ -63,8 +58,7 @@ async function collectUtxos(
       value: badgesScript.script,
     },
     badgesscriptversion: getScriptVersion(badgesScript.type),
-    githoneyaddr: githoneyPaymentHash,
-    script: scriptAddr,
+    githoneyaddr: githoneyAddr,
     settingsref: settingsRef,
     collateralref: collateralref,
   });
@@ -86,6 +80,7 @@ async function collectUtxos(
     }
     inputUtxos.push(utxo);
   });
+  console.log("inputUtxos:", inputUtxos);
   if (inputUtxos.length === 0) {
     return { collectCbor: "" };
   }

@@ -258,8 +258,7 @@ tx collectUtxos(
         ref: collateralRef,
     }
 
-    input settings_utxo {
-        from: Script,
+    reference settings_utxo {
         ref: settingsRef,
     }
 
