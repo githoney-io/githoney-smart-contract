@@ -98,7 +98,6 @@ tx deployBadge(
     policyScript: Bytes,
     policyScriptVersion: Int,
     refNftAssetName: Bytes,
-    settingsRef: UtxoRef,
     utxoRef: UtxoRef,
 ) {
     collateral {
@@ -116,7 +115,7 @@ tx deployBadge(
     }
 
     output badge_utxo {
-        to: Script,
+        to: ScriptBadge,
         amount: min_utxo(badge_utxo) + AnyAsset(mintingPolicyId, refNftAssetName, 1),
         datum: BadgesDatum {
             metadata: {
@@ -173,8 +172,7 @@ tx updateBadge(
         ref: utxoRef,
     }
 
-    input settings_utxo {
-        from: Script,
+    reference settings_utxo {
         ref: settingsRef,
     }
 
@@ -199,7 +197,7 @@ tx updateBadge(
 
     output change {
         to: GitHoneyAddr,
-        amount: githoney_wallet - fees - min_utxo(badge_utxo),
+        amount: githoney_wallet - fees,
     }
 
 

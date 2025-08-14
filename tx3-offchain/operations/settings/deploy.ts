@@ -64,44 +64,20 @@ async function deploySettings(
     Addresses.inspect(githoneyAddr).delegation?.hash || null;
 
   const { tx } = await protocol.deployTx({
-    script: { value: settingsValidatorAddress, type: "String" },
-    githoneyaddr: { value: githoneyAddr, type: "String" },
-    githoneypaymentcredential: {
-      value: Buffer.from(githoneyPaymentCred!, "hex"),
-      type: "Bytes",
-    },
-    githoneystakingcredential: {
-      value: Buffer.from(githoneyStakeCred!, "hex"),
-      type: "Bytes",
-    },
-    bountycreationfee: { value: BigInt(creationFee), type: "Int" },
-    bountyrewardfee: { value: BigInt(rewardFee), type: "Int" },
-    settingsmintingpolicy: {
-      value: settingsMintingPolicy.script,
-      type: "String",
-    },
-    settingspolicyid: {
-      value: Buffer.from(settingsPolicyId.hash, "hex"),
-      type: "Bytes",
-    },
-    settingstokenname: { value: Buffer.from(settingsTokenName), type: "Bytes" },
-    collateralref: { value: collateralref, type: "String" },
-    githoneyscript: {
-      value: gitHoneyValidator.script,
-      type: "String",
-    },
-    scriptversion: {
-      value: scriptVersion,
-      type: "Int",
-    },
-    settingsmintingversion: {
-      value: settingsMintingVersion,
-      type: "Int",
-    },
-    utxoref: {
-      type: "String",
-      value: outRef.txHash + "#" + outRef.outputIndex,
-    },
+    script: settingsValidatorAddress,
+    githoneyaddr: githoneyAddr,
+    githoneypaymentcredential: Buffer.from(githoneyPaymentCred!, "hex"),
+    githoneystakingcredential: Buffer.from(githoneyStakeCred!, "hex"),
+    bountycreationfee: BigInt(creationFee),
+    bountyrewardfee: BigInt(rewardFee),
+    settingsmintingpolicy: Buffer.from(settingsMintingPolicy.script, "hex"),
+    settingspolicyid: Buffer.from(settingsPolicyId.hash, "hex"),
+    settingstokenname: Buffer.from(settingsTokenName),
+    collateralref: collateralref,
+    githoneyscript: Buffer.from(gitHoneyValidator.script, "hex"),
+    scriptversion: scriptVersion,
+    settingsmintingversion: settingsMintingVersion,
+    utxoref: outRef.txHash + "#" + outRef.outputIndex,
   });
 
   logger.info("END deploy");

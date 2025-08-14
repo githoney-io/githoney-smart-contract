@@ -5,8 +5,8 @@ import { logger, lucidBase, signAndSubmit } from "../../utils/utils.ts";
 
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
 const outRef = {
-  txHash: "26ef8bda1195c485a712b4c29d00e4cd7b70ddb159d21565ab3b47dc22e3d56b",
-  outputIndex: 0,
+  txHash: "208fc648a97e8fc6b70d818f6a3b31db1ce15deb66a1e6df96a67a683c47933f",
+  outputIndex: 1,
 };
 const ftBadgeAmount = 3n;
 const metadata: MetadataWithPolicy = {
@@ -18,13 +18,13 @@ const metadata: MetadataWithPolicy = {
   policyId: "c8e163afc42e7f490af16326cab6b8eb8183386f5415dfca2929f010",
 };
 
-const { deployBadgesCbor, newMetadatas } = await deployBadges(
+const { deployBadgesCbor, newMetadata } = await deployBadges(
   settingsUtxo,
   outRef,
   ftBadgeAmount,
   ftAddr,
-  [metadata],
+  metadata,
 );
-logger.debug("New Metadatas", JSON.stringify(newMetadatas));
+logger.debug("New Metadata", JSON.stringify(newMetadata));
 lucidBase.selectWalletFromSeed(githoneySeed);
 await signAndSubmit(deployBadgesCbor);

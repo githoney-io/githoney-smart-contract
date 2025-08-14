@@ -45,8 +45,8 @@ async function deployBadges(
   settingsNftOutRef: OutRef,
   ftBadgeAmount: bigint,
   ftAddress: string,
-  metadatas: MetadataWithPolicy[],
-): Promise<{ deployBadgesCbor: string; newMetadatas: MetadataWithPolicy[] }> {
+  meta: MetadataWithPolicy,
+): Promise<{ deployBadgesCbor: string; newMetadata: MetadataWithPolicy }> {
   logger.info("START deployBadges");
   const settings = await lucid.datumOf(settingsUtxo, SettingsDatumSchema);
   const settingsRef = settingsUtxo.txHash + "#" + settingsUtxo.outputIndex;
@@ -59,7 +59,6 @@ async function deployBadges(
   const [utxo] = (await lucid.utxosAt(githoneyAddr)).filter(
     (utxo) => utxo.assets["lovelace"] >= 15_000_000,
   );
-
   const outRef = {
     txHash: utxo.txHash,
     outputIndex: utxo.outputIndex,
@@ -81,103 +80,58 @@ async function deployBadges(
   let i = 0n;
   const ftAssets: Assets = {};
   const utxosToCollect: Utxo[] = [];
-  const newMetadatas: MetadataWithPolicy[] = [];
-  for (const meta of metadatas) {
-    logger.info("-------------------------------------------------");
-    logger.info(`Deploying badge ${JSON.stringify(meta)}`);
-    const { res, referenceNftPolicyId } = await isReferenceNftMinted(
-      lucid,
-      utxosAtScript,
-      meta,
+  let newMetadata: MetadataWithPolicy = meta;
+  logger.info("-------------------------------------------------");
+  logger.info(`Deploying badge ${JSON.stringify(meta)}`);
+  const { res, referenceNftPolicyId } = await isReferenceNftMinted(
+    lucid,
+    utxosAtScript,
+    meta,
+  );
+  if (res) {
+    logger.info(`Badge already minted ${meta.metadata.name}`);
+    newMetadata = {
+      metadata: meta.metadata,
+      policyId: referenceNftPolicyId,
+    };
+  } else {
+    logger.error(`Badge not minted ${JSON.stringify(meta)}`);
+  }
+  let utxos: Utxo[] = [];
+  if (meta.policyId) {
+    logger.info(
+      `Updating metadata of badge ${meta.metadata.name} policy ${meta.policyId}`,
     );
-    if (res) {
-      logger.info(`Badge already minted ${meta.metadata.name}`);
-      newMetadatas.push({
-        metadata: meta.metadata,
-        policyId: referenceNftPolicyId,
-      });
-      continue;
-    } else {
-      logger.error(`Badge not minted ${JSON.stringify(meta)}`);
-    }
-    let utxos: Utxo[] = [];
-    if (meta.policyId) {
-      logger.info(
-        `Updating metadata of badge ${meta.metadata.name} policy ${meta.policyId}`,
-      );
-      // We only need to update the metadata
-      const nftUnit = toUnit(meta.policyId, fromText(meta.metadata.name), 100);
+    // We only need to update the metadata
+    const nftUnit = toUnit(meta.policyId, fromText(meta.metadata.name), 100);
 
-      utxos = await lucid.utxosAtWithUnit(scriptAddr, nftUnit);
-      if (utxos.length === 1) {
-        logger.info("Collecting utxo to update metadata");
+    utxos = await lucid.utxosAtWithUnit(scriptAddr, nftUnit);
+    if (utxos.length === 1) {
+      logger.info("Collecting utxo to update metadata");
 
-        utxosToCollect.push(utxos[0]);
-        console.log("utxosToCollect", utxosToCollect);
-        const utxoToCollectRef = utxos[0].txHash + "#" + utxos[0].outputIndex;
-        ({ tx } = await protocol.updateBadgeTx({
-          badgesscript: {
-            type: "String",
-            value: badgesScript.script,
-          },
-          badgesscriptversion: {
-            type: "Int",
-            value: getScriptVersion(badgesScript.type),
-          },
-          collateralref: {
-            type: "String",
-            value: collateralref,
-          },
-          githoneyaddr: {
-            type: "String",
-            value: githoneyAddr,
-          },
-          description: {
-            type: "Bytes",
-            value: Buffer.from(fromText("description"), "hex"),
-          },
-          descriptionvalue: {
-            type: "Bytes",
-            value: Buffer.from(fromText(meta.metadata.description), "hex"),
-          },
-          logo: {
-            type: "Bytes",
-            value: Buffer.from(fromText("logo"), "hex"),
-          },
-          logovalue: {
-            type: "Bytes",
-            value: Buffer.from(fromText(meta.metadata.logo), "hex"),
-          },
-          name: {
-            type: "Bytes",
-            value: Buffer.from(fromText("name"), "hex"),
-          },
-          namevalue: {
-            type: "Bytes",
-            value: Buffer.from(fromText(meta.metadata.name), "hex"),
-          },
-          mversion: {
-            type: "Int",
-            value: 1n,
-          },
-          scriptbadge: {
-            type: "String",
-            value: scriptAddr,
-          },
-          settingsref: {
-            type: "String",
-            value: settingsRef,
-          },
-          utxoref: {
-            type: "String",
-            value: utxoRef,
-          },
-          utxotocollect: {
-            type: "String",
-            value: utxoToCollectRef,
-          },
-        }));
-      }
+      utxosToCollect.push(utxos[0]);
+      console.log("utxosToCollect", utxosToCollect);
+      const utxoToCollectRef = utxos[0].txHash + "#" + utxos[0].outputIndex;
+      ({ tx } = await protocol.updateBadgeTx({
+        badgesscript: Buffer.from(badgesScript.script, "hex"),
+        badgesscriptversion: getScriptVersion(badgesScript.type),
+        collateralref: collateralref,
+        githoneyaddr: githoneyAddr,
+        description: Buffer.from(fromText("description"), "hex"),
+        descriptionvalue: Buffer.from(
+          fromText(meta.metadata.description),
+          "hex",
+        ),
+        logo: Buffer.from(fromText("logo"), "hex"),
+        logovalue: Buffer.from(fromText(meta.metadata.logo), "hex"),
+        name: Buffer.from(fromText("name"), "hex"),
+        namevalue: Buffer.from(fromText(meta.metadata.name), "hex"),
+        mversion: 1n,
+        scriptbadge: scriptAddr,
+        utxoref: utxoRef,
+        utxotocollect: utxoToCollectRef,
+        settingsref: settingsRef,
+      }));
     }
 
     if ((meta.policyId && utxos.length === 0) || !meta.policyId) {
@@ -194,96 +148,43 @@ async function deployBadges(
       ftAssets[ftUnit] = ftBadgeAmount;
 
       ({ tx } = await protocol.deployBadgeTx({
-        collateralref: {
-          type: "String",
-          value: collateralref,
-        },
-        ftaddress: {
-          type: "String",
-          value: ftAddress,
-        },
-        ftbadgeamount: {
-          type: "Int",
-          value: ftBadgeAmount,
-        },
-        ftbadgename: {
-          type: "Bytes",
-          value: Buffer.from(fromUnit(ftUnit).assetName!, "hex"),
-        },
-        mintingpolicyid: {
-          type: "Bytes",
-          value: Buffer.from(mintingPolicyId, "hex"),
-        },
-        githoneyaddr: {
-          type: "String",
-          value: githoneyAddr,
-        },
-        policyscript: {
-          type: "String",
-          value: policyScript.script,
-        },
-        policyscriptversion: {
-          type: "Int",
-          value: getScriptVersion(policyScript.type),
-        },
-        refnftassetname: {
-          type: "Bytes",
-          value: Buffer.from(fromUnit(referenceNFTUnit).assetName!, "hex"),
-        },
-        scriptbadge: {
-          type: "String",
-          value: scriptAddr,
-        },
-        utxoref: {
-          type: "String",
-          value: utxoRef,
-        },
-        description: {
-          type: "Bytes",
-          value: Buffer.from(fromText("description"), "hex"),
-        },
-        descriptionvalue: {
-          type: "Bytes",
-          value: Buffer.from(fromText(meta.metadata.description), "hex"),
-        },
-        logo: {
-          type: "Bytes",
-          value: Buffer.from(fromText("logo"), "hex"),
-        },
-        logovalue: {
-          type: "Bytes",
-          value: Buffer.from(fromText(meta.metadata.logo), "hex"),
-        },
-        name: {
-          type: "Bytes",
-          value: Buffer.from(fromText("name"), "hex"),
-        },
-        namevalue: {
-          type: "Bytes",
-          value: Buffer.from(fromText(meta.metadata.name), "hex"),
-        },
-        mversion: {
-          type: "Int",
-          value: 1n,
-        },
+        collateralref: collateralref,
+        ftaddress: ftAddress,
+        ftbadgeamount: ftBadgeAmount,
+        ftbadgename: Buffer.from(fromUnit(ftUnit).assetName!, "hex"),
+        mintingpolicyid: Buffer.from(mintingPolicyId, "hex"),
+        githoneyaddr: githoneyAddr,
+        policyscript: Buffer.from(policyScript.script, "hex"),
+        policyscriptversion: getScriptVersion(policyScript.type),
+        refnftassetname: Buffer.from(
+          fromUnit(referenceNFTUnit).assetName!,
+          "hex",
+        ),
+        scriptbadge: scriptAddr,
+        utxoref: utxoRef,
+        description: Buffer.from(fromText("description"), "hex"),
+        descriptionvalue: Buffer.from(
+          fromText(meta.metadata.description),
+          "hex",
+        ),
+        logo: Buffer.from(fromText("logo"), "hex"),
+        logovalue: Buffer.from(fromText(meta.metadata.logo), "hex"),
+        name: Buffer.from(fromText("name"), "hex"),
+        namevalue: Buffer.from(fromText(meta.metadata.name), "hex"),
+        mversion: 1n,
       }));
-      newMetadatas.push({ metadata: meta.metadata, policyId: mintingPolicyId });
+      newMetadata = { metadata: meta.metadata, policyId: mintingPolicyId };
     }
   }
 
   if (Object.keys(ftAssets).length === 0 && utxosToCollect.length === 0) {
     logger.info("All badges already minted");
+  } else {
+    logger.info("CBOR");
+    logger.info(tx);
   }
-  //   const txComplete = await tx.commit();
-  //   if (Object.keys(ftAssets).length === 0 && utxosToCollect.length === 0) {
-  //     logger.info("All badges already minted");
-  //   } else {
-  //     cbor = txComplete.toString();
-  //     logger.info("CBOR");
-  //     logger.info(cbor);
-  //   }
   logger.info("END deployBadges");
-  return { deployBadgesCbor: tx, newMetadatas };
+  return { deployBadgesCbor: tx, newMetadata };
 }
 
 async function isReferenceNftMinted(
@@ -341,7 +242,3 @@ async function hasReferenceNft(
 }
 
 export { deployBadges, isReferenceNftMinted };
-
-// {mismatchSupplied = MaryValue (Coin 2000458) (MultiAsset (fromList [(PolicyID {policyID = ScriptHash \"1889f6656b22b63c13498f08d3514b6fbb8223e3329f157b7b993ff0\"},fromList [(\"000643b04578707265737320506f6c6c696e61746f72\",1),(\"0014df104578707265737320506f6c6c696e61746f72\",3)]),(PolicyID {policyID = ScriptHash \"a9fc2c980e6beed499b91089ca06ad433961a6238690219b8021fe43\"},fromList [(\"0014df1044454449\",897670012)])])),
-
-//   mismatchExpected = MaryValue (Coin 13438347) (MultiAsset (fromList [(PolicyID {policyID = ScriptHash \"1889f6656b22b63c13498f08d3514b6fbb8223e3329f157b7b993ff0\"},fromList [(\"000643b04578707265737320506f6c6c696e61746f72\",1),(\"0014df104578707265737320506f6c6c696e61746f72\",3)])]))})))"],"kind":"ShelleyTxValidationError"},"tag":"TxValidationErrorInCardanoMode"},"tag":"TxCmdTxSubmitValidationError"},"tag":"TxSubmitFail"}
