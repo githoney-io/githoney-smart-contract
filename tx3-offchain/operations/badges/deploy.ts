@@ -81,7 +81,7 @@ async function deployBadges(
   const ftAssets: Assets = {};
   const utxosToCollect: Utxo[] = [];
   let newMetadata: MetadataWithPolicy = meta;
-  logger.info("-------------------------------------------------");
+  logger.info("-".repeat(64));
   logger.info(`Deploying badge ${JSON.stringify(meta)}`);
   const { res, referenceNftPolicyId } = await isReferenceNftMinted(
     lucid,
@@ -110,7 +110,6 @@ async function deployBadges(
       logger.info("Collecting utxo to update metadata");
 
       utxosToCollect.push(utxos[0]);
-      console.log("utxosToCollect", utxosToCollect);
       const utxoToCollectRef = utxos[0].txHash + "#" + utxos[0].outputIndex;
       ({ tx } = await protocol.updateBadgeTx({
         badgesscript: Buffer.from(badgesScript.script, "hex"),
@@ -180,8 +179,8 @@ async function deployBadges(
   if (Object.keys(ftAssets).length === 0 && utxosToCollect.length === 0) {
     logger.info("All badges already minted");
   } else {
-    logger.info("CBOR");
-    logger.info(tx);
+    logger.debug("CBOR");
+    logger.debug(tx);
   }
   logger.info("END deployBadges");
   return { deployBadgesCbor: tx, newMetadata };

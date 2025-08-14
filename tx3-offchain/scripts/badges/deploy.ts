@@ -15,7 +15,7 @@ const metadata: MetadataWithPolicy = {
     logo: "https://githoney.io/assets/badges/small/express-pollinator_400.webp",
     description: "Updated description",
   },
-  policyId: "c8e163afc42e7f490af16326cab6b8eb8183386f5415dfca2929f010",
+  policyId: "1855a70da3f8b041ff49a6ca063817598b1f7c72d4ef25a292e776f2",
 };
 
 const { deployBadgesCbor, newMetadata } = await deployBadges(
