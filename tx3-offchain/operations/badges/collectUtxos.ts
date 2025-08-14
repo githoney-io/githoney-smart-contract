@@ -62,26 +62,11 @@ async function collectUtxos(
       type: "String",
       value: badgesScript.script,
     },
-    badgesscriptversion: {
-      type: "Int",
-      value: getScriptVersion(badgesScript.type),
-    },
-    githoneyaddr: {
-      type: "String",
-      value: githoneyPaymentHash,
-    },
-    script: {
-      type: "String",
-      value: scriptAddr,
-    },
-    settingsref: {
-      type: "String",
-      value: settingsRef,
-    },
-    collateralref: {
-      type: "String",
-      value: collateralref,
-    },
+    badgesscriptversion: getScriptVersion(badgesScript.type),
+    githoneyaddr: githoneyPaymentHash,
+    script: scriptAddr,
+    settingsref: settingsRef,
+    collateralref: collateralref,
   });
   const policiesToAvoid: string[] = [];
   for (const meta of metadatas) {
