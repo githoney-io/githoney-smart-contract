@@ -79,44 +79,20 @@ async function closeBounty(
   let tx;
 
   const baseParams = {
-    script: { value: scriptAddress, type: "String" as const },
-    admin: { value: adminAddr, type: "String" as const },
-    maintainer: { value: maintainerAddr, type: "String" as const },
-    settingsref: {
-      value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-      type: "String" as const,
-    },
-    bountyref: {
-      value: bountyRef,
-      type: "String" as const,
-    },
-    since: {
-      value: BigInt(lucidBase.utils.unixTimeToSlots(now)),
-      type: "Int" as const,
-    },
-    until: {
-      value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
-      type: "Int" as const,
-    },
-    minada: { value: BigInt(MIN_ADA), type: "Int" as const },
-    collateralref: { value: collateralref, type: "String" as const },
-    bountyid: {
-      value: Buffer.from(fromUnit(bountyIdTokenUnit).name!, "hex"),
-      type: "Bytes" as const,
-    },
-    mintingpolicyid: {
-      value: Buffer.from(fromUnit(bountyIdTokenUnit).policyId, "hex"),
-      type: "Bytes" as const,
-    },
-    rewardpolicyid: {
-      value: Buffer.from(rewardPolicy, "hex"),
-      type: "Bytes" as const,
-    },
-    rewardassetname: {
-      value: Buffer.from(rewardName, "hex"),
-      type: "Bytes" as const,
-    },
-    rewardamount: { value: BigInt(rewardAmount), type: "Int" as const },
+    script: scriptAddress,
+    admin: adminAddr,
+    maintainer: maintainerAddr,
+    settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
+    bountyref: bountyRef,
+    since: BigInt(lucidBase.utils.unixTimeToSlots(now)),
+    until: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
+    minada: BigInt(MIN_ADA),
+    collateralref: collateralref,
+    bountyid: Buffer.from(fromUnit(bountyIdTokenUnit).name!, "hex"),
+    mintingpolicyid: Buffer.from(fromUnit(bountyIdTokenUnit).policyId, "hex"),
+    rewardpolicyid: Buffer.from(rewardPolicy, "hex"),
+    rewardassetname: Buffer.from(rewardName, "hex"),
+    rewardamount: BigInt(rewardAmount),
   };
 
   let refundingsParams;
@@ -127,22 +103,10 @@ async function closeBounty(
       fromUnit(refundingUnit);
 
     refundingsParams = {
-      sponsor: {
-        value: sponsorAddr,
-        type: "String" as const,
-      },
-      refundingsamount: {
-        value: BigInt(refundingAmount),
-        type: "Int" as const,
-      },
-      refundingsassetname: {
-        value: Buffer.from(refundingName!, "hex"),
-        type: "Bytes" as const,
-      },
-      refundingspolicyid: {
-        value: Buffer.from(refundingPolicy, "hex"),
-        type: "Bytes" as const,
-      },
+      sponsor: sponsorAddr,
+      refundingsamount: BigInt(refundingAmount),
+      refundingsassetname: Buffer.from(refundingName!, "hex"),
+      refundingspolicyid: Buffer.from(refundingPolicy, "hex"),
     };
   }
 

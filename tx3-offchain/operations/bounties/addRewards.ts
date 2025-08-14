@@ -52,27 +52,17 @@ async function addRewards(
 
   const now = new Date().getTime() - 60 * 1000;
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
-
   const { tx } = await protocol.addTx({
-    bountyref: {
-      value: bountyRef,
-      type: "String",
-    },
-    collateralref: { value: collateralref, type: "String" },
-    rewardamount: { value: BigInt(rewardAmount), type: "Int" },
-    rewardassetname: { value: Buffer.from(rewardName, "hex"), type: "Bytes" },
-    rewardpolicyid: { value: Buffer.from(rewardPolicy, "hex"), type: "Bytes" },
-    script: { value: scriptAddress, type: "String" },
-    settingsref: {
-      value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-      type: "String",
-    },
-    since: { value: BigInt(lucidBase.utils.unixTimeToSlots(now)), type: "Int" },
-    until: {
-      value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
-      type: "Int",
-    },
-    sponsor: { value: sponsorAddr, type: "String" },
+    bountyref: bountyRef,
+    collateralref: collateralref,
+    rewardamount: BigInt(rewardAmount),
+    rewardassetname: Buffer.from(rewardName, "hex"),
+    rewardpolicyid: Buffer.from(rewardPolicy, "hex"),
+    script: scriptAddress,
+    settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
+    since: BigInt(lucidBase.utils.unixTimeToSlots(now)),
+    until: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
+    sponsor: sponsorAddr,
   });
 
   logger.info("END addRewards");

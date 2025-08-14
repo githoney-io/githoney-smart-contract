@@ -30,12 +30,8 @@ async function createBounty(
   const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
 
-  const selectedUtxos = await collateralOutRef(lucidWithWallet);
-
-  const collateralref = {
-    txid: Buffer.from(selectedUtxos[0].txHash, "hex"),
-    index: selectedUtxos[0].outputIndex,
-  };
+  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
+  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const now = new Date().getTime() - 60 * 1000; // 1 minute ago
   const tomorrow = new Date(now + 1000 * 60 * 60 * 24 * 1).getTime();
@@ -63,50 +59,23 @@ async function createBounty(
   );
 
   const createParams = {
-    adminpaymentcredential: {
-      value: new Uint8Array(Buffer.from(adminPaymentCred!, "hex")),
-      type: "Bytes" as const,
-    },
-    bountycreationfee: {
-      value: settings.bountyCreationFee,
-      type: "Int" as const,
-    },
-    bountyid: {
-      value: new Uint8Array(Buffer.from(bountyId)),
-      type: "Bytes" as const,
-    },
-    bountyrewardfee: { value: settings.bountyRewardFee, type: "Int" as const },
-    collateralref: { value: collateralref, type: "UtxoRef" as const },
-    githoneyaddr: { value: githoneyAddr, type: "String" as const },
-    maintainer: { value: maintainerAddr, type: "String" as const },
-    maintainerpaymentcredential: {
-      value: new Uint8Array(Buffer.from(maintainerPaymentCred!, "hex")),
-      type: "Bytes" as const,
-    },
-    maintainerstakecredential: {
-      value: new Uint8Array(Buffer.from(maintainerStakeCred!, "hex")),
-      type: "Bytes" as const,
-    },
-    minada: { value: MIN_ADA, type: "Int" as const },
-    mintingpolicyid: {
-      value: new Uint8Array(Buffer.from(scriptHash, "hex")),
-      type: "Bytes" as const,
-    },
-    rewardamount: { value: rewardAmount, type: "Int" as const },
-    script: { value: scriptAddress, type: "String" as const },
-    settingsref: {
-      value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-      type: "String" as const,
-    },
-    since: {
-      value: BigInt(lucidBase.utils.unixTimeToSlots(now)),
-      type: "Int" as const,
-    },
-    timelimit: { value: deadline, type: "Int" as const },
-    until: {
-      value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
-      type: "Int" as const,
-    },
+    adminpaymentcredential: Buffer.from(adminPaymentCred!, "hex"),
+    bountycreationfee: settings.bountyCreationFee,
+    bountyid: Buffer.from(bountyId, "hex"),
+    bountyrewardfee: settings.bountyRewardFee,
+    collateralref: collateralref,
+    githoneyaddr: githoneyAddr,
+    maintainer: maintainerAddr,
+    maintainerpaymentcredential: Buffer.from(maintainerPaymentCred!, "hex"),
+    maintainerstakecredential: Buffer.from(maintainerStakeCred!, "hex"),
+    minada: MIN_ADA,
+    mintingpolicyid: Buffer.from(scriptHash, "hex"),
+    rewardamount: rewardAmount,
+    script: scriptAddress,
+    settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
+    since: BigInt(lucidBase.utils.unixTimeToSlots(now)),
+    timelimit: deadline,
+    until: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
   };
 
   let tx;

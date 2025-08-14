@@ -56,28 +56,19 @@ async function mergeBounty(
   const githoneyFee = (bountyUtxo.assets[rewardUnit] * rewardFee) / 10_000n;
 
   const { tx } = await protocol.mergeTx({
-    admin: { value: adminAddr, type: "String" },
-    bountyref: {
-      value: bountyRef,
-      type: "String",
-    },
-    collateralref: { value: collateralref, type: "String" },
-    githoneyaddr: { value: githoneyAddr, type: "String" },
-    githoneyfee: { value: BigInt(githoneyFee), type: "Int" },
-    maintainer: { value: maintainerAddr, type: "String" },
-    minada: { value: BigInt(MIN_ADA), type: "Int" },
-    rewardpolicyid: { value: Buffer.from(rewardPolicy, "hex"), type: "Bytes" },
-    rewardassetname: { value: Buffer.from(rewardName, "hex"), type: "Bytes" },
-    script: { value: scriptAddress, type: "String" },
-    settingsref: {
-      value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-      type: "String",
-    },
-    since: { value: BigInt(lucidBase.utils.unixTimeToSlots(now)), type: "Int" },
-    until: {
-      value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
-      type: "Int",
-    },
+    admin: adminAddr,
+    bountyref: bountyRef,
+    collateralref: collateralref,
+    githoneyaddr: githoneyAddr,
+    githoneyfee: BigInt(githoneyFee),
+    maintainer: maintainerAddr,
+    minada: BigInt(MIN_ADA),
+    rewardpolicyid: Buffer.from(rewardPolicy, "hex"),
+    rewardassetname: Buffer.from(rewardName, "hex"),
+    script: scriptAddress,
+    settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
+    since: BigInt(lucidBase.utils.unixTimeToSlots(now)),
+    until: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
   });
 
   logger.info("END merge");
