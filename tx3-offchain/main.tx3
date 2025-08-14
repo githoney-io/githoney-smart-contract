@@ -226,7 +226,12 @@ tx payBadgesTo(
 ) {
     input badges {
         from: FTAddress,
-        min_amount: AnyAsset(badgePolicy, badgeName, 1) + fees + min_utxo(payment) + min_utxo(change),
+        min_amount: AnyAsset(badgePolicy, badgeName, 1),
+    }
+
+    input gas {
+        from: FTAddress,
+        min_amount: fees + min_utxo(payment) + min_utxo(change),
     }
 
     output payment {
@@ -236,7 +241,7 @@ tx payBadgesTo(
 
     output change {
         to: FTAddress,
-        amount: badges - fees - min_utxo(payment) - AnyAsset(badgePolicy, badgeName, 1),
+        amount: gas + badges - fees - min_utxo(payment) - AnyAsset(badgePolicy, badgeName, 1),
     }
 }
 

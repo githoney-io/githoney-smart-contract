@@ -44,16 +44,10 @@ async function payBadgesTo(
   }
 
   const { tx } = await protocol.payBadgesToTx({
-    badgename: {
-      type: "Bytes",
-      value: Buffer.from(badgeAssetName!, "hex"),
-    },
-    badgepolicy: {
-      type: "Bytes",
-      value: Buffer.from(badgePolicy, "hex"),
-    },
-    ftaddress: { type: "String", value: ftAddress },
-    payaddress: { type: "String", value: badge.payAddress },
+    badgename: Buffer.from(badgeAssetName!, "hex"),
+    badgepolicy: Buffer.from(badgePolicy, "hex"),
+    ftaddress: ftAddress,
+    payaddress: badge.payAddress,
   });
 
   logger.info("END payBadgeTo");
