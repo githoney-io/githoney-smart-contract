@@ -96,6 +96,12 @@ interface MetadataWithPolicy {
   policyId?: string;
 }
 
+interface Badge {
+  badgeName: string;
+  badgePolicy: string;
+  payAddress: string;
+}
+
 export {
   githoneyMintingPolicy,
   githoneyValidator,
@@ -117,4 +123,5 @@ export type {
   StakeCredential,
   Metadata,
   MetadataWithPolicy,
+  Badge,
 };
