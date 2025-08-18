@@ -1,13 +1,9 @@
-import { settingsRef } from "../../constants.ts";
+import { settingsNftRef, settingsRef } from "../../constants.ts";
 import { collectUtxos } from "../../operations/index.ts";
 import { MetadataWithPolicy } from "../../types.ts";
 import { lucidBase as lucid } from "../../utils/utils.ts";
 
 const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
-const outRef = {
-  txHash: "208fc648a97e8fc6b70d818f6a3b31db1ce15deb66a1e6df96a67a683c47933f",
-  outputIndex: 1,
-};
 const metadatas: MetadataWithPolicy[] = [
   {
     metadata: {
@@ -20,4 +16,4 @@ const metadatas: MetadataWithPolicy[] = [
   },
 ];
 
-await collectUtxos(settingsUtxo, outRef, metadatas);
+await collectUtxos(settingsUtxo, settingsNftRef, metadatas);
