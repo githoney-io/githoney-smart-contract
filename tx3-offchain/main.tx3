@@ -248,11 +248,12 @@ tx payBadgesTo(
 // COLLECT UTXOS FROM BADGES
 
 tx collectUtxos(
+    badgesScript: Bytes,
+    badgesScriptVersion: Int,
     collateralRef: UtxoRef,
     settingsRef: UtxoRef,
     utxoRef: UtxoRef,
-    badgesScript: Bytes,
-    badgesScriptVersion: Int,
+    utxoToCollect: UtxoRef,
 ) {
     collateral {
         ref: collateralRef,
@@ -260,6 +261,22 @@ tx collectUtxos(
 
     reference settings_utxo {
         ref: settingsRef,
+    }
+
+    input current {
+        from: ScriptBadge,
+        ref: utxoToCollect,
+        redeemer: (),
+    }
+
+    input githoney_wallet {
+        from: GitHoneyAddr,
+        min_amount: fees,
+    }
+
+    output change {
+        to: GitHoneyAddr,
+        amount: githoney_wallet + current - fees,
     }
 
     signers {

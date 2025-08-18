@@ -1,15 +1,14 @@
-import { githoneySeed, settingsRef } from "../../constants.ts";
+import { settingsRef } from "../../constants.ts";
 import { collectUtxos } from "../../operations/index.ts";
 import { MetadataWithPolicy } from "../../types.ts";
-import { lucidBase as lucid, signAndSubmit } from "../../utils/utils.ts";
+import { lucidBase as lucid } from "../../utils/utils.ts";
 
 const [settingsUtxo] = await lucid.utxosByOutRef([settingsRef]);
 const outRef = {
-  txHash: "26ef8bda1195c485a712b4c29d00e4cd7b70ddb159d21565ab3b47dc22e3d56b",
-  outputIndex: 0,
+  txHash: "208fc648a97e8fc6b70d818f6a3b31db1ce15deb66a1e6df96a67a683c47933f",
+  outputIndex: 1,
 };
 const metadatas: MetadataWithPolicy[] = [
-  // TODO - complete with actual badge metadata information
   {
     metadata: {
       name: "Express Pollinator",
@@ -17,10 +16,8 @@ const metadatas: MetadataWithPolicy[] = [
       description:
         "Given to a contributor who completes a bounty within 24h of accepting the bounty.",
     },
-    policyId: "policy1",
+    // policyId: "1855a70da3f8b041ff49a6ca063817598b1f7c72d4ef25a292e776f2",
   },
 ];
 
-const { collectCbor } = await collectUtxos(settingsUtxo, outRef, metadatas);
-lucid.selectWalletFromSeed(githoneySeed);
-await signAndSubmit(collectCbor, lucid);
+await collectUtxos(settingsUtxo, outRef, metadatas);
