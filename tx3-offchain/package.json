@@ -14,6 +14,7 @@
     "tx3-close-settings": "npx tsx --experimental-wasm-modules scripts/settings/close.ts",
     "tx3-deploy-badges": "npx tsx --experimental-wasm-modules scripts/badges/deploy.ts",
     "tx3-pay-badges": "npx tsx --experimental-wasm-modules scripts/badges/payBadgesTo.ts",
+    "tx3-collect-utxos": "npx tsx --experimental-wasm-modules scripts/badges/collectUtxos.ts",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test-demo": "NODE_OPTIONS=--experimental-vm-modules jest test/demo/integration.test.ts",
     "test-create": "NODE_OPTIONS=--experimental-vm-modules jest test/bounties/create.test.ts",

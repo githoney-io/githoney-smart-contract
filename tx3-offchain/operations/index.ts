@@ -9,3 +9,4 @@ export { updateSettings } from "./settings/update.ts";
 export { closeSettings } from "./settings/close.ts";
 export { deployBadges } from "./badges/deploy.ts";
 export { payBadgesTo } from "./badges/payBadgesTo.ts";
+export { collectUtxos } from "./badges/collectUtxos.ts";
