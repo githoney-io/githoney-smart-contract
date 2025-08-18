@@ -7,3 +7,4 @@ export { closeBounty } from "./bounties/close.ts";
 export { deploySettings } from "./settings/deploy.ts";
 export { updateSettings } from "./settings/update.ts";
 export { closeSettings } from "./settings/close.ts";
+export { deployBadges } from "./badges/deploy.ts";

@@ -11,12 +11,16 @@ import {
   TypesSettingsRedeemers,
   GithoneyContractGithoneyMint,
   GithoneyContractSettingsMintingMint,
+  GithoneyContractBadgesPolicyMint,
+  GithoneyContractBadgesContractSpend,
 } from "./plutus.ts";
 
 const GITHONEY_SCRIPT = GithoneyContractGithoneySpend;
 const MINTING_SCRIPT = GithoneyContractGithoneyMint;
 const SETTINGS_SCRIPT = new GithoneyContractSettingsSpend();
 const SETTINGS_POLICY = GithoneyContractSettingsMintingMint;
+const BADGES_POLICY = GithoneyContractBadgesPolicyMint;
+const BADGES_SCRIPT = GithoneyContractBadgesContractSpend;
 
 type Address = CardanoAddressAddress;
 type PaymentCredential = CardanoAddressPaymentCredential;
@@ -69,11 +73,36 @@ function settingsValidator(): Script {
   return SETTINGS_SCRIPT;
 }
 
+function badgesPolicy(outRef: OutRef, nonce: bigint): Script {
+  // Convert OutRef to CardanoTransactionOutputReference
+  const outRefParam = {
+    transactionId: outRef.txHash,
+    outputIndex: BigInt(outRef.outputIndex),
+  };
+  return new BADGES_POLICY(outRefParam, nonce);
+}
+
+function badgesValidator(settingsPolicyId: string): Script {
+  return new BADGES_SCRIPT(settingsPolicyId);
+}
+
+interface Metadata {
+  name: string;
+  logo: string;
+  description: string;
+}
+interface MetadataWithPolicy {
+  metadata: Metadata;
+  policyId?: string;
+}
+
 export {
   githoneyMintingPolicy,
   githoneyValidator,
   settingsPolicy,
   settingsValidator,
+  badgesPolicy,
+  badgesValidator,
   GithoneyDatumSchema,
   SettingsDatumSchema,
   SettingsRedeemerSchema,
@@ -86,4 +115,6 @@ export type {
   Address,
   PaymentCredential,
   StakeCredential,
+  Metadata,
+  MetadataWithPolicy,
 };

@@ -4,6 +4,8 @@ party GitHoneyAddr;
 party Maintainer;
 party Script;
 party Sponsor;
+party FTAddress;
+party ScriptBadge;
 
 type CardanoAddress {
     payment_credential: CardanoCredential,
@@ -72,6 +74,147 @@ type GithoneyDatum {
     merged: Bool,
     initial_value: Map<Bytes, Map<Bytes, Int>>,
 }
+
+type BadgesDatum {
+    metadata: Map<Bytes, Bytes>,
+    version: Int,
+}
+
+// BADGES
+
+// DEPLOY BADGE
+tx deployBadge(
+    collateralRef: UtxoRef,
+    description: Bytes,
+    descriptionValue: Bytes,
+    ftBadgeAmount: Int,
+    ftBadgeName: Bytes,
+    logo: Bytes,
+    logoValue: Bytes,
+    mVersion: Int,
+    mintingPolicyId: Bytes,
+    name: Bytes,
+    nameValue: Bytes,
+    policyScript: Bytes,
+    policyScriptVersion: Int,
+    refNftAssetName: Bytes,
+    utxoRef: UtxoRef,
+) {
+    collateral {
+        ref: collateralRef,
+    }
+
+    input githoney_wallet {
+        from: GitHoneyAddr,
+        ref: utxoRef,
+    }
+
+    mint {
+        amount: AnyAsset(mintingPolicyId, refNftAssetName, 1) + AnyAsset(mintingPolicyId, ftBadgeName, ftBadgeAmount),
+        redeemer: (),
+    }
+
+    output badge_utxo {
+        to: ScriptBadge,
+        amount: min_utxo(badge_utxo) + AnyAsset(mintingPolicyId, refNftAssetName, 1),
+        datum: BadgesDatum {
+            metadata: {
+                name: nameValue,
+                logo: logoValue,
+                description: descriptionValue,
+            },
+            version: mVersion,
+        },
+    }
+
+    output ft_output {
+        to: FTAddress,
+        amount: AnyAsset(mintingPolicyId, ftBadgeName, ftBadgeAmount) + min_utxo(ft_output),
+    }
+
+    output change {
+        to: GitHoneyAddr,
+        amount: githoney_wallet - fees - min_utxo(ft_output) - min_utxo(badge_utxo),
+    }
+
+    cardano::plutus_witness {
+        version: policyScriptVersion,
+        script: policyScript,
+    }
+
+    metadata {
+        674: "Creating badges",
+    }
+}
+
+// UPDATE BADGE METADATA
+tx updateBadge(
+    badgesScript: Bytes,
+    badgesScriptVersion: Int,
+    collateralRef: UtxoRef,
+    description: Bytes,
+    descriptionValue: Bytes,
+    logo: Bytes,
+    logoValue: Bytes,
+    mVersion: Int,
+    name: Bytes,
+    nameValue: Bytes,
+    settingsRef: UtxoRef,
+    utxoRef: UtxoRef,
+    utxoToCollect: UtxoRef,
+) {
+    collateral {
+        ref: collateralRef,
+    }
+
+    input githoney_wallet {
+        from: GitHoneyAddr,
+        ref: utxoRef,
+    }
+
+    reference settings_utxo {
+        ref: settingsRef,
+    }
+
+    input current {
+        from: ScriptBadge,
+        ref: utxoToCollect,
+        redeemer: (),
+    }
+
+    output badge_utxo {
+        to: ScriptBadge,
+        amount: current,
+        datum: BadgesDatum {
+            metadata: {
+                name: nameValue,
+                logo: logoValue,
+                description: descriptionValue,
+            },
+            version: mVersion,
+        },
+    }
+
+    output change {
+        to: GitHoneyAddr,
+        amount: githoney_wallet - fees,
+    }
+
+
+    signers {
+        GitHoneyAddr,
+    }
+
+    cardano::plutus_witness {
+        version: badgesScriptVersion,
+        script: badgesScript,
+    }
+
+    metadata {
+        674: "Creating badges",
+    }
+}
+
 
 // SETTINGS
 // DEPLOY SETTINGS

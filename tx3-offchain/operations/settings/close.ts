@@ -65,38 +65,17 @@ async function closeSettings(
   );
 
   const { tx } = await protocol.closeTx({
-    script: { value: settingsValidatorAddress, type: "String" },
-    githoneyaddr: { value: githoneyAddr, type: "String" },
-    collateralref: { value: collateralref, type: "String" },
-    settingsref: {
-      value: settingsRef,
-      type: "String",
-    },
-    remainingada: {
-      value: BigInt(remainingAda),
-      type: "Int",
-    },
-    settingspolicyid: { value: Buffer.from(policyId, "hex"), type: "Bytes" },
-    settingstokenname: {
-      value: Buffer.from(settingsTokenName!, "hex"),
-      type: "Bytes",
-    },
-    settingsmintingpolicy: {
-      value: settingsMintingPolicy.script,
-      type: "String",
-    },
-    settingsmintingversion: {
-      type: "Int",
-      value: BigInt(settingsMintingVersion),
-    },
-    settingsvalidatorscript: {
-      value: settingsValidatorScript.script,
-      type: "String",
-    },
-    settingsvalidatorversion: {
-      value: BigInt(settingsValidatorVersion),
-      type: "Int",
-    },
+    script: settingsValidatorAddress,
+    githoneyaddr: githoneyAddr,
+    collateralref: collateralref,
+    settingsref: settingsRef,
+    remainingada: BigInt(remainingAda),
+    settingspolicyid: Buffer.from(policyId, "hex"),
+    settingstokenname: Buffer.from(settingsTokenName!, "hex"),
+    settingsmintingpolicy: Buffer.from(settingsMintingPolicy.script, "hex"),
+    settingsmintingversion: BigInt(settingsMintingVersion),
+    settingsvalidatorscript: Buffer.from(settingsValidatorScript.script, "hex"),
+    settingsvalidatorversion: BigInt(settingsValidatorVersion),
   });
 
   logger.info("END closeSettings");

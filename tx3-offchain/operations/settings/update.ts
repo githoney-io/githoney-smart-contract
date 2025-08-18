@@ -75,31 +75,16 @@ async function updateSettings(
   }
 
   const { tx } = await protocol.updateTx({
-    script: { value: settingsValidatorAddress, type: "String" },
-    githoneyaddr: { value: githoneyAddress, type: "String" },
-    bountycreationfee: { value: BigInt(bountyCreationFee), type: "Int" },
-    bountyrewardfee: { value: BigInt(bountyRewardFee), type: "Int" },
-    collateralref: { value: collateralref, type: "String" },
-    settingsref: {
-      value: settingsRef,
-      type: "String",
-    },
-    githoneyscript: {
-      value: gitHoneyValidator.script,
-      type: "String",
-    },
-    scriptversion: {
-      value: BigInt(scriptVersion),
-      type: "Int",
-    },
-    settingsvalidatorscript: {
-      value: settingsValidatorScript.script,
-      type: "String",
-    },
-    settingsvalidatorversion: {
-      value: BigInt(settingsValidatorVersion),
-      type: "Int",
-    },
+    script: settingsValidatorAddress,
+    githoneyaddr: githoneyAddress,
+    bountycreationfee: BigInt(bountyCreationFee),
+    bountyrewardfee: BigInt(bountyRewardFee),
+    collateralref: collateralref,
+    settingsref: settingsRef,
+    githoneyscript: Buffer.from(gitHoneyValidator.script, "hex"),
+    scriptversion: BigInt(scriptVersion),
+    settingsvalidatorscript: Buffer.from(settingsValidatorScript.script, "hex"),
+    settingsvalidatorversion: BigInt(settingsValidatorVersion),
   });
 
   logger.info("END update");

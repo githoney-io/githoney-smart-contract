@@ -1,0 +1,243 @@
+import { protocol } from "../../gen/typescript/protocol.ts";
+import {
+  Data,
+  fromText,
+  OutRef,
+  toUnit,
+  Assets,
+  Utxo,
+  Lucid,
+  Constr,
+  fromUnit,
+  toText,
+  Addresses,
+} from "@spacebudz/lucid";
+import {
+  getScriptVersion,
+  keyPairsToAddress,
+  logger,
+  lucidBase as lucid,
+  lucidWithWallet,
+} from "../../utils/utils.ts";
+import {
+  MetadataWithPolicy,
+  SettingsDatumSchema,
+  badgesPolicy,
+  badgesValidator,
+  settingsPolicy,
+} from "../../types.ts";
+import { collateralOutRef } from "../../utils/utxo.ts";
+
+/**
+ * Builds a `deployBadges` transaction. The tx is built in the context of the GitHoney address,
+ * checks if the badge is already minted, and deploys the badge if it is not.
+ * In the case of updating the metadata, the badge utxo is consumed and the NFT reutilized.
+ * @param settingsUtxo The settings Utxo.
+ * @param settingsNftOutRef The output reference passed as a parameter of the settings nft minting policy,
+ * @param ftBadgeAmount The amount of FT tokens to be minted for each badge.
+ * @param ftAddress The address where the FT tokens should be paid.
+ * @param metadatas The metadata of the badges to be deployed.
+ * @returns The cbor of the unsigned transaction.
+ */
+
+async function deployBadges(
+  settingsUtxo: Utxo,
+  settingsNftOutRef: OutRef,
+  ftBadgeAmount: bigint,
+  ftAddress: string,
+  meta: MetadataWithPolicy,
+): Promise<{ deployBadgesCbor: string; newMetadata: MetadataWithPolicy }> {
+  logger.info("START deployBadges");
+  const settings = await lucid.datumOf(settingsUtxo, SettingsDatumSchema);
+  const settingsRef = settingsUtxo.txHash + "#" + settingsUtxo.outputIndex;
+
+  const githoneyAddr = keyPairsToAddress(
+    lucid.network,
+    settings.githoneyAddress,
+  );
+  logger.info(`Deploying badges from ${githoneyAddr}`);
+  const [utxo] = (await lucid.utxosAt(githoneyAddr)).filter(
+    (utxo) => utxo.assets["lovelace"] >= 15_000_000,
+  );
+  const outRef = {
+    txHash: utxo.txHash,
+    outputIndex: utxo.outputIndex,
+  };
+  const utxoRef = outRef.txHash + "#" + outRef.outputIndex;
+
+  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
+  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
+
+  const settingsMintingPolicy = settingsPolicy(settingsNftOutRef);
+  const settingsNftPolicy = Addresses.scriptToCredential(settingsMintingPolicy);
+  const badgesScript = badgesValidator(settingsNftPolicy.hash);
+  const scriptAddr = Addresses.scriptToAddress(lucid.network, badgesScript);
+  const utxosAtScript = await lucid.utxosAt(scriptAddr);
+
+  lucid.selectReadOnlyWallet({ address: githoneyAddr });
+
+  let tx: string = "";
+  let i = 0n;
+  const ftAssets: Assets = {};
+  const utxosToCollect: Utxo[] = [];
+  let newMetadata: MetadataWithPolicy = meta;
+  logger.info("-".repeat(64));
+  logger.info(`Deploying badge ${JSON.stringify(meta)}`);
+  const { res, referenceNftPolicyId } = await isReferenceNftMinted(
+    lucid,
+    utxosAtScript,
+    meta,
+  );
+  if (res) {
+    logger.info(`Badge already minted ${meta.metadata.name}`);
+    newMetadata = {
+      metadata: meta.metadata,
+      policyId: referenceNftPolicyId,
+    };
+  } else {
+    logger.error(`Badge not minted ${JSON.stringify(meta)}`);
+  }
+  let utxos: Utxo[] = [];
+  if (meta.policyId) {
+    logger.info(
+      `Updating metadata of badge ${meta.metadata.name} policy ${meta.policyId}`,
+    );
+    // We only need to update the metadata
+    const nftUnit = toUnit(meta.policyId, fromText(meta.metadata.name), 100);
+
+    utxos = await lucid.utxosAtWithUnit(scriptAddr, nftUnit);
+    if (utxos.length === 1) {
+      logger.info("Collecting utxo to update metadata");
+
+      utxosToCollect.push(utxos[0]);
+      const utxoToCollectRef = utxos[0].txHash + "#" + utxos[0].outputIndex;
+      ({ tx } = await protocol.updateBadgeTx({
+        badgesscript: Buffer.from(badgesScript.script, "hex"),
+        badgesscriptversion: getScriptVersion(badgesScript.type),
+        collateralref: collateralref,
+        githoneyaddr: githoneyAddr,
+        description: Buffer.from(fromText("description"), "hex"),
+        descriptionvalue: Buffer.from(
+          fromText(meta.metadata.description),
+          "hex",
+        ),
+        logo: Buffer.from(fromText("logo"), "hex"),
+        logovalue: Buffer.from(fromText(meta.metadata.logo), "hex"),
+        name: Buffer.from(fromText("name"), "hex"),
+        namevalue: Buffer.from(fromText(meta.metadata.name), "hex"),
+        mversion: 1n,
+        scriptbadge: scriptAddr,
+        utxoref: utxoRef,
+        utxotocollect: utxoToCollectRef,
+        settingsref: settingsRef,
+      }));
+    }
+
+    if ((meta.policyId && utxos.length === 0) || !meta.policyId) {
+      const policyScript = badgesPolicy(outRef, i);
+      i++;
+
+      const mintingPolicyId = Addresses.scriptToCredential(policyScript).hash;
+      const referenceNFTUnit = toUnit(
+        mintingPolicyId,
+        fromText(meta.metadata.name),
+        100,
+      );
+      const ftUnit = toUnit(mintingPolicyId, fromText(meta.metadata.name), 333);
+      ftAssets[ftUnit] = ftBadgeAmount;
+
+      ({ tx } = await protocol.deployBadgeTx({
+        collateralref: collateralref,
+        ftaddress: ftAddress,
+        ftbadgeamount: ftBadgeAmount,
+        ftbadgename: Buffer.from(fromUnit(ftUnit).assetName!, "hex"),
+        mintingpolicyid: Buffer.from(mintingPolicyId, "hex"),
+        githoneyaddr: githoneyAddr,
+        policyscript: Buffer.from(policyScript.script, "hex"),
+        policyscriptversion: getScriptVersion(policyScript.type),
+        refnftassetname: Buffer.from(
+          fromUnit(referenceNFTUnit).assetName!,
+          "hex",
+        ),
+        scriptbadge: scriptAddr,
+        utxoref: utxoRef,
+        description: Buffer.from(fromText("description"), "hex"),
+        descriptionvalue: Buffer.from(
+          fromText(meta.metadata.description),
+          "hex",
+        ),
+        logo: Buffer.from(fromText("logo"), "hex"),
+        logovalue: Buffer.from(fromText(meta.metadata.logo), "hex"),
+        name: Buffer.from(fromText("name"), "hex"),
+        namevalue: Buffer.from(fromText(meta.metadata.name), "hex"),
+        mversion: 1n,
+      }));
+      newMetadata = { metadata: meta.metadata, policyId: mintingPolicyId };
+    }
+  }
+
+  if (Object.keys(ftAssets).length === 0 && utxosToCollect.length === 0) {
+    logger.info("All badges already minted");
+  } else {
+    logger.debug("CBOR");
+    logger.debug(tx);
+  }
+  logger.info("END deployBadges");
+  return { deployBadgesCbor: tx, newMetadata };
+}
+
+async function isReferenceNftMinted(
+  lucid: Lucid,
+  utxos: Utxo[],
+  meta: MetadataWithPolicy,
+): Promise<{ res: boolean; referenceNftPolicyId: string | undefined }> {
+  for (const utxo of utxos) {
+    let referenceNftPolicyId: string | undefined;
+    if (utxo.datum) {
+      try {
+        referenceNftPolicyId = await hasReferenceNft(
+          utxo.assets,
+          meta.metadata.name,
+          meta.policyId,
+        );
+        const datum = (await lucid.datumOf(utxo)) as Constr<Data>;
+        const datumJson = Data.toMetadata(datum.fields[0]);
+        if (
+          referenceNftPolicyId &&
+          datumJson.name === meta.metadata.name &&
+          datumJson.logo === meta.metadata.logo &&
+          datumJson.description === meta.metadata.description
+        ) {
+          return { res: true, referenceNftPolicyId };
+        }
+      } catch (e) {
+        const error = e as Error;
+        logger.error(error.message);
+        continue;
+      }
+    }
+  }
+  return { res: false, referenceNftPolicyId: undefined };
+}
+
+async function hasReferenceNft(
+  assets: Assets,
+  name: string,
+  policyId?: string,
+): Promise<string | undefined> {
+  for (const [unit, amount] of Object.entries(assets)) {
+    const asset = fromUnit(unit);
+    if (asset.name) {
+      if (toText(asset.name) === name && asset.label === 100 && amount === 1n) {
+        if (policyId && asset.policyId !== policyId) {
+          return undefined;
+        } else {
+          return asset.policyId;
+        }
+      }
+    }
+  }
+  return undefined;
+}
+
+export { deployBadges, isReferenceNftMinted };

@@ -51,30 +51,15 @@ async function claimBounty(
   );
 
   const { tx } = await protocol.claimTx({
-    bountyid: {
-      value: Buffer.from(fromUnit(bountyIdTokenUnit).name!, "hex"),
-      type: "Bytes",
-    },
-    bountyref: {
-      value: bountyRef,
-      type: "String",
-    },
-    collateralref: { value: collateralref, type: "String" },
-    contributor: { value: contributorAddr, type: "String" },
-    mintingpolicyid: {
-      value: Buffer.from(fromUnit(bountyIdTokenUnit).policyId, "hex"),
-      type: "Bytes",
-    },
-    script: { value: scriptAddress, type: "String" },
-    settingsref: {
-      value: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
-      type: "String",
-    },
-    since: { value: BigInt(lucidBase.utils.unixTimeToSlots(now)), type: "Int" },
-    until: {
-      value: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
-      type: "Int",
-    },
+    bountyid: Buffer.from(fromUnit(bountyIdTokenUnit).name!, "hex"),
+    bountyref: bountyRef,
+    collateralref: collateralref,
+    contributor: contributorAddr,
+    mintingpolicyid: Buffer.from(fromUnit(bountyIdTokenUnit).policyId, "hex"),
+    script: scriptAddress,
+    settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
+    since: BigInt(lucidBase.utils.unixTimeToSlots(now)),
+    until: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
   });
   logger.info("END claim");
   return {

@@ -43,7 +43,7 @@ export const signAndSubmit = async (
   return txHash;
 };
 
-function cardanoCredentialToCredential(
+export function cardanoCredentialToCredential(
   credential: PaymentCredential,
 ): Credential {
   let hash: string;
@@ -116,17 +116,17 @@ export function getRewardAsset(
   };
 }
 
-export function getScriptVersion(type: string): number {
+export function getScriptVersion(type: string): bigint {
   switch (type.toLowerCase()) {
     case "native":
-      return 0;
+      return 0n;
     case "plutusv1":
-      return 1;
+      return 1n;
     case "plutusv2":
-      return 2;
+      return 2n;
     case "plutusv3":
-      return 3;
+      return 3n;
     default:
-      return 3;
+      return 3n;
   }
 }

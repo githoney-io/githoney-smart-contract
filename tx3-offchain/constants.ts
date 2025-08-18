@@ -13,9 +13,14 @@ const maintainerAddr = process.env.MAINTAINER_ADDRESS!;
 const adminAddr = process.env.ADMIN_ADDRESS!;
 const contributorAddr = process.env.CONTRIBUTOR_ADDRESS!;
 const sponsorAddr = process.env.SPONSOR_ADDRESS!;
+const ftAddr = process.env.FT_ADDRESS!;
 const settingsRef: OutRef = {
   txHash: process.env.SETTINGS_TX_HASH!,
   outputIndex: 0,
+};
+const settingsNftRef: OutRef = {
+  txHash: process.env.SETTINGS_NFT_TX_HASH!,
+  outputIndex: process.env.SETTINGS_NFT_OUTPUT_INDEX! as unknown as number,
 };
 
 const githoneySeed = process.env.GITHONEY_SEED!;
@@ -37,7 +42,9 @@ export {
   maintainerSeed,
   rewardFee,
   settingsRef,
+  settingsNftRef,
   settingsTokenName,
   sponsorAddr,
   sponsorSeed,
+  ftAddr,
 };
