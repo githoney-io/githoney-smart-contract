@@ -18,6 +18,10 @@ const settingsRef: OutRef = {
   txHash: process.env.SETTINGS_TX_HASH!,
   outputIndex: 0,
 };
+const settingsNftRef: OutRef = {
+  txHash: process.env.SETTINGS_NFT_TX_HASH!,
+  outputIndex: process.env.SETTINGS_NFT_OUTPUT_INDEX! as unknown as number,
+};
 
 const githoneySeed = process.env.GITHONEY_SEED!;
 const maintainerSeed = process.env.MAINTAINER_SEED!;
@@ -38,6 +42,7 @@ export {
   maintainerSeed,
   rewardFee,
   settingsRef,
+  settingsNftRef,
   settingsTokenName,
   sponsorAddr,
   sponsorSeed,

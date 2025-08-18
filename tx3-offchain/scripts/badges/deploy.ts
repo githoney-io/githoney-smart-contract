@@ -1,13 +1,14 @@
-import { ftAddr, githoneySeed, settingsRef } from "../../constants.ts";
+import {
+  ftAddr,
+  githoneySeed,
+  settingsNftRef,
+  settingsRef,
+} from "../../constants.ts";
 import { deployBadges } from "../../operations/index.ts";
 import { MetadataWithPolicy } from "../../types.ts";
 import { logger, lucidBase, signAndSubmit } from "../../utils/utils.ts";
 
 const [settingsUtxo] = await lucidBase.utxosByOutRef([settingsRef]);
-const outRef = {
-  txHash: "208fc648a97e8fc6b70d818f6a3b31db1ce15deb66a1e6df96a67a683c47933f",
-  outputIndex: 1,
-};
 const ftBadgeAmount = 3n;
 const metadata: MetadataWithPolicy = {
   metadata: {
@@ -20,7 +21,7 @@ const metadata: MetadataWithPolicy = {
 
 const { deployBadgesCbor, newMetadata } = await deployBadges(
   settingsUtxo,
-  outRef,
+  settingsNftRef,
   ftBadgeAmount,
   ftAddr,
   metadata,
