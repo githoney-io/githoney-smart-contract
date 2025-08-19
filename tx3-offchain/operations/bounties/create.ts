@@ -1,5 +1,5 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, Utxo } from "@spacebudz/lucid";
+import { Addresses, fromText, Utxo } from "@spacebudz/lucid";
 import { MIN_ADA } from "../../constants.ts";
 import {
   keyPairsToAddress,
@@ -61,7 +61,7 @@ async function createBounty(
   const createParams = {
     adminpaymentcredential: Buffer.from(adminPaymentCred!, "hex"),
     bountycreationfee: settings.bountyCreationFee,
-    bountyid: Buffer.from(bountyId, "hex"),
+    bountyid: Buffer.from(fromText(bountyId), "hex"),
     bountyrewardfee: settings.bountyRewardFee,
     collateralref: collateralref,
     githoneyaddr: githoneyAddr,
