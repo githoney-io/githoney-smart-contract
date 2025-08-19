@@ -20,7 +20,6 @@ import {
 } from "../../operations/index.ts";
 import {
   MIN_ADA,
-  adminAddr,
   creationFee,
   githoneyAddr,
   rewardFee,
@@ -112,9 +111,10 @@ describe("Integration tests", () => {
       100n,
       bounty_id,
       maintainerAddress,
-      adminAddr,
+      githoneyAddr,
       settingsUtxo,
       BigInt(deadline),
+      lucidMaintainer,
     );
 
     logger.info(`Creating bounty ${bounty_id}`);
@@ -152,6 +152,7 @@ describe("Integration tests", () => {
       settingsUtxo,
       maintainerAddress,
       createOutRef,
+      lucidMaintainer,
     );
 
     logger.info(`Adding reward to bounty`);
@@ -172,6 +173,7 @@ describe("Integration tests", () => {
       contributorAddr,
       settingsUtxo,
       { txHash: addRewardTxId, outputIndex: 0 },
+      lucidContributor,
     );
     const assignTxId = await signSubmitAndWaitConfirmation(
       assignCbor,
@@ -198,10 +200,15 @@ describe("Integration tests", () => {
 
     // MERGE BOUNTY
     logger.info(`Merging bounty`);
-    const { mergeCbor } = await mergeBounty(adminAddr, settingsUtxo, {
-      txHash: assignTxId,
-      outputIndex: 0,
-    });
+    const { mergeCbor } = await mergeBounty(
+      githoneyAddr,
+      settingsUtxo,
+      {
+        txHash: assignTxId,
+        outputIndex: 0,
+      },
+      lucidGithoney,
+    );
     const mergeTxId = await signSubmitAndWaitConfirmation(
       mergeCbor,
       lucidGithoney,
@@ -225,10 +232,14 @@ describe("Integration tests", () => {
 
     // CLAIM BOUNTY
     logger.info(`Claiming bounty`);
-    const { claimCbor } = await claimBounty(settingsUtxo, {
-      txHash: mergeTxId,
-      outputIndex: 0,
-    });
+    const { claimCbor } = await claimBounty(
+      settingsUtxo,
+      {
+        txHash: mergeTxId,
+        outputIndex: 0,
+      },
+      lucidContributor,
+    );
     const claimTxId = await signSubmitAndWaitConfirmation(
       claimCbor,
       lucidContributor,
@@ -282,9 +293,10 @@ describe("Integration tests", () => {
       100n,
       bounty_id,
       maintainerAddress,
-      adminAddr,
+      githoneyAddr,
       settingsUtxo,
       deadline,
+      lucidMaintainer,
     );
 
     logger.info(`Creating bounty ${bounty_id}`);
@@ -338,9 +350,10 @@ describe("Integration tests", () => {
       100n,
       "Bounty DEMO 2",
       maintainerAddress,
-      adminAddr,
+      githoneyAddr,
       newSettingsUtxo,
       deadline,
+      lucidMaintainer,
     );
 
     logger.info(`Creating bounty Bounty DEMO 2`);
@@ -371,6 +384,7 @@ describe("Integration tests", () => {
       contributorAddr,
       newSettingsUtxo,
       newCreateOutRef,
+      lucidContributor,
     );
 
     logger.info(`Assigning contributor with addr ${contributorAddr}`);
@@ -382,9 +396,10 @@ describe("Integration tests", () => {
     const assignOutRef = { txHash: assignTxId, outputIndex: 0 };
 
     const { mergeCbor } = await mergeBounty(
-      adminAddr,
+      githoneyAddr,
       newSettingsUtxo,
       assignOutRef,
+      lucidGithoney,
     );
 
     logger.info(`Merging bounty`);
@@ -407,7 +422,11 @@ describe("Integration tests", () => {
       `Githoney fee pay mismatch ${githoneyFeePayUtxo.assets[tokenDUnit]}`,
     );
 
-    const { claimCbor } = await claimBounty(newSettingsUtxo, mergeOutRef);
+    const { claimCbor } = await claimBounty(
+      newSettingsUtxo,
+      mergeOutRef,
+      lucidContributor,
+    );
 
     logger.info(`Claiming bounty`);
     await signSubmitAndWaitConfirmation(claimCbor, lucidContributor);

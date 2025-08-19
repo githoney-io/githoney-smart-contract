@@ -24,7 +24,7 @@ export const lucidBase = new Lucid({
 });
 
 export const lucidWithWallet = lucidBase.selectWalletFromSeed(
-  process.env.ADMIN_SEED as string,
+  process.env.GITHONEY_SEED as string,
 );
 
 export const cExplorerTxURL = "https://preprod.cexplorer.io/tx/";

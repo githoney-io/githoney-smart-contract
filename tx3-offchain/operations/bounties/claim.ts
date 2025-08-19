@@ -1,11 +1,10 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, fromUnit, OutRef, Utxo } from "@spacebudz/lucid";
+import { Addresses, fromUnit, Lucid, OutRef, Utxo } from "@spacebudz/lucid";
 import {
   extractBountyIdTokenUnit,
   keyPairsToAddress,
   logger,
   lucidBase,
-  lucidWithWallet,
 } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
 import { GithoneyDatumSchema } from "../../types.ts";
@@ -13,6 +12,7 @@ import { GithoneyDatumSchema } from "../../types.ts";
 async function claimBounty(
   settingsUtxo: Utxo,
   utxoRef: OutRef,
+  lucid: Lucid,
 ): Promise<{
   claimCbor: string;
 }> {
@@ -24,7 +24,7 @@ async function claimBounty(
   const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
 
-  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
+  const [selectedUtxos] = await collateralOutRef(lucid);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);

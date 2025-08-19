@@ -1,12 +1,7 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, fromText, Utxo } from "@spacebudz/lucid";
+import { Addresses, fromText, Lucid, Utxo } from "@spacebudz/lucid";
 import { MIN_ADA } from "../../constants.ts";
-import {
-  keyPairsToAddress,
-  logger,
-  lucidBase,
-  lucidWithWallet,
-} from "../../utils/utils.ts";
+import { keyPairsToAddress, logger, lucidBase } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
 import { SettingsDatumSchema } from "../../types.ts";
 
@@ -19,6 +14,7 @@ async function createBounty(
   adminAddr: string,
   settingsUtxo: Utxo,
   deadline: bigint,
+  lucid: Lucid,
 ): Promise<{
   createCbor: string;
 }> {
@@ -30,7 +26,7 @@ async function createBounty(
   const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
 
-  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
+  const [selectedUtxos] = await collateralOutRef(lucid);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const now = new Date().getTime() - 60 * 1000; // 1 minute ago

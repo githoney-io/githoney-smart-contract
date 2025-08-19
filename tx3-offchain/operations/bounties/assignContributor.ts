@@ -1,6 +1,6 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, OutRef, Utxo } from "@spacebudz/lucid";
-import { logger, lucidBase, lucidWithWallet } from "../../utils/utils.ts";
+import { Addresses, Lucid, OutRef, Utxo } from "@spacebudz/lucid";
+import { logger, lucidBase } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
 import { GithoneyDatumSchema } from "../../types.ts";
@@ -9,6 +9,7 @@ async function assignContributor(
   contributorAddr: string,
   settingsUtxo: Utxo,
   utxoRef: OutRef,
+  lucid: Lucid,
 ): Promise<{
   assignCbor: string;
 }> {
@@ -19,7 +20,7 @@ async function assignContributor(
   }
   const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
 
-  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
+  const [selectedUtxos] = await collateralOutRef(lucid);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);

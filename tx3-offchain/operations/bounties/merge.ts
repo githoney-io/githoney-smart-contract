@@ -1,11 +1,10 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, OutRef, toUnit, Utxo } from "@spacebudz/lucid";
+import { Addresses, Lucid, OutRef, toUnit, Utxo } from "@spacebudz/lucid";
 import {
   getRewardAsset,
   keyPairsToAddress,
   logger,
   lucidBase,
-  lucidWithWallet,
 } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
 import { MIN_ADA, rewardFee } from "../../constants.ts";
@@ -15,6 +14,7 @@ async function mergeBounty(
   adminAddr: string,
   settingsUtxo: Utxo,
   utxoRef: OutRef,
+  lucid: Lucid,
 ): Promise<{
   mergeCbor: string;
 }> {
@@ -26,7 +26,7 @@ async function mergeBounty(
   const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
 
-  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
+  const [selectedUtxos] = await collateralOutRef(lucid);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
