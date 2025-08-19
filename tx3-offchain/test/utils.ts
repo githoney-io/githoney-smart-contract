@@ -114,6 +114,7 @@ const newBounty = async (lucid: Lucid, settingsUtxo: Utxo) => {
     githoneyAddr,
     settingsUtxo,
     BigInt(deadline),
+    lucid,
   );
   lucid.selectWalletFromSeed(maintainerSeed);
   const txId = await signAndSubmit(createCbor, lucid);
@@ -126,6 +127,7 @@ const newAssign = async (lucid: Lucid, outRef: OutRef, settingsUtxo: Utxo) => {
     contributorAddr,
     settingsUtxo,
     outRef,
+    lucid,
   );
   lucid.selectWalletFromSeed(contributorSeed);
   const txId = await signAndSubmit(assignCbor, lucid);
@@ -134,7 +136,12 @@ const newAssign = async (lucid: Lucid, outRef: OutRef, settingsUtxo: Utxo) => {
 };
 
 const newMerge = async (lucid: Lucid, outRef: OutRef, settingsUtxo: Utxo) => {
-  const { mergeCbor } = await mergeBounty(githoneyAddr, settingsUtxo, outRef);
+  const { mergeCbor } = await mergeBounty(
+    githoneyAddr,
+    settingsUtxo,
+    outRef,
+    lucid,
+  );
   lucid.selectWalletFromSeed(githoneySeed);
   const txId = await signAndSubmit(mergeCbor, lucid);
   await waitForUtxosUpdate(lucid, txId);
@@ -142,7 +149,7 @@ const newMerge = async (lucid: Lucid, outRef: OutRef, settingsUtxo: Utxo) => {
 };
 
 const newClaim = async (lucid: Lucid, outRef: OutRef, settingsUtxo: Utxo) => {
-  const { claimCbor } = await claimBounty(settingsUtxo, outRef);
+  const { claimCbor } = await claimBounty(settingsUtxo, outRef, lucid);
   lucid.selectWalletFromSeed(contributorSeed);
   const txId = await signAndSubmit(claimCbor, lucid);
   await waitForUtxosUpdate(lucid, txId);
@@ -160,6 +167,7 @@ const newClose = async (
     refundings,
     settingsUtxo,
     outRef,
+    lucid,
   );
   lucid.selectWalletFromSeed(githoneySeed);
   const txId = await signAndSubmit(closeCbor, lucid);

@@ -10,6 +10,6 @@ const bountyRef: OutRef = {
   outputIndex: 0,
 };
 
-const { claimCbor } = await claimBounty(settingsUtxo, bountyRef);
 lucidBase.selectWalletFromSeed(contributorSeed);
-await signAndSubmit(claimCbor);
+const { claimCbor } = await claimBounty(settingsUtxo, bountyRef, lucidBase);
+await signAndSubmit(claimCbor, lucidBase);

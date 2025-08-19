@@ -3,6 +3,7 @@ import {
   Addresses,
   Assets,
   fromUnit,
+  Lucid,
   OutRef,
   toUnit,
   Utxo,
@@ -13,7 +14,6 @@ import {
   keyPairsToAddress,
   logger,
   lucidBase,
-  lucidWithWallet,
 } from "../../utils/utils.ts";
 import { collateralOutRef } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
@@ -24,6 +24,7 @@ async function closeBounty(
   refundings: { [key: string]: Assets },
   settingsUtxo: Utxo,
   utxoRef: OutRef,
+  lucid: Lucid,
 ): Promise<{
   closeCbor: string;
 }> {
@@ -35,7 +36,7 @@ async function closeBounty(
   const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
 
-  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
+  const [selectedUtxos] = await collateralOutRef(lucid);
   const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);

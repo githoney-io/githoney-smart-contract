@@ -12,14 +12,17 @@ const bountyRefBefore: OutRef = {
   outputIndex: 0,
 };
 
+lucidBase.selectWalletFromSeed(githoneySeed);
+
 console.log("Closing before contributor has been assigned...");
 const closeBefore = await closeBounty(
   githoneyAddr,
   {},
   settingsUtxo,
   bountyRefBefore,
+  lucidBase,
 );
-lucidBase.selectWalletFromSeed(githoneySeed);
+
 await signAndSubmit(closeBefore.closeCbor);
 
 const bountyRefAfter: OutRef = {
@@ -33,6 +36,7 @@ const closeAfter = await closeBounty(
   {},
   settingsUtxo,
   bountyRefAfter,
+  lucidBase,
 );
 await signAndSubmit(closeAfter.closeCbor);
 
@@ -60,6 +64,7 @@ const closeBeforeWithRewards = await closeBounty(
   refundings,
   settingsUtxo,
   bountyRefBeforeWithRewards,
+  lucidBase,
 );
 await signAndSubmit(closeBeforeWithRewards.closeCbor);
 
@@ -73,5 +78,6 @@ const closeAfterWithRewards = await closeBounty(
   refundings,
   settingsUtxo,
   bountyRefAfterWithRewards,
+  lucidBase,
 );
 await signAndSubmit(closeAfterWithRewards.closeCbor);
