@@ -1,5 +1,5 @@
 import {
-  adminAddr,
+  githoneyAddr,
   maintainerAddr,
   maintainerSeed,
   settingsRef,
@@ -24,7 +24,7 @@ const { createCbor } = await createBounty(
   rewardAmount,
   bountyId,
   maintainerAddr,
-  adminAddr,
+  githoneyAddr,
   settingsUtxo,
   BigInt(deadline),
 );

@@ -1,5 +1,5 @@
 import { OutRef } from "@spacebudz/lucid";
-import { adminAddr, adminSeed, settingsRef } from "../constants.ts";
+import { githoneyAddr, githoneySeed, settingsRef } from "../constants.ts";
 import { lucidBase, signAndSubmit } from "../utils/utils.ts";
 import { mergeBounty } from "../operations/bounties/merge.ts";
 
@@ -10,6 +10,6 @@ const bountyRef: OutRef = {
   outputIndex: 0,
 };
 
-const { mergeCbor } = await mergeBounty(adminAddr, settingsUtxo, bountyRef);
-lucidBase.selectWalletFromSeed(adminSeed);
+const { mergeCbor } = await mergeBounty(githoneyAddr, settingsUtxo, bountyRef);
+lucidBase.selectWalletFromSeed(githoneySeed);
 await signAndSubmit(mergeCbor);

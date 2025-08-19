@@ -74,7 +74,7 @@ logger.info(`MAINTAINER address: ${maintainerAddress}\n`);
 
 const tokenDPolicy = "fb279c09175731ade05f7314a9b36cf923c7a3d6873be26bbd1eeccf";
 const tokenDName = "tokenD";
-const tokenDUnit = toUnit(tokenDPolicy, tokenDName);
+const tokenDUnit = toUnit(tokenDPolicy, fromText(tokenDName));
 const bounty_id = "Bounty DEMO";
 
 describe("Integration tests", () => {

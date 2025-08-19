@@ -1,5 +1,5 @@
 import { Assets, OutRef } from "@spacebudz/lucid";
-import { adminAddr, adminSeed, settingsRef } from "../constants.ts";
+import { githoneyAddr, githoneySeed, settingsRef } from "../constants.ts";
 import { closeBounty } from "../operations/bounties/close.ts";
 import { lucidBase, signAndSubmit } from "../utils/utils.ts";
 
@@ -14,12 +14,12 @@ const bountyRefBefore: OutRef = {
 
 console.log("Closing before contributor has been assigned...");
 const closeBefore = await closeBounty(
-  adminAddr,
+  githoneyAddr,
   {},
   settingsUtxo,
   bountyRefBefore,
 );
-lucidBase.selectWalletFromSeed(adminSeed);
+lucidBase.selectWalletFromSeed(githoneySeed);
 await signAndSubmit(closeBefore.closeCbor);
 
 const bountyRefAfter: OutRef = {
@@ -29,7 +29,7 @@ const bountyRefAfter: OutRef = {
 
 console.log("Closing after contributor has been assigned...");
 const closeAfter = await closeBounty(
-  adminAddr,
+  githoneyAddr,
   {},
   settingsUtxo,
   bountyRefAfter,
@@ -56,7 +56,7 @@ const bountyRefBeforeWithRewards: OutRef = {
 };
 
 const closeBeforeWithRewards = await closeBounty(
-  adminAddr,
+  githoneyAddr,
   refundings,
   settingsUtxo,
   bountyRefBeforeWithRewards,
@@ -69,7 +69,7 @@ const bountyRefAfterWithRewards: OutRef = {
 };
 
 const closeAfterWithRewards = await closeBounty(
-  adminAddr,
+  githoneyAddr,
   refundings,
   settingsUtxo,
   bountyRefAfterWithRewards,

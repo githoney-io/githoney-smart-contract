@@ -7,8 +7,8 @@ import {
   mergeBounty,
 } from "../operations/index.ts";
 import {
-  adminAddr,
-  adminSeed,
+  githoneyAddr,
+  githoneySeed,
   contributorAddr,
   contributorSeed,
   maintainerAddr,
@@ -111,7 +111,7 @@ const newBounty = async (lucid: Lucid, settingsUtxo: Utxo) => {
     rewardAmount,
     bountyId,
     maintainerAddr,
-    adminAddr,
+    githoneyAddr,
     settingsUtxo,
     BigInt(deadline),
   );
@@ -134,8 +134,8 @@ const newAssign = async (lucid: Lucid, outRef: OutRef, settingsUtxo: Utxo) => {
 };
 
 const newMerge = async (lucid: Lucid, outRef: OutRef, settingsUtxo: Utxo) => {
-  const { mergeCbor } = await mergeBounty(adminAddr, settingsUtxo, outRef);
-  lucid.selectWalletFromSeed(adminSeed);
+  const { mergeCbor } = await mergeBounty(githoneyAddr, settingsUtxo, outRef);
+  lucid.selectWalletFromSeed(githoneySeed);
   const txId = await signAndSubmit(mergeCbor, lucid);
   await waitForUtxosUpdate(lucid, txId);
   return txId;
@@ -156,12 +156,12 @@ const newClose = async (
   refundings = {},
 ) => {
   const { closeCbor } = await closeBounty(
-    adminAddr,
+    githoneyAddr,
     refundings,
     settingsUtxo,
     outRef,
   );
-  lucid.selectWalletFromSeed(adminSeed);
+  lucid.selectWalletFromSeed(githoneySeed);
   const txId = await signAndSubmit(closeCbor, lucid);
   await waitForUtxosUpdate(lucid, txId);
   return txId;
