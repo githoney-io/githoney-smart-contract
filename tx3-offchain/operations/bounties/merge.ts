@@ -1,12 +1,11 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, Lucid, OutRef, toUnit, Utxo } from "@spacebudz/lucid";
+import { Addresses, OutRef, toUnit, Utxo } from "@spacebudz/lucid";
 import {
   getRewardAsset,
   keyPairsToAddress,
   logger,
   lucidBase,
 } from "../../utils/utils.ts";
-import { collateralOutRef } from "../../utils/utxo.ts";
 import { MIN_ADA, rewardFee } from "../../constants.ts";
 import { GithoneyDatumSchema, SettingsDatumSchema } from "../../types.ts";
 
@@ -14,7 +13,6 @@ async function mergeBounty(
   adminAddr: string,
   settingsUtxo: Utxo,
   utxoRef: OutRef,
-  lucid: Lucid,
 ): Promise<{
   mergeCbor: string;
 }> {
@@ -25,9 +23,6 @@ async function mergeBounty(
   }
   const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
-
-  const [selectedUtxos] = await collateralOutRef(lucid);
-  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
   const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
@@ -58,7 +53,6 @@ async function mergeBounty(
   const { tx } = await protocol.mergeTx({
     admin: adminAddr,
     bountyref: bountyRef,
-    collateralref: collateralref,
     githoneyaddr: githoneyAddr,
     githoneyfee: BigInt(githoneyFee),
     maintainer: maintainerAddr,

@@ -13,7 +13,6 @@ import {
   lucidWithWallet,
 } from "../../utils/utils.ts";
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { collateralOutRef } from "../../utils/utxo.ts";
 import { signSubmitAndWaitConfirmation } from "../../test/utils.ts";
 import { githoneySeed } from "../../constants.ts";
 
@@ -32,9 +31,6 @@ async function collectUtxos(
   logger.info("START collectUtxos");
   const settings = await lucid.datumOf(settingsUtxo, SettingsDatumSchema);
   const settingsRef = settingsUtxo.txHash + "#" + settingsUtxo.outputIndex;
-
-  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
-  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const settingsMintingPolicy = settingsPolicy(settingsNftOutRef);
   const settingsNftPolicy = Addresses.scriptToCredential(
@@ -79,7 +75,6 @@ async function collectUtxos(
       badgesscriptversion: getScriptVersion(badgesScript.type),
       githoneyaddr: githoneyAddr,
       settingsref: settingsRef,
-      collateralref: collateralref,
       utxotocollect: utxo.txHash + "#" + utxo.outputIndex,
     }));
 

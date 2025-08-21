@@ -1,8 +1,7 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, fromText, Lucid, Utxo } from "@spacebudz/lucid";
+import { Addresses, fromText, Utxo } from "@spacebudz/lucid";
 import { MIN_ADA } from "../../constants.ts";
 import { keyPairsToAddress, logger, lucidBase } from "../../utils/utils.ts";
-import { collateralOutRef } from "../../utils/utxo.ts";
 import { SettingsDatumSchema } from "../../types.ts";
 
 async function createBounty(
@@ -14,7 +13,6 @@ async function createBounty(
   adminAddr: string,
   settingsUtxo: Utxo,
   deadline: bigint,
-  lucid: Lucid,
 ): Promise<{
   createCbor: string;
 }> {
@@ -25,9 +23,6 @@ async function createBounty(
   }
   const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
-
-  const [selectedUtxos] = await collateralOutRef(lucid);
-  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const now = new Date().getTime() - 60 * 1000; // 1 minute ago
   const tomorrow = new Date(now + 1000 * 60 * 60 * 24 * 1).getTime();
@@ -59,7 +54,6 @@ async function createBounty(
     bountycreationfee: settings.bountyCreationFee,
     bountyid: Buffer.from(fromText(bountyId), "hex"),
     bountyrewardfee: settings.bountyRewardFee,
-    collateralref: collateralref,
     githoneyaddr: githoneyAddr,
     maintainer: maintainerAddr,
     maintainerpaymentcredential: Buffer.from(maintainerPaymentCred!, "hex"),

@@ -114,7 +114,6 @@ describe("Integration tests", () => {
       githoneyAddr,
       settingsUtxo,
       BigInt(deadline),
-      lucidMaintainer,
     );
 
     logger.info(`Creating bounty ${bounty_id}`);
@@ -152,7 +151,6 @@ describe("Integration tests", () => {
       settingsUtxo,
       maintainerAddress,
       createOutRef,
-      lucidMaintainer,
     );
 
     logger.info(`Adding reward to bounty`);
@@ -173,7 +171,6 @@ describe("Integration tests", () => {
       contributorAddr,
       settingsUtxo,
       { txHash: addRewardTxId, outputIndex: 0 },
-      lucidContributor,
     );
     const assignTxId = await signSubmitAndWaitConfirmation(
       assignCbor,
@@ -200,15 +197,10 @@ describe("Integration tests", () => {
 
     // MERGE BOUNTY
     logger.info(`Merging bounty`);
-    const { mergeCbor } = await mergeBounty(
-      githoneyAddr,
-      settingsUtxo,
-      {
-        txHash: assignTxId,
-        outputIndex: 0,
-      },
-      lucidGithoney,
-    );
+    const { mergeCbor } = await mergeBounty(githoneyAddr, settingsUtxo, {
+      txHash: assignTxId,
+      outputIndex: 0,
+    });
     const mergeTxId = await signSubmitAndWaitConfirmation(
       mergeCbor,
       lucidGithoney,
@@ -219,27 +211,23 @@ describe("Integration tests", () => {
     const mergeDatum = await lucid.datumOf(mergeUtxo, GithoneyDatumSchema);
 
     const lovelaceReward = (20_000_000n * (10_000n - rewardFee)) / 10_000n;
-    const tokenAReward = (100n * (10_000n - rewardFee)) / 10_000n;
+    const tokenDReward = (100n * (10_000n - rewardFee)) / 10_000n;
     assert(mergeDatum.merged === true, "Merged mismatch");
     assert(
       mergeUtxo.assets["lovelace"] === lovelaceReward + MIN_ADA,
       `Lovelace mismatch ${mergeUtxo.assets["lovelace"]} !== ${lovelaceReward}`,
     );
     assert(
-      mergeUtxo.assets[tokenDUnit] === tokenAReward,
-      `Token A mismatch ${mergeUtxo.assets[tokenDUnit]} !== ${tokenAReward}`,
+      mergeUtxo.assets[tokenDUnit] === tokenDReward,
+      `Token D mismatch ${mergeUtxo.assets[tokenDUnit]} !== ${tokenDReward}`,
     );
 
     // CLAIM BOUNTY
     logger.info(`Claiming bounty`);
-    const { claimCbor } = await claimBounty(
-      settingsUtxo,
-      {
-        txHash: mergeTxId,
-        outputIndex: 0,
-      },
-      lucidContributor,
-    );
+    const { claimCbor } = await claimBounty(settingsUtxo, {
+      txHash: mergeTxId,
+      outputIndex: 0,
+    });
     const claimTxId = await signSubmitAndWaitConfirmation(
       claimCbor,
       lucidContributor,
@@ -252,8 +240,8 @@ describe("Integration tests", () => {
       `Lovelace mismatch ${claimUtxo.assets["lovelace"]} !== ${lovelaceReward}`,
     );
     assert(
-      claimUtxo.assets[tokenDUnit] === tokenAReward,
-      `Token A mismatch ${claimUtxo.assets[tokenDUnit]} !== ${tokenAReward}`,
+      claimUtxo.assets[tokenDUnit] === tokenDReward,
+      `Token A mismatch ${claimUtxo.assets[tokenDUnit]} !== ${tokenDReward}`,
     );
   }, 900000);
 
@@ -296,7 +284,6 @@ describe("Integration tests", () => {
       githoneyAddr,
       settingsUtxo,
       deadline,
-      lucidMaintainer,
     );
 
     logger.info(`Creating bounty ${bounty_id}`);
@@ -353,7 +340,6 @@ describe("Integration tests", () => {
       githoneyAddr,
       newSettingsUtxo,
       deadline,
-      lucidMaintainer,
     );
 
     logger.info(`Creating bounty Bounty DEMO 2`);
@@ -384,7 +370,6 @@ describe("Integration tests", () => {
       contributorAddr,
       newSettingsUtxo,
       newCreateOutRef,
-      lucidContributor,
     );
 
     logger.info(`Assigning contributor with addr ${contributorAddr}`);
@@ -399,7 +384,6 @@ describe("Integration tests", () => {
       githoneyAddr,
       newSettingsUtxo,
       assignOutRef,
-      lucidGithoney,
     );
 
     logger.info(`Merging bounty`);
@@ -422,11 +406,7 @@ describe("Integration tests", () => {
       `Githoney fee pay mismatch ${githoneyFeePayUtxo.assets[tokenDUnit]}`,
     );
 
-    const { claimCbor } = await claimBounty(
-      newSettingsUtxo,
-      mergeOutRef,
-      lucidContributor,
-    );
+    const { claimCbor } = await claimBounty(newSettingsUtxo, mergeOutRef);
 
     logger.info(`Claiming bounty`);
     await signSubmitAndWaitConfirmation(claimCbor, lucidContributor);

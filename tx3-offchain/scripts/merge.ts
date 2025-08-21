@@ -10,11 +10,6 @@ const bountyRef: OutRef = {
   outputIndex: 0,
 };
 
+const { mergeCbor } = await mergeBounty(githoneyAddr, settingsUtxo, bountyRef);
 lucidBase.selectWalletFromSeed(githoneySeed);
-const { mergeCbor } = await mergeBounty(
-  githoneyAddr,
-  settingsUtxo,
-  bountyRef,
-  lucidBase,
-);
 await signAndSubmit(mergeCbor);

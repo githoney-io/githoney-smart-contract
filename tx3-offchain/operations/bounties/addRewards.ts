@@ -1,7 +1,6 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, Lucid, OutRef, Utxo } from "@spacebudz/lucid";
+import { Addresses, OutRef, Utxo } from "@spacebudz/lucid";
 import { getRewardAsset, logger, lucidBase } from "../../utils/utils.ts";
-import { collateralOutRef } from "../../utils/utxo.ts";
 import { GithoneyDatumSchema } from "../../types.ts";
 
 async function addRewards(
@@ -9,7 +8,6 @@ async function addRewards(
   settingsUtxo: Utxo,
   sponsorAddr: string,
   utxoRef: OutRef,
-  lucid: Lucid,
   withLovelace?: boolean,
 ): Promise<{
   addRewardCbor: string;
@@ -21,9 +19,6 @@ async function addRewards(
   }
   const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
-
-  const [selectedUtxos] = await collateralOutRef(lucid);
-  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
   const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
@@ -50,7 +45,6 @@ async function addRewards(
   const sixHoursFromNow = new Date(now + 6 * 60 * 60 * 1000).getTime();
   const { tx } = await protocol.addTx({
     bountyref: bountyRef,
-    collateralref: collateralref,
     rewardamount: BigInt(rewardAmount),
     rewardassetname: Buffer.from(rewardName, "hex"),
     rewardpolicyid: Buffer.from(rewardPolicy, "hex"),

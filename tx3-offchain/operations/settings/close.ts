@@ -5,9 +5,7 @@ import {
   keyPairsToAddress,
   logger,
   lucidBase,
-  lucidWithWallet,
 } from "../../utils/utils.ts";
-import { collateralOutRef } from "../../utils/utxo.ts";
 import {
   SettingsDatumSchema,
   settingsPolicy,
@@ -37,9 +35,6 @@ async function closeSettings(
 
   const settingsMintingPolicy = settingsPolicy(utxoRef);
   const settingsMintingVersion = getScriptVersion(settingsMintingPolicy.type);
-
-  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
-  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
   const settingsRef = settingsUtxo.txHash + "#" + settingsUtxo.outputIndex;
 
   const settingsTokenUnit = Object.keys(settingsUtxo.assets).find((unit) => {
@@ -62,7 +57,6 @@ async function closeSettings(
 
   const { tx } = await protocol.closeTx({
     githoneyaddr: githoneyAddr,
-    collateralref: collateralref,
     settingsref: settingsRef,
     remainingada: BigInt(remainingAda),
     settingspolicyid: Buffer.from(policyId, "hex"),

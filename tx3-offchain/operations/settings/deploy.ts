@@ -7,7 +7,7 @@ import {
   lucidBase,
   lucidWithWallet,
 } from "../../utils/utils.ts";
-import { collateralOutRef, sortUTxOs } from "../../utils/utxo.ts";
+import { sortUTxOs } from "../../utils/utxo.ts";
 import {
   settingsValidator,
   githoneyValidator,
@@ -56,9 +56,6 @@ async function deploySettings(
   const scriptVersion = getScriptVersion(gitHoneyValidator.type);
   const settingsMintingVersion = getScriptVersion(settingsMintingPolicy.type);
 
-  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
-  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
-
   const githoneyPaymentCred = Addresses.inspect(githoneyAddr).payment?.hash;
   const githoneyStakeCred =
     Addresses.inspect(githoneyAddr).delegation?.hash || null;
@@ -73,7 +70,6 @@ async function deploySettings(
     settingsmintingpolicy: Buffer.from(settingsMintingPolicy.script, "hex"),
     settingspolicyid: Buffer.from(settingsPolicyId.hash, "hex"),
     settingstokenname: Buffer.from(settingsTokenName),
-    collateralref: collateralref,
     githoneyscript: Buffer.from(gitHoneyValidator.script, "hex"),
     scriptversion: scriptVersion,
     settingsmintingversion: settingsMintingVersion,

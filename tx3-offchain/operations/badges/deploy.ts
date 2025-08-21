@@ -26,7 +26,6 @@ import {
   badgesValidator,
   settingsPolicy,
 } from "../../types.ts";
-import { collateralOutRef } from "../../utils/utxo.ts";
 
 /**
  * Builds a `deployBadges` transaction. The tx is built in the context of the GitHoney address,
@@ -64,9 +63,6 @@ async function deployBadges(
     outputIndex: utxo.outputIndex,
   };
   const utxoRef = outRef.txHash + "#" + outRef.outputIndex;
-
-  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
-  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const settingsMintingPolicy = settingsPolicy(settingsNftOutRef);
   const settingsNftPolicy = Addresses.scriptToCredential(settingsMintingPolicy);
@@ -114,7 +110,6 @@ async function deployBadges(
       ({ tx } = await protocol.updateBadgeTx({
         badgesscript: Buffer.from(badgesScript.script, "hex"),
         badgesscriptversion: getScriptVersion(badgesScript.type),
-        collateralref: collateralref,
         githoneyaddr: githoneyAddr,
         description: Buffer.from(fromText("description"), "hex"),
         descriptionvalue: Buffer.from(
@@ -147,7 +142,6 @@ async function deployBadges(
       ftAssets[ftUnit] = ftBadgeAmount;
 
       ({ tx } = await protocol.deployBadgeTx({
-        collateralref: collateralref,
         ftaddress: ftAddress,
         ftbadgeamount: ftBadgeAmount,
         ftbadgename: Buffer.from(fromUnit(ftUnit).assetName!, "hex"),

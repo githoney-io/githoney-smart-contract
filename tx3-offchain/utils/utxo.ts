@@ -69,16 +69,3 @@ const canonical = (a: Utxo, b: Utxo) => {
     return a.outputIndex - b.outputIndex;
   }
 };
-
-export const collateralOutRef = async (lucid: Lucid): Promise<Utxo[]> => {
-  return await lucid.wallet
-    .getUtxos()
-    .then((utxos) => {
-      return utxos.filter(
-        (utxo) =>
-          utxo.assets["lovelace"] >= 20_000_000 &&
-          Object.keys(utxo.assets).length === 1,
-      );
-    })
-    .then((utxos) => sortUTxOs(utxos, "Canonical"));
-};

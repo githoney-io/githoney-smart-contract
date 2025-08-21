@@ -86,7 +86,6 @@ type BadgesDatum {
 // DEPLOY BADGE
 
 tx deployBadge(
-    collateralRef: UtxoRef,
     description: Bytes,
     descriptionValue: Bytes,
     ftBadgeAmount: Int,
@@ -103,7 +102,8 @@ tx deployBadge(
     utxoRef: UtxoRef,
 ) {
     collateral {
-        ref: collateralRef,
+        from: GitHoneyAddr,
+        min_amount: Ada(20000000),
     }
 
     input githoney_wallet {
@@ -153,7 +153,6 @@ tx deployBadge(
 tx updateBadge(
     badgesScript: Bytes,
     badgesScriptVersion: Int,
-    collateralRef: UtxoRef,
     description: Bytes,
     descriptionValue: Bytes,
     logo: Bytes,
@@ -166,7 +165,8 @@ tx updateBadge(
     utxoToCollect: UtxoRef,
 ) {
     collateral {
-        ref: collateralRef,
+        from: GitHoneyAddr,
+        min_amount: Ada(20000000),
     }
 
     input githoney_wallet {
@@ -247,13 +247,13 @@ tx payBadgesTo(
 tx collectUtxos(
     badgesScript: Bytes,
     badgesScriptVersion: Int,
-    collateralRef: UtxoRef,
     settingsRef: UtxoRef,
     utxoRef: UtxoRef,
     utxoToCollect: UtxoRef,
 ) {
     collateral {
-        ref: collateralRef,
+        from: GitHoneyAddr,
+        min_amount: Ada(5000000),
     }
 
     reference settings_utxo {
@@ -291,7 +291,6 @@ tx collectUtxos(
 tx deploy(
     bountyCreationFee: Int,
     bountyRewardFee: Int,
-    collateralRef: UtxoRef,
     githoneyPaymentCredential: Bytes,
     githoneyScript: Bytes,
     githoneyStakingCredential: Bytes,
@@ -308,7 +307,8 @@ tx deploy(
     }
 
     collateral {
-        ref: collateralRef,
+        from: GitHoneyAddr,
+        min_amount: Ada(5000000),
     }
 
     mint {
@@ -354,13 +354,16 @@ tx deploy(
 tx update(
     bountyCreationFee: Int,
     bountyRewardFee: Int,
-    collateralRef: UtxoRef,
     githoneyScript: Bytes,
     scriptVersion: Int,
     settingsRef: UtxoRef,
     settingsValidatorScript: Bytes,
     settingsValidatorVersion: Int,
 ) {
+    collateral {
+        from: GitHoneyAddr,
+        min_amount: Ada(20000000),
+    }
 
     input current {
         ref: settingsRef,
@@ -371,10 +374,6 @@ tx update(
     input githoney_wallet {
         from: GitHoneyAddr,
         min_amount: min_utxo(change) + fees,
-    }
-
-    collateral {
-        ref: collateralRef,
     }
 
     output settings_utxo {
@@ -406,7 +405,6 @@ tx update(
 // CLOSE SETTINGS
 
 tx close(
-    collateralRef: UtxoRef,
     githoneyPaymentCredential: Bytes,
     githoneyStakingCredential: Bytes,
     remainingAda: Int,
@@ -418,6 +416,10 @@ tx close(
     settingsValidatorScript: Bytes,
     settingsValidatorVersion: Int,
 ) {
+    collateral {
+        from: GitHoneyAddr,
+        min_amount: Ada(20000000),
+    }
 
     input githoney_wallet {
         from: GitHoneyAddr,
@@ -428,10 +430,6 @@ tx close(
         ref: settingsRef,
         datum_is: SettingsDatum,
         redeemer: SettingsRedeemers::CloseSettings {},
-    }
-
-    collateral {
-        ref: collateralRef,
     }
 
     mint {
@@ -470,7 +468,6 @@ tx createWithToken(
     bountyCreationFee: Int,
     bountyId: Bytes,
     bountyRewardFee: Int,
-    collateralRef: UtxoRef,
     maintainerPaymentCredential: Bytes,
     maintainerStakeCredential: Bytes,
     minAda: Int,
@@ -489,7 +486,8 @@ tx createWithToken(
     }
 
     collateral {
-        ref: collateralRef,
+        from: Maintainer,
+        min_amount: Ada(5000000),
     }
 
     input maintainer_input {
@@ -557,7 +555,6 @@ tx createWithLovelace(
     bountyCreationFee: Int,
     bountyId: Bytes,
     bountyRewardFee: Int,
-    collateralRef: UtxoRef,
     maintainerPaymentCredential: Bytes,
     maintainerStakeCredential: Bytes,
     minAda: Int,
@@ -573,7 +570,8 @@ tx createWithLovelace(
     }
 
     collateral {
-        ref: collateralRef,
+        from: Maintainer,
+        min_amount: Ada(5000000),
     }
 
     input maintainer_input {
@@ -637,7 +635,6 @@ tx createWithLovelace(
 
 tx add(
     bountyRef: UtxoRef,
-    collateralRef: UtxoRef,
     minAda: Int,
     rewardAmount: Int,
     rewardAssetName: Bytes,
@@ -651,7 +648,8 @@ tx add(
     }
 
     collateral {
-        ref: collateralRef,
+        from: Sponsor,
+        min_amount: Ada(5000000),
     }
 
     input sponsor_input {
@@ -694,7 +692,6 @@ tx add(
 
 tx assign(
     bountyRef: UtxoRef,
-    collateralRef: UtxoRef,
     contributorPaymentCredential: Bytes,
     contributorStakeCredential: Bytes,
     minAda: Int,
@@ -707,7 +704,8 @@ tx assign(
     }
 
     collateral {
-        ref: collateralRef,
+        from: Contributor,
+        min_amount: Ada(5000000),
     }
 
     input contributor_input {
@@ -764,7 +762,6 @@ tx assign(
 tx closeBeforeContributor(
     bountyId: Bytes,
     bountyRef: UtxoRef,
-    collateralRef: UtxoRef,
     minAda: Int,
     mintingPolicyId: Bytes,
     rewardAmount: Int,
@@ -780,7 +777,8 @@ tx closeBeforeContributor(
     }
 
     collateral {
-        ref: collateralRef,
+        from: Admin,
+        min_amount: Ada(5000000),
     }
 
     input admin_input {
@@ -822,7 +820,6 @@ tx closeBeforeContributor(
 tx closeBeforeContributorWithReward(
     bountyId: Bytes,
     bountyRef: UtxoRef,
-    collateralRef: UtxoRef,
     minAda: Int,
     mintingPolicyId: Bytes,
     rewardAmount: Int,
@@ -841,7 +838,8 @@ tx closeBeforeContributorWithReward(
     }
 
     collateral {
-        ref: collateralRef,
+        from: Admin,
+        min_amount: Ada(5000000),
     }
 
     input admin_input {
@@ -888,7 +886,6 @@ tx closeBeforeContributorWithReward(
 tx closeAfterContributor(
     bountyId: Bytes,
     bountyRef: UtxoRef,
-    collateralRef: UtxoRef,
     minAda: Int,
     mintingPolicyId: Bytes,
     rewardAmount: Int,
@@ -905,7 +902,8 @@ tx closeAfterContributor(
     }
 
     collateral {
-        ref: collateralRef,
+        from: Admin,
+        min_amount: Ada(5000000),
     }
 
     input admin_input {
@@ -952,7 +950,6 @@ tx closeAfterContributor(
 tx closeAfterContributorWithReward(
     bountyId: Bytes,
     bountyRef: UtxoRef,
-    collateralRef: UtxoRef,
     minAda: Int,
     mintingPolicyId: Bytes,
     rewardAmount: Int,
@@ -971,7 +968,8 @@ tx closeAfterContributorWithReward(
     }
 
     collateral {
-        ref: collateralRef,
+        from: Admin,
+        min_amount: Ada(5000000),
     }
 
     input admin_input {
@@ -1024,7 +1022,6 @@ tx closeAfterContributorWithReward(
 
 tx merge(
     bountyRef: UtxoRef,
-    collateralRef: UtxoRef,
     githoneyFee: Int,
     minAda: Int,
     rewardAssetName: Bytes,
@@ -1039,7 +1036,8 @@ tx merge(
     }
 
     collateral {
-        ref: collateralRef,
+        from: GitHoneyAddr,
+        min_amount: Ada(5000000),
     }
 
     input admin_input {
@@ -1099,7 +1097,6 @@ tx merge(
 tx claim(
     bountyId: Bytes,
     bountyRef: UtxoRef,
-    collateralRef: UtxoRef,
     minAda: Int,
     mintingPolicyId: Bytes,
     settingsRef: UtxoRef,
@@ -1111,7 +1108,8 @@ tx claim(
     }
 
     collateral {
-        ref: collateralRef,
+        from: Contributor,
+        min_amount: Ada(5000000),
     }
 
     input contributor_input {

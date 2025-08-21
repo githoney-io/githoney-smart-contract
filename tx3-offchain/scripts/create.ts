@@ -18,7 +18,6 @@ const deadline = new Date(
   new Date().getTime() + 1000 * 60 * 60 * 24 * 2,
 ).getTime(); // 2 days from now
 
-lucidBase.selectWalletFromSeed(maintainerSeed);
 const { createCbor } = await createBounty(
   rewardPolicy,
   rewardName,
@@ -28,6 +27,6 @@ const { createCbor } = await createBounty(
   githoneyAddr,
   settingsUtxo,
   BigInt(deadline),
-  lucidBase,
 );
+lucidBase.selectWalletFromSeed(maintainerSeed);
 await signAndSubmit(createCbor);

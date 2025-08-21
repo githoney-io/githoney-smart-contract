@@ -3,7 +3,6 @@ import {
   Addresses,
   Assets,
   fromUnit,
-  Lucid,
   OutRef,
   toUnit,
   Utxo,
@@ -15,7 +14,6 @@ import {
   logger,
   lucidBase,
 } from "../../utils/utils.ts";
-import { collateralOutRef } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
 import { GithoneyDatumSchema, InitialValue } from "../../types.ts";
 
@@ -24,7 +22,6 @@ async function closeBounty(
   refundings: { [key: string]: Assets },
   settingsUtxo: Utxo,
   utxoRef: OutRef,
-  lucid: Lucid,
 ): Promise<{
   closeCbor: string;
 }> {
@@ -35,9 +32,6 @@ async function closeBounty(
   }
   const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
-
-  const [selectedUtxos] = await collateralOutRef(lucid);
-  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
   const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
@@ -88,7 +82,6 @@ async function closeBounty(
     since: BigInt(lucidBase.utils.unixTimeToSlots(now)),
     until: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),
     minada: BigInt(MIN_ADA),
-    collateralref: collateralref,
     bountyid: Buffer.from(fromUnit(bountyIdTokenUnit).name!, "hex"),
     mintingpolicyid: Buffer.from(fromUnit(bountyIdTokenUnit).policyId, "hex"),
     rewardpolicyid: Buffer.from(rewardPolicy, "hex"),

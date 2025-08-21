@@ -6,9 +6,7 @@ import {
   keyPairsToAddress,
   logger,
   lucidBase,
-  lucidWithWallet,
 } from "../../utils/utils.ts";
-import { collateralOutRef } from "../../utils/utxo.ts";
 import {
   githoneyValidator,
   SettingsDatumSchema,
@@ -45,8 +43,6 @@ async function updateSettings(
   const gitHoneyValidator = githoneyValidator(settingsPolicyId);
   const scriptVersion = getScriptVersion(gitHoneyValidator.type);
 
-  const [selectedUtxos] = await collateralOutRef(lucidWithWallet);
-  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
   const settingsRef = settingsUtxo.txHash + "#" + settingsUtxo.outputIndex;
 
   const oldSettings = await lucidBase.datumOf(
@@ -79,7 +75,6 @@ async function updateSettings(
     githoneyaddr: githoneyAddress,
     bountycreationfee: BigInt(bountyCreationFee),
     bountyrewardfee: BigInt(bountyRewardFee),
-    collateralref: collateralref,
     settingsref: settingsRef,
     githoneyscript: Buffer.from(gitHoneyValidator.script, "hex"),
     scriptversion: BigInt(scriptVersion),

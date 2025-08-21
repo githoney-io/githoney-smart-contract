@@ -1,7 +1,6 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, Lucid, OutRef, Utxo } from "@spacebudz/lucid";
+import { Addresses, OutRef, Utxo } from "@spacebudz/lucid";
 import { logger, lucidBase } from "../../utils/utils.ts";
-import { collateralOutRef } from "../../utils/utxo.ts";
 import { MIN_ADA } from "../../constants.ts";
 import { GithoneyDatumSchema } from "../../types.ts";
 
@@ -9,7 +8,6 @@ async function assignContributor(
   contributorAddr: string,
   settingsUtxo: Utxo,
   utxoRef: OutRef,
-  lucid: Lucid,
 ): Promise<{
   assignCbor: string;
 }> {
@@ -19,9 +17,6 @@ async function assignContributor(
     throw new Error("Githoney validator not found");
   }
   const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
-
-  const [selectedUtxos] = await collateralOutRef(lucid);
-  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
   const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
@@ -47,7 +42,6 @@ async function assignContributor(
 
   const { tx } = await protocol.assignTx({
     bountyref: bountyRef,
-    collateralref: collateralref,
     contributor: contributorAddr,
     contributorpaymentcredential: Buffer.from(contributorPaymentCred!, "hex"),
     contributorstakecredential: Buffer.from(contributorStakeCred!, "hex"),

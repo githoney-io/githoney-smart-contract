@@ -1,18 +1,16 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, fromUnit, Lucid, OutRef, Utxo } from "@spacebudz/lucid";
+import { Addresses, fromUnit, OutRef, Utxo } from "@spacebudz/lucid";
 import {
   extractBountyIdTokenUnit,
   keyPairsToAddress,
   logger,
   lucidBase,
 } from "../../utils/utils.ts";
-import { collateralOutRef } from "../../utils/utxo.ts";
 import { GithoneyDatumSchema } from "../../types.ts";
 
 async function claimBounty(
   settingsUtxo: Utxo,
   utxoRef: OutRef,
-  lucid: Lucid,
 ): Promise<{
   claimCbor: string;
 }> {
@@ -22,9 +20,6 @@ async function claimBounty(
     throw new Error("Githoney validator not found");
   }
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
-
-  const [selectedUtxos] = await collateralOutRef(lucid);
-  const collateralref = selectedUtxos.txHash + "#" + selectedUtxos.outputIndex;
 
   const [bountyUtxo] = await lucidBase.utxosByOutRef([utxoRef]);
   const bountyRef = bountyUtxo.txHash + "#" + bountyUtxo.outputIndex;
@@ -52,7 +47,6 @@ async function claimBounty(
   const { tx } = await protocol.claimTx({
     bountyid: Buffer.from(fromUnit(bountyIdTokenUnit).name!, "hex"),
     bountyref: bountyRef,
-    collateralref: collateralref,
     contributor: contributorAddr,
     mintingpolicyid: Buffer.from(fromUnit(bountyIdTokenUnit).policyId, "hex"),
     settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
