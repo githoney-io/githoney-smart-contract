@@ -21,7 +21,6 @@ async function claimBounty(
   if (!settingsUtxo.scriptRef) {
     throw new Error("Githoney validator not found");
   }
-  const scriptAddress = lucidBase.utils.scriptToAddress(settingsUtxo.scriptRef);
   const scriptHash = Addresses.scriptToCredential(settingsUtxo.scriptRef).hash;
 
   const [selectedUtxos] = await collateralOutRef(lucid);
@@ -56,7 +55,6 @@ async function claimBounty(
     collateralref: collateralref,
     contributor: contributorAddr,
     mintingpolicyid: Buffer.from(fromUnit(bountyIdTokenUnit).policyId, "hex"),
-    script: scriptAddress,
     settingsref: `${settingsUtxo.txHash}#${settingsUtxo.outputIndex}`,
     since: BigInt(lucidBase.utils.unixTimeToSlots(now)),
     until: BigInt(lucidBase.utils.unixTimeToSlots(sixHoursFromNow)),

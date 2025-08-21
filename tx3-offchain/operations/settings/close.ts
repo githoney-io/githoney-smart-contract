@@ -26,10 +26,6 @@ async function closeSettings(
   const settingsValidatorVersion = getScriptVersion(
     settingsValidatorScript.type,
   );
-  const settingsValidatorAddress = Addresses.scriptToAddress(
-    lucidBase.network,
-    settingsValidatorScript,
-  );
   const settingsValidatorCredential = Addresses.scriptToCredential(
     settingsValidatorScript,
   );
@@ -65,7 +61,6 @@ async function closeSettings(
   );
 
   const { tx } = await protocol.closeTx({
-    script: settingsValidatorAddress,
     githoneyaddr: githoneyAddr,
     collateralref: collateralref,
     settingsref: settingsRef,

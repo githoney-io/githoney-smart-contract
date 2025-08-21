@@ -107,7 +107,6 @@ tx deployBadge(
     }
 
     input githoney_wallet {
-        from: GitHoneyAddr,
         ref: utxoRef,
     }
 
@@ -171,7 +170,6 @@ tx updateBadge(
     }
 
     input githoney_wallet {
-        from: GitHoneyAddr,
         ref: utxoRef,
     }
 
@@ -180,7 +178,6 @@ tx updateBadge(
     }
 
     input current {
-        from: ScriptBadge,
         ref: utxoToCollect,
         redeemer: (),
     }
@@ -264,7 +261,6 @@ tx collectUtxos(
     }
 
     input current {
-        from: ScriptBadge,
         ref: utxoToCollect,
         redeemer: (),
     }
@@ -308,7 +304,6 @@ tx deploy(
 ) {
 
     input githoney_wallet {
-        from: GitHoneyAddr,
         ref: utxoRef,
     }
 
@@ -368,7 +363,6 @@ tx update(
 ) {
 
     input current {
-        from: Script,
         ref: settingsRef,
         datum_is: SettingsDatum,
         redeemer: SettingsRedeemers::UpdateSettings {},
@@ -431,7 +425,6 @@ tx close(
     }
 
     input current {
-        from: Script,
         ref: settingsRef,
         datum_is: SettingsDatum,
         redeemer: SettingsRedeemers::CloseSettings {},
@@ -667,7 +660,6 @@ tx add(
     }
 
     input current {
-        from: Script,
         ref: bountyRef,
         datum_is: GithoneyDatum,
         redeemer: GithoneyContractRedeemers::AddRewards {},
@@ -724,7 +716,6 @@ tx assign(
     }
 
     input current {
-        from: Script,
         ref: bountyRef,
         datum_is: GithoneyDatum,
         redeemer: GithoneyContractRedeemers::Assign {},
@@ -798,7 +789,6 @@ tx closeBeforeContributor(
     }
 
     input current {
-        from: Script,
         ref: bountyRef,
         datum_is: GithoneyDatum,
         redeemer: GithoneyContractRedeemers::Close {},
@@ -860,7 +850,6 @@ tx closeBeforeContributorWithReward(
     }
 
     input current {
-        from: Script,
         ref: bountyRef,
         datum_is: GithoneyDatum,
         redeemer: GithoneyContractRedeemers::Close {},
@@ -925,7 +914,6 @@ tx closeAfterContributor(
     }
 
     input current {
-        from: Script,
         ref: bountyRef,
         datum_is: GithoneyDatum,
         redeemer: GithoneyContractRedeemers::Close {},
@@ -992,7 +980,6 @@ tx closeAfterContributorWithReward(
     }
 
     input current {
-        from: Script,
         ref: bountyRef,
         datum_is: GithoneyDatum,
         redeemer: GithoneyContractRedeemers::Close {},
@@ -1061,7 +1048,6 @@ tx merge(
     }
 
     input current {
-        from: Script,
         ref: bountyRef,
         datum_is: GithoneyDatum,
         redeemer: GithoneyContractRedeemers::Merge {},
@@ -1134,7 +1120,6 @@ tx claim(
     }
 
     input current {
-        from: Script,
         ref: bountyRef,
         datum_is: GithoneyDatum,
         redeemer: GithoneyContractRedeemers::Claim {},

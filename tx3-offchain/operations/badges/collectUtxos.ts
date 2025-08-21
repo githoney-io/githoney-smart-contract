@@ -80,7 +80,6 @@ async function collectUtxos(
       githoneyaddr: githoneyAddr,
       settingsref: settingsRef,
       collateralref: collateralref,
-      scriptbadge: scriptAddr,
       utxotocollect: utxo.txHash + "#" + utxo.outputIndex,
     }));
 
