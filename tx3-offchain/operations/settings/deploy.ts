@@ -1,5 +1,5 @@
 import { protocol } from "../../gen/typescript/protocol.ts";
-import { Addresses, OutRef } from "@spacebudz/lucid";
+import { Addresses, fromText, OutRef } from "@spacebudz/lucid";
 import { creationFee, rewardFee, settingsTokenName } from "../../constants.ts";
 import {
   getScriptVersion,
@@ -69,7 +69,7 @@ async function deploySettings(
     bountyrewardfee: BigInt(rewardFee),
     settingsmintingpolicy: Buffer.from(settingsMintingPolicy.script, "hex"),
     settingspolicyid: Buffer.from(settingsPolicyId.hash, "hex"),
-    settingstokenname: Buffer.from(settingsTokenName),
+    settingstokenname: Buffer.from(fromText(settingsTokenName), "hex"),
     githoneyscript: Buffer.from(gitHoneyValidator.script, "hex"),
     scriptversion: scriptVersion,
     settingsmintingversion: settingsMintingVersion,
