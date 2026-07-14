@@ -31,7 +31,6 @@
     "@spacebudz/lucid": "npm:@jsr/spacebudz__lucid@^0.20.10",
     "chai": "^5.1.1",
     "dotenv": "^16.4.5",
-    "lucid-txpipe": "^0.10.13",
     "pino": "^9.1.0",
     "pino-pretty": "^11.1.0",
     "ts-node": "^10.9.2",

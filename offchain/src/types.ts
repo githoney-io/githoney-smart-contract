@@ -1,5 +1,4 @@
 import { Constr, Data, fromText } from "@spacebudz/lucid";
-import { Data as DataOld } from "lucid-txpipe";
 import {
   CardanoAddressAddress,
   CardanoAddressPaymentCredential,
@@ -97,13 +96,13 @@ namespace SettingsRedeemer {
     );
 }
 
-const BadgeDatumSchema = DataOld.Object({
-  metadata: DataOld.Map(DataOld.Bytes(), DataOld.Bytes()),
-  version: DataOld.Integer()
+const BadgeDatumSchema = Data.Object({
+  metadata: Data.Map(Data.Bytes(), Data.Bytes()),
+  version: Data.Integer()
 });
 
-type BadgeDatumT = DataOld.Static<typeof BadgeDatumSchema>;
-const BadgeDatum = BadgeDatumSchema as unknown as BadgeDatumT;
+type BadgeDatumT = typeof BadgeDatumSchema;
+const BadgeDatum = BadgeDatumSchema;
 
 interface Metadata {
   name: string;
